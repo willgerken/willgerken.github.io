@@ -1,0 +1,1054 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Will Gerken — Finance Professor, University of Kentucky</title>
+    <meta name="description" content="Will Gerken is the Real Estate Endowed Professor of Finance and 2025-26 University Research Professor at the University of Kentucky. His research on financial advisor misconduct has been cited by the SEC and FINRA in rulemaking.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --ink: #1a1a1a;
+            --ink-light: #4a4a4a;
+            --ink-muted: #737373;
+            --paper: #faf9f7;
+            --paper-warm: #f5f3ef;
+            --accent: #1a3a5c;
+            --accent-light: #2d5a8e;
+            --highlight: #c4a35a;
+            --highlight-soft: rgba(196, 163, 90, 0.12);
+            --border: #e0ddd8;
+            --border-light: #eceae6;
+            --radius: 4px;
+            --font-display: 'Instrument Serif', Georgia, serif;
+            --font-body: 'DM Sans', -apple-system, sans-serif;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html { scroll-behavior: smooth; font-size: 16px; }
+
+        body {
+            font-family: var(--font-body);
+            color: var(--ink);
+            background: var(--paper);
+            line-height: 1.7;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* ─── NAV ─── */
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            background: rgba(250, 249, 247, 0.92);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border-light);
+            transition: box-shadow 0.3s ease;
+        }
+        nav.scrolled { box-shadow: 0 1px 8px rgba(0,0,0,0.06); }
+        .nav-inner {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 56px;
+        }
+        .nav-name {
+            font-family: var(--font-display);
+            font-size: 1.25rem;
+            color: var(--ink);
+            text-decoration: none;
+            letter-spacing: -0.01em;
+        }
+        .nav-links { display: flex; gap: 1.75rem; align-items: center; }
+        .nav-links a {
+            font-size: 0.82rem;
+            font-weight: 500;
+            color: var(--ink-muted);
+            text-decoration: none;
+            letter-spacing: 0.03em;
+            text-transform: uppercase;
+            transition: color 0.2s;
+        }
+        .nav-links a:hover { color: var(--ink); }
+        .hamburger { display: none; background: none; border: none; cursor: pointer; padding: 4px; }
+        .hamburger span { display: block; width: 20px; height: 2px; background: var(--ink); margin: 4px 0; transition: 0.3s; }
+
+        /* ─── HERO ─── */
+        .hero {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 8rem 2rem 4rem;
+            display: grid;
+            grid-template-columns: 1fr 280px;
+            gap: 4rem;
+            align-items: end;
+        }
+        .hero-text h1 {
+            font-family: var(--font-display);
+            font-size: 3.2rem;
+            line-height: 1.15;
+            letter-spacing: -0.02em;
+            font-weight: 400;
+            margin-bottom: 1.25rem;
+            color: var(--ink);
+        }
+        .hero-text h1 em {
+            font-style: italic;
+            color: var(--accent-light);
+        }
+        .hero-title-line {
+            font-size: 1rem;
+            color: var(--ink-muted);
+            font-weight: 400;
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+            max-width: 560px;
+        }
+        .hero-creds {
+            display: flex;
+            gap: 0.6rem;
+            flex-wrap: wrap;
+            margin-bottom: 1.5rem;
+        }
+        .cred-tag {
+            font-size: 0.72rem;
+            font-weight: 600;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            padding: 0.3rem 0.7rem;
+            border-radius: 3px;
+            background: var(--paper-warm);
+            border: 1px solid var(--border);
+            color: var(--ink-light);
+        }
+        .cred-tag.gold {
+            background: var(--highlight-soft);
+            border-color: var(--highlight);
+            color: #8a6d1b;
+        }
+        .hero-links {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+        .hero-links a {
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--accent);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+            transition: color 0.2s;
+        }
+        .hero-links a:hover { color: var(--highlight); }
+        .hero-links a svg { width: 16px; height: 16px; }
+        .hero-photo {
+            position: relative;
+        }
+        .hero-photo img {
+            width: 100%;
+            aspect-ratio: 3/4;
+            object-fit: cover;
+            border-radius: 6px;
+            filter: grayscale(15%);
+            transition: filter 0.4s;
+        }
+        .hero-photo:hover img { filter: grayscale(0%); }
+        .hero-photo::after {
+            content: '';
+            position: absolute;
+            inset: 8px -8px -8px 8px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            z-index: -1;
+        }
+
+        /* ─── SECTION LAYOUT ─── */
+        section {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 4rem 2rem;
+        }
+        section + section { border-top: 1px solid var(--border-light); }
+        .section-header {
+            display: flex;
+            align-items: baseline;
+            gap: 1rem;
+            margin-bottom: 2.5rem;
+        }
+        .section-header h2 {
+            font-family: var(--font-display);
+            font-size: 2rem;
+            font-weight: 400;
+            letter-spacing: -0.01em;
+        }
+        .section-header .line {
+            flex: 1;
+            height: 1px;
+            background: var(--border);
+        }
+
+        /* ─── FEATURED IN ─── */
+        .featured-strip {
+            background: var(--accent);
+            padding: 2.5rem 0;
+            margin-top: 0;
+        }
+        .featured-inner {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+        .featured-label {
+            font-size: 0.7rem;
+            font-weight: 600;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: rgba(255,255,255,0.45);
+            margin-bottom: 1.25rem;
+        }
+        .featured-logos {
+            display: flex;
+            align-items: center;
+            gap: 2.5rem;
+            flex-wrap: wrap;
+        }
+        .featured-logo {
+            font-family: var(--font-display);
+            color: rgba(255,255,255,0.8);
+            font-size: 1.1rem;
+            letter-spacing: 0.02em;
+            white-space: nowrap;
+            transition: color 0.2s;
+            line-height: 1;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .featured-logo:hover { color: rgba(255,255,255,1); }
+        .featured-logo .logo-text { font-weight: 400; }
+        .featured-logo.wsj .logo-text { font-family: 'Georgia', serif; font-style: italic; letter-spacing: 0; }
+        .featured-logo.ft .logo-text { font-family: 'Georgia', serif; font-style: normal; letter-spacing: 0.05em; }
+        .featured-logo.bloomberg .logo-text { font-family: var(--font-body); font-weight: 700; font-size: 0.95rem; letter-spacing: 0.01em; }
+        .featured-logo.npr .logo-text { font-family: var(--font-body); font-weight: 700; font-size: 0.95rem; letter-spacing: 0.08em; text-transform: uppercase; }
+        .featured-logo.hbr .logo-text { font-family: 'Georgia', serif; font-style: italic; font-size: 0.9rem; letter-spacing: 0.02em; }
+        .featured-logo.fastco .logo-text { font-family: var(--font-body); font-weight: 700; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.04em; }
+        .featured-logo.barrons .logo-text { font-family: 'Georgia', serif; font-style: italic; font-size: 1.05rem; }
+        .featured-logo.promarket .logo-text { font-family: var(--font-body); font-weight: 600; font-size: 0.85rem; letter-spacing: 0.02em; }
+        .divider-dot {
+            width: 3px; height: 3px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.25);
+            flex-shrink: 0;
+        }
+
+        /* ─── POLICY IMPACT ─── */
+        .impact-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .impact-card {
+            padding: 1.75rem;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            background: white;
+            transition: border-color 0.2s;
+        }
+        .impact-card:hover { border-color: var(--highlight); }
+        .impact-icon {
+            font-size: 0.7rem;
+            font-weight: 600;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--highlight);
+            margin-bottom: 0.75rem;
+        }
+        .impact-card h3 {
+            font-family: var(--font-display);
+            font-size: 1.2rem;
+            font-weight: 400;
+            margin-bottom: 0.5rem;
+            line-height: 1.35;
+        }
+        .impact-card p {
+            font-size: 0.88rem;
+            color: var(--ink-muted);
+            line-height: 1.6;
+        }
+
+        /* ─── PAPERS ─── */
+        .paper {
+            padding: 1.75rem 0;
+            border-bottom: 1px solid var(--border-light);
+        }
+        .paper:last-child { border-bottom: none; }
+        .paper-status {
+            display: inline-block;
+            font-size: 0.68rem;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            padding: 0.2rem 0.6rem;
+            border-radius: 3px;
+            margin-bottom: 0.6rem;
+        }
+        .status-published { background: #e8f5e9; color: #2e7d32; }
+        .status-accepted { background: #e3f2fd; color: #1565c0; }
+        .status-rr { background: #fff3e0; color: #e65100; }
+        .status-submitted { background: #f3e5f5; color: #7b1fa2; }
+        .status-wp { background: var(--paper-warm); color: var(--ink-muted); }
+        .paper h3 {
+            font-family: var(--font-display);
+            font-size: 1.3rem;
+            font-weight: 400;
+            line-height: 1.35;
+            margin-bottom: 0.3rem;
+        }
+        .paper h3 a {
+            color: var(--ink);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+        .paper h3 a:hover { color: var(--accent-light); }
+        .paper-meta {
+            font-size: 0.88rem;
+            color: var(--ink-muted);
+            margin-bottom: 0.5rem;
+        }
+        .paper-meta .journal {
+            color: var(--accent);
+            font-weight: 500;
+        }
+        .paper-abstract {
+            font-size: 0.88rem;
+            color: var(--ink-light);
+            line-height: 1.7;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease, opacity 0.3s ease;
+            opacity: 0;
+        }
+        .paper-abstract.open {
+            max-height: 300px;
+            opacity: 1;
+        }
+        .abstract-toggle {
+            font-size: 0.8rem;
+            color: var(--ink-muted);
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 0.25rem 0;
+            font-family: var(--font-body);
+            transition: color 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+        .abstract-toggle:hover { color: var(--ink); }
+        .abstract-toggle .arrow {
+            display: inline-block;
+            transition: transform 0.3s;
+            font-size: 0.7rem;
+        }
+        .abstract-toggle.open .arrow { transform: rotate(90deg); }
+
+        /* ─── CFP PROGRAM ─── */
+        .cfp-highlight {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 2.5rem;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2.5rem;
+        }
+        .cfp-highlight h3 {
+            font-family: var(--font-display);
+            font-size: 1.6rem;
+            font-weight: 400;
+            margin-bottom: 1rem;
+            line-height: 1.3;
+        }
+        .cfp-highlight p {
+            font-size: 0.92rem;
+            color: var(--ink-light);
+            line-height: 1.7;
+            margin-bottom: 1rem;
+        }
+        .cfp-stat {
+            display: flex;
+            align-items: baseline;
+            gap: 0.75rem;
+            margin-bottom: 0.75rem;
+        }
+        .cfp-stat .number {
+            font-family: var(--font-display);
+            font-size: 2.4rem;
+            color: var(--accent);
+            line-height: 1;
+        }
+        .cfp-stat .label {
+            font-size: 0.88rem;
+            color: var(--ink-muted);
+        }
+        .cfp-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-size: 0.88rem;
+            font-weight: 500;
+            color: var(--accent);
+            text-decoration: none;
+            margin-top: 0.5rem;
+            transition: gap 0.2s;
+        }
+        .cfp-link:hover { gap: 0.6rem; }
+
+        /* ─── MEDIA ─── */
+        .media-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 1rem;
+        }
+        .media-item {
+            display: block;
+            padding: 1.25rem 1.5rem;
+            border: 1px solid var(--border-light);
+            border-radius: 6px;
+            text-decoration: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            background: white;
+        }
+        .media-item:hover {
+            border-color: var(--border);
+            box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+        }
+        .media-item h4 {
+            font-family: var(--font-display);
+            font-size: 1.05rem;
+            font-weight: 400;
+            color: var(--ink);
+            line-height: 1.4;
+            margin-bottom: 0.4rem;
+        }
+        .media-item .outlet {
+            font-size: 0.78rem;
+            font-weight: 500;
+            color: var(--ink-muted);
+            letter-spacing: 0.02em;
+        }
+        .media-item .date {
+            font-size: 0.78rem;
+            color: var(--ink-muted);
+        }
+
+        /* ─── EDUCATION TIMELINE ─── */
+        .timeline {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1.25rem;
+        }
+        .timeline-item {
+            padding: 1.25rem;
+            border-left: 2px solid var(--border);
+            transition: border-color 0.2s;
+        }
+        .timeline-item:hover { border-color: var(--highlight); }
+        .timeline-item .degree {
+            font-weight: 600;
+            font-size: 0.88rem;
+            margin-bottom: 0.15rem;
+        }
+        .timeline-item .school {
+            font-size: 0.82rem;
+            color: var(--ink-muted);
+        }
+        .timeline-item .year {
+            font-size: 0.78rem;
+            color: var(--ink-muted);
+            margin-top: 0.25rem;
+        }
+
+        /* ─── FOOTER ─── */
+        footer {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 3rem 2rem;
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .footer-contact {
+            font-size: 0.88rem;
+            color: var(--ink-muted);
+            line-height: 1.7;
+        }
+        .footer-contact a {
+            color: var(--accent);
+            text-decoration: none;
+        }
+        .footer-social {
+            display: flex;
+            gap: 1.25rem;
+        }
+        .footer-social a {
+            color: var(--ink-muted);
+            text-decoration: none;
+            font-size: 0.82rem;
+            font-weight: 500;
+            letter-spacing: 0.02em;
+            transition: color 0.2s;
+        }
+        .footer-social a:hover { color: var(--ink); }
+
+        /* ─── MOBILE ─── */
+        @media (max-width: 768px) {
+            .hero {
+                grid-template-columns: 1fr;
+                padding: 6rem 1.5rem 2.5rem;
+                gap: 2rem;
+            }
+            .hero-photo { order: -1; max-width: 200px; }
+            .hero-text h1 { font-size: 2.2rem; }
+            .nav-links { display: none; }
+            .nav-links.open {
+                display: flex;
+                flex-direction: column;
+                position: absolute;
+                top: 56px;
+                left: 0;
+                right: 0;
+                background: var(--paper);
+                border-bottom: 1px solid var(--border);
+                padding: 1.5rem 2rem;
+                gap: 1rem;
+            }
+            .hamburger { display: block; }
+            .impact-grid { grid-template-columns: 1fr; }
+            .cfp-highlight { grid-template-columns: 1fr; }
+            .featured-logos { gap: 1.5rem; }
+            section { padding: 3rem 1.5rem; }
+            .media-grid { grid-template-columns: 1fr; }
+            .timeline { grid-template-columns: 1fr 1fr; }
+            footer { flex-direction: column; text-align: center; }
+        }
+
+        /* ─── SCROLL ANIMATIONS ─── */
+        .fade-in {
+            opacity: 0;
+            transform: translateY(16px);
+            transition: opacity 0.6s ease, transform 0.6s ease;
+        }
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav id="navbar">
+    <div class="nav-inner">
+        <a href="#" class="nav-name">Will Gerken</a>
+        <div class="nav-links" id="navLinks">
+            <a href="#impact">Impact</a>
+            <a href="#research">Research</a>
+            <a href="#publications">Publications</a>
+            <a href="#cfp">CFP Program</a>
+            <a href="#media">Media</a>
+            <a href="#background">Background</a>
+            <a href="https://doi.org/10.13023/nsjd-rk62" target="_blank" rel="noopener">Data</a>
+            <a href="http://gattonweb.uky.edu/Vitas/wge224_Vita.pdf" target="_blank" rel="noopener">CV</a>
+        </div>
+        <button class="hamburger" id="hamburger" aria-label="Toggle menu">
+            <span></span><span></span><span></span>
+        </button>
+    </div>
+</nav>
+
+<!-- HERO -->
+<header class="hero">
+    <div class="hero-text">
+        <h1>Studying how misconduct spreads—and how to <em>stop it</em></h1>
+        <p class="hero-title-line">
+            Real Estate Endowed Professor of Finance &amp; Director, Certificate in Financial Planning<br>
+            2025–26 University Research Professor<br>
+            Gatton College of Business and Economics, University of Kentucky
+        </p>
+        <div class="hero-creds">
+            <span class="cred-tag gold">CFA Charterholder</span>
+            <span class="cred-tag gold">CFP® Professional</span>
+            <span class="cred-tag">Associate Editor, J. Corp. Finance</span>
+        </div>
+        <div class="hero-links">
+            <a href="mailto:will.gerken@uky.edu">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m2 4 10 8 10-8"/></svg>
+                will.gerken@uky.edu
+            </a>
+            <a href="https://scholar.google.com/citations?user=REPLACE_WITH_YOUR_ID" target="_blank" rel="noopener">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M5.242 13.769L0 9.5 12 0l12 9.5-5.242 4.269C17.548 11.249 14.978 9.5 12 9.5c-2.977 0-5.548 1.749-6.758 4.269zM12 10a7 7 0 1 0 0 14 7 7 0 0 0 0-14z"/></svg>
+                Google Scholar
+            </a>
+            <a href="https://ssrn.com/author=REPLACE_WITH_YOUR_ID" target="_blank" rel="noopener">SSRN</a>
+            <a href="https://www.linkedin.com/in/REPLACE_WITH_YOUR_PROFILE" target="_blank" rel="noopener">LinkedIn</a>
+        </div>
+    </div>
+    <div class="hero-photo">
+        <img src="img/headshot_gerken-will.jpg" alt="Will Gerken" onerror="this.style.background='#ddd'; this.alt='Photo: Will Gerken';">
+    </div>
+</header>
+
+<!-- FEATURED IN -->
+<div class="featured-strip">
+    <div class="featured-inner">
+        <div class="featured-label">Research Featured In &amp; Cited By</div>
+        <div class="featured-logos">
+            <span class="featured-logo wsj"><span class="logo-text">The Wall Street Journal</span></span>
+            <span class="divider-dot"></span>
+            <span class="featured-logo ft"><span class="logo-text">Financial Times</span></span>
+            <span class="divider-dot"></span>
+            <span class="featured-logo bloomberg"><span class="logo-text">Bloomberg</span></span>
+            <span class="divider-dot"></span>
+            <span class="featured-logo npr"><span class="logo-text">NPR</span></span>
+            <span class="divider-dot"></span>
+            <span class="featured-logo hbr"><span class="logo-text">Harvard Business Review</span></span>
+            <span class="divider-dot"></span>
+            <span class="featured-logo fastco"><span class="logo-text">Fast Company</span></span>
+            <span class="divider-dot"></span>
+            <span class="featured-logo barrons"><span class="logo-text">Barron's</span></span>
+            <span class="divider-dot"></span>
+            <span class="featured-logo promarket"><span class="logo-text">ProMarket</span></span>
+        </div>
+    </div>
+</div>
+
+<!-- POLICY IMPACT -->
+<section id="impact" class="fade-in">
+    <div class="section-header">
+        <h2>Regulatory Impact</h2>
+        <span class="line"></span>
+    </div>
+    <div class="impact-grid">
+        <div class="impact-card">
+            <div class="impact-icon">SEC Rulemaking</div>
+            <h3>Cited in Regulation Best Interest</h3>
+            <p>Research on financial advisor misconduct was cited by SEC Commissioner Robert Jackson in his public statement on the Final Rules governing Regulation Best Interest (Reg BI), which requires financial professionals to act in their clients' best interest.</p>
+        </div>
+        <div class="impact-card">
+            <div class="impact-icon">SEC Engagement</div>
+            <h3>Presented to SEC Division of Economic and Risk Analysis</h3>
+            <p>Findings on how fraud spreads through career networks were presented directly to the SEC's research division, informing the Commission's approach to identifying high-risk advisors and monitoring misconduct patterns.</p>
+        </div>
+        <div class="impact-card">
+            <div class="impact-icon">Open Data</div>
+            <h3>Public Misconduct Database</h3>
+            <p>Constructed and publicly released a comprehensive database of investment manager fraud using FOIA requests, enabling researchers, regulators, and investors to study misconduct patterns. Available at the <a href="https://doi.org/10.13023/nsjd-rk62" style="color: var(--accent);">UK data repository</a>.</p>
+        </div>
+        <div class="impact-card">
+            <div class="impact-icon">100K+ Views in 24 Hours</div>
+            <h3>Watching the Watchdogs Goes Viral</h3>
+            <p>Smartphone geolocation research tracking SEC enforcement interactions received over 100,000 views within the first day of release and was covered by the Financial Times, Bloomberg, Fast Company, and ProMarket.</p>
+        </div>
+    </div>
+</section>
+
+<!-- WORKING PAPERS -->
+<section id="research" class="fade-in">
+    <div class="section-header">
+        <h2>Working Papers</h2>
+        <span class="line"></span>
+    </div>
+
+    <!-- Childhood Exposure - Conditional Accept RFS -->
+    <div class="paper">
+        <span class="paper-status status-accepted">Conditional Acceptance — Review of Financial Studies</span>
+        <h3><a href="http://ssrn.com/abstract=3361230" target="_blank" rel="noopener">Childhood Exposure to Misbehavior and the Culture of Financial Misconduct</a></h3>
+        <p class="paper-meta">with Chris Clifford and Jesse Ellis</p>
+        <button class="abstract-toggle" onclick="toggleAbstract(this)"><span class="arrow">▸</span> Abstract</button>
+        <div class="paper-abstract">Using novel data on financial advisors' childhood residences, we show that advisors raised in counties with less ethical cultures are more likely to commit misconduct as adults. Our identification strategy exploits variation in childhood backgrounds among advisors working together in the same branch office in adulthood. Exploiting timing of moves during childhood, we find evidence of dosage effects. Influences are amplified when coworkers come from less diverse geographic backgrounds.</div>
+    </div>
+
+    <!-- Third Party Quality - R&R Management Science -->
+    <div class="paper">
+        <span class="paper-status status-rr">Revise &amp; Resubmit — Management Science</span>
+        <h3><a href="http://ssrn.com/abstract=4149993" target="_blank" rel="noopener">Third Party Quality Certification in the Market for Financial Advice</a></h3>
+        <p class="paper-meta">with Morteza Momeni</p>
+        <button class="abstract-toggle" onclick="toggleAbstract(this)"><span class="arrow">▸</span> Abstract</button>
+        <div class="paper-abstract">We study third party quality certification in the market for financial advice. Using the Barron's Top Financial Advisors rankings, we find evidence that being named a top advisor increases both assets under management and accounts for individuals and their firms. The effects increase sharply around thresholds for certification suggesting that clients value the certification itself and not solely the underlying quality.</div>
+    </div>
+
+    <!-- Madison Ave & Wall St - Submitted RFS -->
+    <div class="paper">
+        <span class="paper-status status-submitted">Under Review — Review of Financial Studies</span>
+        <h3><a href="http://ssrn.com/abstract=3914328" target="_blank" rel="noopener">Where is the Intersection of Madison Avenue and Wall Street? Advertisement, Local Access to Investment Advice, and Stock Market Participation</a></h3>
+        <p class="paper-meta">with Joe Farizo and Ge Wu</p>
+        <button class="abstract-toggle" onclick="toggleAbstract(this)"><span class="arrow">▸</span> Abstract</button>
+        <div class="paper-abstract">Exploiting variation in household exposure to financial advertising along Designated Market Area (DMA) borders, we find increased advertising by investment advisory firms leads to greater stock market participation. This relationship is concentrated in areas where the advertising firm maintains a physical presence, and unlike advertising in other industries, we find limited evidence of between-firm spillovers.</div>
+    </div>
+
+    <!-- Death of a Salesman's Manager -->
+    <div class="paper">
+        <span class="paper-status status-wp">Working Paper</span>
+        <h3><a href="http://ssrn.com/abstract=5025434" target="_blank" rel="noopener">Death of a Salesman's Manager: Soft Information, Collusion, and Misconduct in Financial Advisory Firms</a></h3>
+        <p class="paper-meta">with Steve Dimmock and Jesse Ellis</p>
+        <button class="abstract-toggle" onclick="toggleAbstract(this)"><span class="arrow">▸</span> Abstract</button>
+        <div class="paper-abstract">Using the sudden deaths of financial advisory branch managers as exogenous disruptions to the accumulated soft information between supervisors and advisors, we find that these deaths trigger a sharp decline in advisor misconduct that persists for several years before gradually returning to prior levels. These findings challenge the intuitive notion that more informed supervisors will curb unethical behavior.</div>
+    </div>
+
+    <!-- Watching the Watchdogs -->
+    <div class="paper">
+        <span class="paper-status status-wp">Working Paper</span>
+        <h3><a href="http://ssrn.com/abstract=4941708" target="_blank" rel="noopener">Watching the Watchdogs: The Information Content of SEC Interactions</a></h3>
+        <p class="paper-meta">with Steve Irlbeck, Marc Painter, and Guangli Zhang</p>
+        <button class="abstract-toggle" onclick="toggleAbstract(this)"><span class="arrow">▸</span> Abstract</button>
+        <div class="paper-abstract">Using smartphone geolocation data, we provide systematic evidence of physical regulatory interactions at SEC offices and corporate headquarters across all stages of oversight. Our methodology reveals many interactions occur outside formal proceedings. On average, interactions predict abnormal returns of -3.9% over three months. Although insiders typically reduce selling around interactions, those who continue trading avoid substantial losses.</div>
+    </div>
+
+    <!-- Broker Geography -->
+    <div class="paper">
+        <span class="paper-status status-wp">Working Paper</span>
+        <h3><a href="http://ssrn.com/abstract=3994790" target="_blank" rel="noopener">The Impact of Broker Geography on Retail Investor Behavior</a></h3>
+        <p class="paper-meta">with Dan Bradley and Jared Williams</p>
+        <button class="abstract-toggle" onclick="toggleAbstract(this)"><span class="arrow">▸</span> Abstract</button>
+        <div class="paper-abstract">We examine the effects of broker geography on the geography of retail trading in stocks covered by the broker's analysts. Retail investors are significantly more likely to trade and own stocks covered by brokers employing financial advisors in their metropolitan area. Our findings are driven by the effects of equity research on investor awareness rather than investor credulity.</div>
+    </div>
+</section>
+
+<!-- PUBLICATIONS -->
+<section id="publications" class="fade-in">
+    <div class="section-header">
+        <h2>Publications</h2>
+        <span class="line"></span>
+    </div>
+
+    <div class="paper">
+        <span class="paper-status status-published">Review of Financial Studies — Accepted</span>
+        <h3><a href="http://ssrn.com/abstract=3479352" target="_blank" rel="noopener">The Value of Differing Points of View: Evidence from Financial Analysts' Geographic Diversity</a></h3>
+        <p class="paper-meta">with Marc Painter</p>
+        <button class="abstract-toggle" onclick="toggleAbstract(this)"><span class="arrow">▸</span> Abstract</button>
+        <div class="paper-abstract">We show that analysts incorporate geographically dispersed information about firms into individual forecasts and that limited analyst geographic diversity adversely affects consensus forecasts and firm liquidity. Using satellite imagery of U.S. retailers' parking lots, we find analysts shade their own forecast in the direction of local car counts.</div>
+    </div>
+
+    <div class="paper">
+        <span class="paper-status status-published">Journal of Finance (2021) · Vol. 76, 3309–3346</span>
+        <h3><a href="http://ssrn.com/abstract=3187082" target="_blank" rel="noopener">Real Estate Shocks and Financial Advisor Misconduct</a></h3>
+        <p class="paper-meta">with Stephen Dimmock and Tyson Van Alfen</p>
+        <button class="abstract-toggle" onclick="toggleAbstract(this)"><span class="arrow">▸</span> Abstract</button>
+        <div class="paper-abstract">We test whether personal real estate shocks affect professional misconduct by financial advisors. We find a negative relation between housing returns and misconduct. Advisors' housing returns explain misconduct against out-of-state customers, breaking the link between customer and advisor housing shocks.</div>
+    </div>
+
+    <div class="paper">
+        <span class="paper-status status-published">Journal of Finance (2021) · Vol. 76, 2409–2445</span>
+        <h3><a href="http://ssrn.com/abstract=3064204" target="_blank" rel="noopener">Property Rights to Client Relationships and Financial Advisor Incentives</a></h3>
+        <p class="paper-meta">with Chris Clifford</p>
+        <button class="abstract-toggle" onclick="toggleAbstract(this)"><span class="arrow">▸</span> Abstract</button>
+        <div class="paper-abstract">We study the effect of a change in property rights on employee behavior in the industry for financial advice. After the Protocol for Broker Recruiting transferred ownership of client relationships from the firm to the advisor, advisors invested in client-facing industry licenses, shifted to fee-based advising, and garnered fewer customer complaints.</div>
+    </div>
+
+    <div class="paper">
+        <span class="paper-status status-published">Journal of Finance (2018) · Vol. 73, 1417–1450</span>
+        <h3><a href="http://ssrn.com/abstract=2577311" target="_blank" rel="noopener">Is Fraud Contagious? Career Networks and Fraud by Financial Advisors</a></h3>
+        <p class="paper-meta">with Stephen Dimmock and Nathaniel Graham</p>
+        <button class="abstract-toggle" onclick="toggleAbstract(this)"><span class="arrow">▸</span> Abstract</button>
+        <div class="paper-abstract">We show that co-workers influence an individual's propensity to commit financial misconduct. We identify co-workers' effect on misconduct using changes in co-workers caused by mergers of financial advisory firms. The probability of an advisor committing misconduct increases if new co-workers have a history of misconduct. This effect is stronger between demographically similar co-workers.</div>
+    </div>
+
+    <div class="paper">
+        <span class="paper-status status-published">JFQA (2018) · Vol. 53, 2067–2101</span>
+        <h3><a href="http://ssrn.com/abstract=2537253" target="_blank" rel="noopener">Hedge Fund Boards and the Market for Independent Directors</a></h3>
+        <p class="paper-meta">with Chris Clifford and Jesse Ellis</p>
+        <button class="abstract-toggle" onclick="toggleAbstract(this)"><span class="arrow">▸</span> Abstract</button>
+        <div class="paper-abstract">We provide the first examination of hedge fund boards and their directors. Busy independent directors are sought after because they have more reputational capital at stake. Funds with busy independent directors are less likely to commit fraud, abuse discretionary liquidity restrictions, or engage in performance-based risk shifting.</div>
+    </div>
+
+    <div class="paper">
+        <span class="paper-status status-published">J. Financial Economics (2018) · Vol. 127, 113–135</span>
+        <h3><a href="http://ssrn.com/abstract=2291827" target="_blank" rel="noopener">Capital Gains Lock-In and Governance Choices</a></h3>
+        <p class="paper-meta">with Steve Dimmock, Zoran Ivkovich, and Scott Weisbenner</p>
+        <button class="abstract-toggle" onclick="toggleAbstract(this)"><span class="arrow">▸</span> Abstract</button>
+        <div class="paper-abstract">Differences in accrued gains and investors' tax-sensitivity induce variation in a capital gains lock-in effect. Higher capital gains decrease the likelihood a fund exits prior to contentious votes and increase the likelihood a fund votes against management.</div>
+    </div>
+
+    <div class="paper">
+        <span class="paper-status status-published">Review of Finance (2016) · Vol. 20, 795–821</span>
+        <h3><a href="http://ssrn.com/abstract=2260058" target="_blank" rel="noopener">Regulatory Oversight and Return Misreporting by Hedge Funds</a></h3>
+        <p class="paper-meta">with Steve Dimmock</p>
+        <button class="abstract-toggle" onclick="toggleAbstract(this)"><span class="arrow">▸</span> Abstract</button>
+        <div class="paper-abstract">We use SEC rule changes to show that regulatory oversight reduces return misreporting by hedge funds. Differences-in-differences tests show that misreporting decreased after a 2004 rule expansion and increased when funds exited the regulatory system after the rule's 2006 revocation.</div>
+    </div>
+
+    <div class="paper">
+        <span class="paper-status status-published">J. Corporate Finance (2015) · Vol. 30, 44–64</span>
+        <h3><a href="http://ssrn.com/abstract=1669800" target="_blank" rel="noopener">What Determines the Allocation of Managerial Ownership within Firms?</a></h3>
+        <p class="paper-meta">with Steve Dimmock and Jennifer Marietta-Westberg</p>
+        <button class="abstract-toggle" onclick="toggleAbstract(this)"><span class="arrow">▸</span> Abstract</button>
+        <div class="paper-abstract">We show that the allocation of managerial ownership to individuals within firms varies depending upon the joint distribution of decision control and decision management rights. Ownership is higher for managers with both executive and operational responsibilities and when benefits of cooperation are higher.</div>
+    </div>
+
+    <div class="paper">
+        <span class="paper-status status-published">Q. J. Finance (2014) · Vol. 4, 1–36</span>
+        <h3><a href="http://ssrn.com/abstract=2463285" target="_blank" rel="noopener">Blockholder Ownership and Corporate Control: The Role of Liquidity</a></h3>
+        <p class="paper-meta">Solo-authored</p>
+        <button class="abstract-toggle" onclick="toggleAbstract(this)"><span class="arrow">▸</span> Abstract</button>
+        <div class="paper-abstract">Employing an instrumental variable approach based on the regulatory change of tick sizes, I examine the link between equity liquidity and activism by large shareholders. Liquidity increases the likelihood of block formation. I find evidence that the threat of exit from a block can discipline managers and that this threat is more effective when liquidity is higher.</div>
+    </div>
+
+    <div class="paper">
+        <span class="paper-status status-published">J. Financial Economics (2012) · Vol. 105, 153–173</span>
+        <h3><a href="http://ssrn.com/abstract=1832770" target="_blank" rel="noopener">Predicting Fraud by Investment Managers</a></h3>
+        <p class="paper-meta">with Steve Dimmock</p>
+        <button class="abstract-toggle" onclick="toggleAbstract(this)"><span class="arrow">▸</span> Abstract</button>
+        <div class="paper-abstract">We test the predictability of investment fraud using mandatory SEC disclosures. Avoiding the 5% of firms with the highest ex ante predicted fraud risk would allow an investor to avoid 29% of fraud cases and over 40% of total dollar losses from fraud. We find no evidence that investors receive compensation for fraud risk.</div>
+    </div>
+
+    <!-- Other pubs header -->
+    <div style="margin-top: 2.5rem;">
+        <p style="font-size: 0.82rem; font-weight: 500; color: var(--ink-muted); letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 1.5rem;">Other Publications</p>
+    </div>
+
+    <div class="paper">
+        <span class="paper-status status-published">Harvard Business Review · March 2018</span>
+        <h3><a href="https://hbr.org/2018/03/research-how-one-bad-employee-can-corrupt-a-whole-team" target="_blank" rel="noopener">How One Bad Employee Can Corrupt a Whole Team</a></h3>
+        <p class="paper-meta">with Stephen Dimmock</p>
+    </div>
+
+    <div class="paper">
+        <h3><a href="http://ssrn.com/abstract=3228688" target="_blank" rel="noopener">Misconduct and Fraud by Investment Managers</a></h3>
+        <p class="paper-meta">with Steve Dimmock and Joe Farizo · Book chapter</p>
+    </div>
+
+    <div class="paper">
+        <h3><a href="http://www.oxfordscholarship.com/view/10.1093/acprof:oso/9780199754656.001.0001/acprof-9780199754656-chapter-7" target="_blank" rel="noopener">Links between International Financial Markets and Volatility</a></h3>
+        <p class="paper-meta">with Kirt Butler · International Finance: A Survey (2012)</p>
+    </div>
+</section>
+
+<!-- CFP PROGRAM -->
+<section id="cfp" class="fade-in">
+    <div class="section-header">
+        <h2>Certificate in Financial Planning</h2>
+        <span class="line"></span>
+    </div>
+    <div class="cfp-highlight">
+        <div>
+            <h3>Training the next generation of ethical financial advisors</h3>
+            <p>As Director of the Certificate in Financial Planning at UK's Gatton College, I lead a CFP Board-registered program that prepares students to sit for the CFP® exam and enter the profession with both technical competence and ethical grounding.</p>
+            <p>The program partners with leading firms including Fidelity, Merrill Lynch, and MCF Advisors to place students in professional roles, and integrates the lessons of my misconduct research directly into the curriculum.</p>
+            <a href="https://gatton.uky.edu" class="cfp-link" target="_blank" rel="noopener">Learn more about the program →</a>
+        </div>
+        <div>
+            <div class="cfp-stat">
+                <span class="number">120+</span>
+                <span class="label">enrolled students</span>
+            </div>
+            <div class="cfp-stat">
+                <span class="number">6×</span>
+                <span class="label">growth in 15 months</span>
+            </div>
+            <div class="cfp-stat">
+                <span class="number">3</span>
+                <span class="label">new courses developed</span>
+            </div>
+            <p style="font-size: 0.85rem; color: var(--ink-muted); margin-top: 1rem; line-height: 1.6;">
+                CFA Institute University Affiliation (BS &amp; MSF) · CFP Board Registered Program · UK Retirement Plan Oversight Committee
+            </p>
+        </div>
+    </div>
+</section>
+
+<!-- MEDIA -->
+<section id="media" class="fade-in">
+    <div class="section-header">
+        <h2>Selected Media</h2>
+        <span class="line"></span>
+    </div>
+    <div class="media-grid">
+        <a class="media-item" href="https://www.promarket.org/2024/12/16/tracking-sec-movements-sheds-light-on-investigatory-process-and-its-impact-on-firms/" target="_blank" rel="noopener">
+            <h4>Tracking SEC Movements Sheds Light on Investigatory Process</h4>
+            <span class="outlet">ProMarket · Stigler Center</span> · <span class="date">December 2024</span>
+        </a>
+        <a class="media-item" href="https://www.fastcompany.com/91188340/smartphone-data-can-highlight-when-firms-are-under-sec-investigation" target="_blank" rel="noopener">
+            <h4>Smartphone Data Can Highlight When Firms Are Under SEC Investigation</h4>
+            <span class="outlet">Fast Company</span> · <span class="date">September 2024</span>
+        </a>
+        <a class="media-item" href="https://www.thedailyupside.com/policy-power/regulation/sec-smartphone-location-data-could-be-linked-to-share-prices/" target="_blank" rel="noopener">
+            <h4>SEC Smartphone Location Data Could Be Linked to Share Prices</h4>
+            <span class="outlet">The Daily Upside</span> · <span class="date">September 2024</span>
+        </a>
+        <a class="media-item" href="https://gatton.uky.edu/about-us/stay-connected/news/2024/gerken-research-receives-strong-media-attention" target="_blank" rel="noopener">
+            <h4>Gerken Research Receives Strong Media Attention</h4>
+            <span class="outlet">Financial Times, Bloomberg &amp; Money Stuff Podcast</span> · <span class="date">September 2024</span>
+        </a>
+        <a class="media-item" href="https://www.wsj.com/articles/for-wall-street-analysts-its-location-location-location-11573846610" target="_blank" rel="noopener">
+            <h4>For Wall Street Analysts, It's Location, Location, Location</h4>
+            <span class="outlet">Wall Street Journal</span> · <span class="date">November 2019</span>
+        </a>
+        <a class="media-item" href="https://hbr.org/2018/03/research-how-one-bad-employee-can-corrupt-a-whole-team" target="_blank" rel="noopener">
+            <h4>How One Bad Employee Can Corrupt a Whole Team</h4>
+            <span class="outlet">Harvard Business Review</span> · <span class="date">March 2018</span>
+        </a>
+        <a class="media-item" href="https://www.marketplace.org/2018/03/15/one-bad-employee-might-spoil-whole-bunch/" target="_blank" rel="noopener">
+            <h4>How One Shady Employee Can Poison the Workplace</h4>
+            <span class="outlet">NPR Marketplace</span> · <span class="date">March 2018</span>
+        </a>
+        <a class="media-item" href="https://www.barrons.com/articles/study-broker-protocol-helps-clients-firms-1511217168" target="_blank" rel="noopener">
+            <h4>Study: Broker Protocol Helps Clients, Firms</h4>
+            <span class="outlet">Barron's</span> · <span class="date">November 2017</span>
+        </a>
+        <a class="media-item" href="https://www.wsj.com/articles/is-your-broker-good-or-bad-1461342875" target="_blank" rel="noopener">
+            <h4>Is Your Stockbroker Great or Mediocre?</h4>
+            <span class="outlet">Wall Street Journal</span> · <span class="date">April 2016</span>
+        </a>
+        <a class="media-item" href="https://ftalphaville.ft.com/2016/03/01/2154793/the-financial-adviser-scammers/" target="_blank" rel="noopener">
+            <h4>The "Financial Adviser" Scammers</h4>
+            <span class="outlet">Financial Times · Alphaville</span> · <span class="date">March 2016</span>
+        </a>
+    </div>
+</section>
+
+<!-- BACKGROUND -->
+<section id="background" class="fade-in">
+    <div class="section-header">
+        <h2>Background</h2>
+        <span class="line"></span>
+    </div>
+    <div style="margin-bottom: 2.5rem;">
+        <p style="font-size: 0.92rem; color: var(--ink-light); line-height: 1.8; max-width: 720px;">
+            My path to studying financial misconduct began with a personal experience—watching a family member be taken advantage of by an unscrupulous advisor. That led me to FOIA-request my way into building one of the first systematic databases of the financial advisory industry, and eventually to an engineering-trained approach to studying how fraud spreads through networks, how regulators interact with firms, and how the market for financial advice can be made to work better for ordinary investors.
+        </p>
+    </div>
+
+    <p style="font-size: 0.82rem; font-weight: 500; color: var(--ink-muted); letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 1.25rem;">Education &amp; Professional Designations</p>
+    <div class="timeline">
+        <div class="timeline-item">
+            <div class="degree">PhD, Finance</div>
+            <div class="school">Michigan State University</div>
+            <div class="year">2009</div>
+        </div>
+        <div class="timeline-item">
+            <div class="degree">CFA Charterholder</div>
+            <div class="school">CFA Institute</div>
+            <div class="year">2006</div>
+        </div>
+        <div class="timeline-item">
+            <div class="degree">CFP® Professional</div>
+            <div class="school">CFP Board</div>
+        </div>
+        <div class="timeline-item">
+            <div class="degree">MBA</div>
+            <div class="school">Georgia Institute of Technology</div>
+            <div class="year">2004</div>
+        </div>
+        <div class="timeline-item">
+            <div class="degree">MS, Electrical Engineering</div>
+            <div class="school">Georgia Institute of Technology</div>
+            <div class="year">2003</div>
+        </div>
+        <div class="timeline-item">
+            <div class="degree">BS, Computer Engineering</div>
+            <div class="school">West Virginia University</div>
+            <div class="year">2001</div>
+        </div>
+        <div class="timeline-item">
+            <div class="degree">BS, Electrical Engineering</div>
+            <div class="school">West Virginia University</div>
+            <div class="year">2001</div>
+        </div>
+    </div>
+
+    <div style="margin-top: 2.5rem;">
+        <p style="font-size: 0.82rem; font-weight: 500; color: var(--ink-muted); letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 1.25rem;">Career</p>
+        <div class="timeline" style="grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));">
+            <div class="timeline-item">
+                <div class="degree">Real Estate Endowed Professor of Finance</div>
+                <div class="school">University of Kentucky</div>
+                <div class="year">2018 – Present</div>
+            </div>
+            <div class="timeline-item">
+                <div class="degree">Assistant Professor of Finance</div>
+                <div class="school">University of Kentucky</div>
+                <div class="year">2012 – 2018</div>
+            </div>
+            <div class="timeline-item">
+                <div class="degree">Assistant Professor of Finance</div>
+                <div class="school">Auburn University</div>
+                <div class="year">2009 – 2012</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+    <div class="footer-contact">
+        <strong>Will Gerken</strong><br>
+        Gatton College of Business and Economics<br>
+        University of Kentucky · 550 S. Limestone · Lexington, KY 40526<br>
+        <a href="mailto:will.gerken@uky.edu">will.gerken@uky.edu</a>
+    </div>
+    <div class="footer-social">
+        <a href="https://scholar.google.com/citations?user=REPLACE" target="_blank" rel="noopener">Google Scholar</a>
+        <a href="https://ssrn.com/author=REPLACE" target="_blank" rel="noopener">SSRN</a>
+        <a href="https://www.linkedin.com/in/REPLACE" target="_blank" rel="noopener">LinkedIn</a>
+        <a href="https://doi.org/10.13023/nsjd-rk62" target="_blank" rel="noopener">Data Repository</a>
+        <a href="http://gattonweb.uky.edu/Vitas/wge224_Vita.pdf" target="_blank" rel="noopener">Full CV (PDF)</a>
+    </div>
+</footer>
+
+<script>
+// Nav scroll effect
+const nav = document.getElementById('navbar');
+window.addEventListener('scroll', () => {
+    nav.classList.toggle('scrolled', window.scrollY > 20);
+});
+
+// Mobile menu
+document.getElementById('hamburger').addEventListener('click', () => {
+    document.getElementById('navLinks').classList.toggle('open');
+});
+
+// Close mobile menu on link click
+document.querySelectorAll('.nav-links a').forEach(link => {
+    link.addEventListener('click', () => {
+        document.getElementById('navLinks').classList.remove('open');
+    });
+});
+
+// Abstract toggle
+function toggleAbstract(btn) {
+    const abstract = btn.nextElementSibling;
+    btn.classList.toggle('open');
+    abstract.classList.toggle('open');
+}
+
+// Scroll fade-in
+const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+        if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+        }
+    });
+}, { threshold: 0.1 });
+
+document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+</script>
+
+</body>
+</html>
