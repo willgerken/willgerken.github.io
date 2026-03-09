@@ -63,7 +63,7 @@
         }
         .nav-name {
             font-family: var(--font-display);
-            font-size: 1.25rem;
+            font-size: 1.4rem;
             color: var(--ink);
             text-decoration: none;
             letter-spacing: -0.01em;
@@ -94,11 +94,11 @@
         }
         .hero-text h1 {
             font-family: var(--font-display);
-            font-size: 3.2rem;
+            font-size: 2.8rem;
             line-height: 1.15;
             letter-spacing: -0.02em;
             font-weight: 400;
-            margin-bottom: 1.25rem;
+            margin-bottom: 0.75rem;
             color: var(--ink);
         }
         .hero-text h1 em {
@@ -364,6 +364,13 @@
             font-size: 0.7rem;
         }
         .abstract-toggle.open .arrow { transform: rotate(90deg); }
+        .paper-summary {
+            font-size: 0.88rem;
+            color: var(--ink-light);
+            line-height: 1.6;
+            font-style: italic;
+            margin-bottom: 0.35rem;
+        }
 
         /* ─── CFP PROGRAM ─── */
         .cfp-highlight {
@@ -525,7 +532,7 @@
                 gap: 2rem;
             }
             .hero-photo { order: -1; max-width: 200px; }
-            .hero-text h1 { font-size: 2.2rem; }
+            .hero-text h1 { font-size: 2rem; }
             .nav-links { display: none; }
             .nav-links.open {
                 display: flex;
@@ -586,32 +593,34 @@
 <!-- HERO -->
 <header class="hero">
     <div class="hero-text">
-        <h1>Studying how misconduct spreads—and how to <em>stop it</em></h1>
+        <h1>Will Gerken</h1>
         <p class="hero-title-line">
             Real Estate Endowed Professor of Finance &amp; Director, Certificate in Financial Planning<br>
             2025–26 University Research Professor<br>
             Gatton College of Business and Economics, University of Kentucky
         </p>
+        <p style="font-size: 0.92rem; color: var(--ink-light); line-height: 1.7; margin-bottom: 1.5rem; max-width: 560px;">My research uses novel data sources, including FOIA requests, smartphone geolocation, and satellite imagery, to study financial advisor misconduct, regulatory enforcement, and how the market for financial advice serves ordinary investors. This work has been cited in SEC rulemaking and featured in the Wall Street Journal, Financial Times, Bloomberg, and NPR.</p>
         <div class="hero-creds">
             <span class="cred-tag gold">CFA Charterholder</span>
             <span class="cred-tag gold">CFP® Professional</span>
             <span class="cred-tag">Associate Editor, J. Corp. Finance</span>
+            <span class="cred-tag">Commonfund Best Paper Prize</span>
         </div>
         <div class="hero-links">
-            <a href="mailto:will.gerken@uky.edu">
+            <a href="/cdn-cgi/l/email-protection#26514f4a4a084143544d434866534d5f08434253">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m2 4 10 8 10-8"/></svg>
-                will.gerken@uky.edu
+                <span class="__cf_email__" data-cfemail="b7c0dedbdb99d0d2c5dcd2d9f7c2dcce99d2d3c2">[email&#160;protected]</span>
             </a>
-            <a href="https://scholar.google.com/citations?user=REPLACE_WITH_YOUR_ID" target="_blank" rel="noopener">
+            <a href="https://scholar.google.com/citations?user=DAwj7DcAAAAJ&hl=en" target="_blank" rel="noopener">
                 <svg viewBox="0 0 24 24" fill="currentColor"><path d="M5.242 13.769L0 9.5 12 0l12 9.5-5.242 4.269C17.548 11.249 14.978 9.5 12 9.5c-2.977 0-5.548 1.749-6.758 4.269zM12 10a7 7 0 1 0 0 14 7 7 0 0 0 0-14z"/></svg>
                 Google Scholar
             </a>
-            <a href="https://ssrn.com/author=REPLACE_WITH_YOUR_ID" target="_blank" rel="noopener">SSRN</a>
-            <a href="https://www.linkedin.com/in/REPLACE_WITH_YOUR_PROFILE" target="_blank" rel="noopener">LinkedIn</a>
+            <a href="https://papers.ssrn.com/sol3/cf_dev/AbsByAuth.cfm?per_id=506496" target="_blank" rel="noopener">SSRN</a>
+            <a href="https://www.linkedin.com/in/will-gerken-7b3202/" target="_blank" rel="noopener">LinkedIn</a>
         </div>
     </div>
     <div class="hero-photo">
-        <img src="headshot_gerken-will.jpg" alt="Will Gerken" onerror="this.style.background='#ddd'; this.alt='Photo: Will Gerken';">
+        <img src="img/headshot_gerken-will.jpg" alt="Will Gerken" onerror="this.style.background='#ddd'; this.alt='Photo: Will Gerken';">
     </div>
 </header>
 
@@ -635,6 +644,8 @@
             <span class="featured-logo barrons"><span class="logo-text">Barron's</span></span>
             <span class="divider-dot"></span>
             <span class="featured-logo promarket"><span class="logo-text">ProMarket</span></span>
+            <span class="divider-dot"></span>
+            <span class="featured-logo" style="font-family: var(--font-body); font-weight: 600; font-size: 0.85rem;"><span class="logo-text">Financial Planning</span></span>
         </div>
     </div>
 </div>
@@ -676,56 +687,38 @@
         <span class="line"></span>
     </div>
 
-    <!-- Childhood Exposure - Conditional Accept RFS -->
+    <!-- Madison Ave & Wall St -->
     <div class="paper">
-        <span class="paper-status status-accepted">Conditional Acceptance — Review of Financial Studies</span>
-        <h3><a href="http://ssrn.com/abstract=3361230" target="_blank" rel="noopener">Childhood Exposure to Misbehavior and the Culture of Financial Misconduct</a></h3>
-        <p class="paper-meta">with Chris Clifford and Jesse Ellis</p>
-        <button class="abstract-toggle" onclick="toggleAbstract(this)"><span class="arrow">▸</span> Abstract</button>
-        <div class="paper-abstract">Using novel data on financial advisors' childhood residences, we show that advisors raised in counties with less ethical cultures are more likely to commit misconduct as adults. Our identification strategy exploits variation in childhood backgrounds among advisors working together in the same branch office in adulthood. Exploiting timing of moves during childhood, we find evidence of dosage effects. Influences are amplified when coworkers come from less diverse geographic backgrounds.</div>
-    </div>
-
-    <!-- Third Party Quality - R&R Management Science -->
-    <div class="paper">
-        <span class="paper-status status-rr">Revise &amp; Resubmit — Management Science</span>
-        <h3><a href="http://ssrn.com/abstract=4149993" target="_blank" rel="noopener">Third Party Quality Certification in the Market for Financial Advice</a></h3>
-        <p class="paper-meta">with Morteza Momeni</p>
-        <button class="abstract-toggle" onclick="toggleAbstract(this)"><span class="arrow">▸</span> Abstract</button>
-        <div class="paper-abstract">We study third party quality certification in the market for financial advice. Using the Barron's Top Financial Advisors rankings, we find evidence that being named a top advisor increases both assets under management and accounts for individuals and their firms. The effects increase sharply around thresholds for certification suggesting that clients value the certification itself and not solely the underlying quality.</div>
-    </div>
-
-    <!-- Madison Ave & Wall St - Submitted RFS -->
-    <div class="paper">
-        <span class="paper-status status-submitted">Under Review — Review of Financial Studies</span>
         <h3><a href="http://ssrn.com/abstract=3914328" target="_blank" rel="noopener">Where is the Intersection of Madison Avenue and Wall Street? Advertisement, Local Access to Investment Advice, and Stock Market Participation</a></h3>
         <p class="paper-meta">with Joe Farizo and Ge Wu</p>
+        <p class="paper-summary">Advertising by investment advisory firms increases local stock market participation, but only where the firm has a physical office. Unlike other industries, there are no between-firm spillovers.</p>
         <button class="abstract-toggle" onclick="toggleAbstract(this)"><span class="arrow">▸</span> Abstract</button>
         <div class="paper-abstract">Exploiting variation in household exposure to financial advertising along Designated Market Area (DMA) borders, we find increased advertising by investment advisory firms leads to greater stock market participation. This relationship is concentrated in areas where the advertising firm maintains a physical presence, and unlike advertising in other industries, we find limited evidence of between-firm spillovers.</div>
     </div>
 
     <!-- Death of a Salesman's Manager -->
     <div class="paper">
-        <span class="paper-status status-wp">Working Paper</span>
         <h3><a href="http://ssrn.com/abstract=5025434" target="_blank" rel="noopener">Death of a Salesman's Manager: Soft Information, Collusion, and Misconduct in Financial Advisory Firms</a></h3>
         <p class="paper-meta">with Steve Dimmock and Jesse Ellis</p>
+        <p class="paper-summary">Unexpected deaths of branch managers trigger a sharp, persistent decline in advisor misconduct. Supervisors with accumulated soft information were facilitating misconduct, not constraining it.</p>
         <button class="abstract-toggle" onclick="toggleAbstract(this)"><span class="arrow">▸</span> Abstract</button>
         <div class="paper-abstract">Using the sudden deaths of financial advisory branch managers as exogenous disruptions to the accumulated soft information between supervisors and advisors, we find that these deaths trigger a sharp decline in advisor misconduct that persists for several years before gradually returning to prior levels. These findings challenge the intuitive notion that more informed supervisors will curb unethical behavior.</div>
     </div>
 
     <!-- Watching the Watchdogs -->
     <div class="paper">
-        <span class="paper-status status-wp">Working Paper</span>
         <h3><a href="http://ssrn.com/abstract=4941708" target="_blank" rel="noopener">Watching the Watchdogs: The Information Content of SEC Interactions</a></h3>
         <p class="paper-meta">with Steve Irlbeck, Marc Painter, and Guangli Zhang</p>
+        <p class="paper-summary">Using smartphone geolocation data, we show that 84% of SEC visits to firm headquarters occur outside formal investigations. Visits predict negative abnormal returns and a chilling effect on insider trading.</p>
         <button class="abstract-toggle" onclick="toggleAbstract(this)"><span class="arrow">▸</span> Abstract</button>
         <div class="paper-abstract">Using smartphone geolocation data, we provide systematic evidence of physical regulatory interactions at SEC offices and corporate headquarters across all stages of oversight. Our methodology reveals many interactions occur outside formal proceedings. On average, interactions predict abnormal returns of -3.9% over three months. Although insiders typically reduce selling around interactions, those who continue trading avoid substantial losses.</div>
     </div>
 
     <!-- Broker Geography -->
     <div class="paper">
-        <span class="paper-status status-wp">Working Paper</span>
         <h3><a href="http://ssrn.com/abstract=3994790" target="_blank" rel="noopener">The Impact of Broker Geography on Retail Investor Behavior</a></h3>
         <p class="paper-meta">with Dan Bradley and Jared Williams</p>
+        <p class="paper-summary">Retail investors are more likely to trade stocks covered by brokers with local financial advisors. The effect operates through awareness rather than credulity.</p>
         <button class="abstract-toggle" onclick="toggleAbstract(this)"><span class="arrow">▸</span> Abstract</button>
         <div class="paper-abstract">We examine the effects of broker geography on the geography of retail trading in stocks covered by the broker's analysts. Retail investors are significantly more likely to trade and own stocks covered by brokers employing financial advisors in their metropolitan area. Our findings are driven by the effects of equity research on investor awareness rather than investor credulity.</div>
     </div>
@@ -739,9 +732,37 @@
     </div>
 
     <div class="paper">
+        <span class="paper-status status-published">Management Science — Forthcoming</span>
+        <h3><a href="http://ssrn.com/abstract=4149993" target="_blank" rel="noopener">Third Party Quality Certification in the Market for Financial Advice</a></h3>
+        <p class="paper-meta">with Morteza Momeni</p>
+        <p class="paper-summary">Being named a Barron's Top Advisor increases assets and accounts, with sharp effects around certification thresholds. Certified advisors subsequently commit less misconduct.</p>
+        <button class="abstract-toggle" onclick="toggleAbstract(this)"><span class="arrow">▸</span> Abstract</button>
+        <div class="paper-abstract">We study third party quality certification in the market for financial advice. Using the Barron's Top Financial Advisors rankings, we find evidence that being named a top advisor increases both assets under management and accounts for individuals and their firms. The effects increase sharply around thresholds for certification suggesting that clients value the certification itself and not solely the underlying quality. After certification, advisors are less likely to engage in misconduct.</div>
+    </div>
+
+    <div class="paper">
+        <span class="paper-status status-published">Review of Financial Studies (2025) · Forthcoming</span>
+        <h3><a href="https://doi.org/10.1093/rfs/hhaf075" target="_blank" rel="noopener">Childhood Exposure to Misbehavior and the Culture of Financial Misconduct</a></h3>
+        <p class="paper-meta">with Chris Clifford and Jesse Ellis</p>
+        <p class="paper-summary">Advisors raised in counties with less ethical cultures are more likely to commit misconduct as adults, even controlling for current workplace and location. Childhood exposure has dosage effects.</p>
+        <button class="abstract-toggle" onclick="toggleAbstract(this)"><span class="arrow">▸</span> Abstract</button>
+        <div class="paper-abstract">Using novel data on financial advisors' childhood residences, we show that advisors raised in counties with less ethical cultures are more likely to commit misconduct as adults. Our identification strategy exploits variation in childhood backgrounds among advisors working together in the same branch office in adulthood. Exploiting timing of moves during childhood, we find evidence of dosage effects. Influences are amplified when coworkers come from less diverse geographic backgrounds.</div>
+    </div>
+
+    <div class="paper">
+        <span class="paper-status status-published">Review of Corporate Finance Studies (2023) · Vol. 12, 906–938</span>
+        <h3><a href="https://doi.org/10.1093/rcfs/cfad005" target="_blank" rel="noopener">Racial Concordance in the Market for Financial Advice</a></h3>
+        <p class="paper-meta">with Chris Clifford and Tian Qiu · RCFS Registered Report: "Finance for the Greater Good"</p>
+        <p class="paper-summary">Minority advisors are underrepresented in the industry and disproportionately serve poorer, racially concordant communities. Racial concordance has only a modest relation with stock market participation.</p>
+        <button class="abstract-toggle" onclick="toggleAbstract(this)"><span class="arrow">▸</span> Abstract</button>
+        <div class="paper-abstract">We examine the role of race and racial concordance between financial advisors and their local community. We document significant differences in stock market participation based on community racial composition, as well as differences in the characteristics of communities served by minority advisors. Notably, minority advisors are more likely to serve racially concordant communities, which tend to be poorer. While minority advisors are more likely to leave the industry, this relation is mitigated among advisors located in more concordant communities.</div>
+    </div>
+
+    <div class="paper">
         <span class="paper-status status-published">Review of Financial Studies — Accepted</span>
         <h3><a href="http://ssrn.com/abstract=3479352" target="_blank" rel="noopener">The Value of Differing Points of View: Evidence from Financial Analysts' Geographic Diversity</a></h3>
         <p class="paper-meta">with Marc Painter</p>
+        <p class="paper-summary">Analysts incorporate local information (measured via satellite imagery of parking lots) into forecasts. Geographic concentration of analyst coverage increases forecast errors and reduces liquidity.</p>
         <button class="abstract-toggle" onclick="toggleAbstract(this)"><span class="arrow">▸</span> Abstract</button>
         <div class="paper-abstract">We show that analysts incorporate geographically dispersed information about firms into individual forecasts and that limited analyst geographic diversity adversely affects consensus forecasts and firm liquidity. Using satellite imagery of U.S. retailers' parking lots, we find analysts shade their own forecast in the direction of local car counts.</div>
     </div>
@@ -750,6 +771,7 @@
         <span class="paper-status status-published">Journal of Finance (2021) · Vol. 76, 3309–3346</span>
         <h3><a href="http://ssrn.com/abstract=3187082" target="_blank" rel="noopener">Real Estate Shocks and Financial Advisor Misconduct</a></h3>
         <p class="paper-meta">with Stephen Dimmock and Tyson Van Alfen</p>
+        <p class="paper-summary">Advisors whose home values decline commit more misconduct. The effect is stronger for advisors with lower career risk and greater borrowing constraints.</p>
         <button class="abstract-toggle" onclick="toggleAbstract(this)"><span class="arrow">▸</span> Abstract</button>
         <div class="paper-abstract">We test whether personal real estate shocks affect professional misconduct by financial advisors. We find a negative relation between housing returns and misconduct. Advisors' housing returns explain misconduct against out-of-state customers, breaking the link between customer and advisor housing shocks.</div>
     </div>
@@ -758,6 +780,7 @@
         <span class="paper-status status-published">Journal of Finance (2021) · Vol. 76, 2409–2445</span>
         <h3><a href="http://ssrn.com/abstract=3064204" target="_blank" rel="noopener">Property Rights to Client Relationships and Financial Advisor Incentives</a></h3>
         <p class="paper-meta">with Chris Clifford</p>
+        <p class="paper-summary">When the Protocol for Broker Recruiting transferred ownership of client relationships from firms to advisors, advisors invested in credentials, shifted to fee-based models, and customer complaints fell.</p>
         <button class="abstract-toggle" onclick="toggleAbstract(this)"><span class="arrow">▸</span> Abstract</button>
         <div class="paper-abstract">We study the effect of a change in property rights on employee behavior in the industry for financial advice. After the Protocol for Broker Recruiting transferred ownership of client relationships from the firm to the advisor, advisors invested in client-facing industry licenses, shifted to fee-based advising, and garnered fewer customer complaints.</div>
     </div>
@@ -766,6 +789,7 @@
         <span class="paper-status status-published">Journal of Finance (2018) · Vol. 73, 1417–1450</span>
         <h3><a href="http://ssrn.com/abstract=2577311" target="_blank" rel="noopener">Is Fraud Contagious? Career Networks and Fraud by Financial Advisors</a></h3>
         <p class="paper-meta">with Stephen Dimmock and Nathaniel Graham</p>
+        <p class="paper-summary">Co-workers influence misconduct propensity. Using mergers as exogenous shocks to career networks, we find advisors paired with new colleagues who have misconduct histories are more likely to offend.</p>
         <button class="abstract-toggle" onclick="toggleAbstract(this)"><span class="arrow">▸</span> Abstract</button>
         <div class="paper-abstract">We show that co-workers influence an individual's propensity to commit financial misconduct. We identify co-workers' effect on misconduct using changes in co-workers caused by mergers of financial advisory firms. The probability of an advisor committing misconduct increases if new co-workers have a history of misconduct. This effect is stronger between demographically similar co-workers.</div>
     </div>
@@ -774,6 +798,7 @@
         <span class="paper-status status-published">JFQA (2018) · Vol. 53, 2067–2101</span>
         <h3><a href="http://ssrn.com/abstract=2537253" target="_blank" rel="noopener">Hedge Fund Boards and the Market for Independent Directors</a></h3>
         <p class="paper-meta">with Chris Clifford and Jesse Ellis</p>
+        <p class="paper-summary">Busy independent directors have more reputational capital at stake and are preferred by high-quality funds. Their presence is associated with less fraud and fewer abuses of discretionary restrictions.</p>
         <button class="abstract-toggle" onclick="toggleAbstract(this)"><span class="arrow">▸</span> Abstract</button>
         <div class="paper-abstract">We provide the first examination of hedge fund boards and their directors. Busy independent directors are sought after because they have more reputational capital at stake. Funds with busy independent directors are less likely to commit fraud, abuse discretionary liquidity restrictions, or engage in performance-based risk shifting.</div>
     </div>
@@ -782,6 +807,7 @@
         <span class="paper-status status-published">J. Financial Economics (2018) · Vol. 127, 113–135</span>
         <h3><a href="http://ssrn.com/abstract=2291827" target="_blank" rel="noopener">Capital Gains Lock-In and Governance Choices</a></h3>
         <p class="paper-meta">with Steve Dimmock, Zoran Ivkovich, and Scott Weisbenner</p>
+        <p class="paper-summary">Tax-driven capital gains lock-in affects governance: funds with larger unrealized gains are less likely to exit before contentious votes and more likely to vote against management.</p>
         <button class="abstract-toggle" onclick="toggleAbstract(this)"><span class="arrow">▸</span> Abstract</button>
         <div class="paper-abstract">Differences in accrued gains and investors' tax-sensitivity induce variation in a capital gains lock-in effect. Higher capital gains decrease the likelihood a fund exits prior to contentious votes and increase the likelihood a fund votes against management.</div>
     </div>
@@ -790,6 +816,7 @@
         <span class="paper-status status-published">Review of Finance (2016) · Vol. 20, 795–821</span>
         <h3><a href="http://ssrn.com/abstract=2260058" target="_blank" rel="noopener">Regulatory Oversight and Return Misreporting by Hedge Funds</a></h3>
         <p class="paper-meta">with Steve Dimmock</p>
+        <p class="paper-summary">Hedge fund misreporting decreased after a 2004 SEC rule expanded oversight, and increased after the rule was revoked in 2006. Regulatory scrutiny also increased flows and reduced flow-performance sensitivity.</p>
         <button class="abstract-toggle" onclick="toggleAbstract(this)"><span class="arrow">▸</span> Abstract</button>
         <div class="paper-abstract">We use SEC rule changes to show that regulatory oversight reduces return misreporting by hedge funds. Differences-in-differences tests show that misreporting decreased after a 2004 rule expansion and increased when funds exited the regulatory system after the rule's 2006 revocation.</div>
     </div>
@@ -798,6 +825,7 @@
         <span class="paper-status status-published">J. Corporate Finance (2015) · Vol. 30, 44–64</span>
         <h3><a href="http://ssrn.com/abstract=1669800" target="_blank" rel="noopener">What Determines the Allocation of Managerial Ownership within Firms?</a></h3>
         <p class="paper-meta">with Steve Dimmock and Jennifer Marietta-Westberg</p>
+        <p class="paper-summary">How firms allocate ownership to individual managers depends on the distribution of decision rights and the benefits of cooperation.</p>
         <button class="abstract-toggle" onclick="toggleAbstract(this)"><span class="arrow">▸</span> Abstract</button>
         <div class="paper-abstract">We show that the allocation of managerial ownership to individuals within firms varies depending upon the joint distribution of decision control and decision management rights. Ownership is higher for managers with both executive and operational responsibilities and when benefits of cooperation are higher.</div>
     </div>
@@ -806,6 +834,7 @@
         <span class="paper-status status-published">Q. J. Finance (2014) · Vol. 4, 1–36</span>
         <h3><a href="http://ssrn.com/abstract=2463285" target="_blank" rel="noopener">Blockholder Ownership and Corporate Control: The Role of Liquidity</a></h3>
         <p class="paper-meta">Solo-authored</p>
+        <p class="paper-summary">Greater stock liquidity enables blockholders to discipline managers through the credible threat of selling their shares.</p>
         <button class="abstract-toggle" onclick="toggleAbstract(this)"><span class="arrow">▸</span> Abstract</button>
         <div class="paper-abstract">Employing an instrumental variable approach based on the regulatory change of tick sizes, I examine the link between equity liquidity and activism by large shareholders. Liquidity increases the likelihood of block formation. I find evidence that the threat of exit from a block can discipline managers and that this threat is more effective when liquidity is higher.</div>
     </div>
@@ -814,6 +843,7 @@
         <span class="paper-status status-published">J. Financial Economics (2012) · Vol. 105, 153–173</span>
         <h3><a href="http://ssrn.com/abstract=1832770" target="_blank" rel="noopener">Predicting Fraud by Investment Managers</a></h3>
         <p class="paper-meta">with Steve Dimmock</p>
+        <p class="paper-summary">SEC disclosure data can predict fraud: avoiding the riskiest 5% of firms would have prevented 29% of fraud cases and 40% of dollar losses.</p>
         <button class="abstract-toggle" onclick="toggleAbstract(this)"><span class="arrow">▸</span> Abstract</button>
         <div class="paper-abstract">We test the predictability of investment fraud using mandatory SEC disclosures. Avoiding the 5% of firms with the highest ex ante predicted fraud risk would allow an investor to avoid 29% of fraud cases and over 40% of total dollar losses from fraud. We find no evidence that investors receive compensation for fraud risk.</div>
     </div>
@@ -851,7 +881,7 @@
             <h3>Training the next generation of ethical financial advisors</h3>
             <p>As Director of the Certificate in Financial Planning at UK's Gatton College, I lead a CFP Board-registered program that prepares students to sit for the CFP® exam and enter the profession with both technical competence and ethical grounding.</p>
             <p>The program partners with leading firms including Fidelity, Merrill Lynch, and MCF Advisors to place students in professional roles, and integrates the lessons of my misconduct research directly into the curriculum.</p>
-            <a href="https://gatton.uky.edu" class="cfp-link" target="_blank" rel="noopener">Learn more about the program →</a>
+            <a href="https://online.uky.edu/undergraduate-certificate/financial-planning" class="cfp-link" target="_blank" rel="noopener">Learn more about the program →</a>
         </div>
         <div>
             <div class="cfp-stat">
@@ -880,21 +910,21 @@
         <span class="line"></span>
     </div>
     <div class="media-grid">
+        <a class="media-item" href="https://www.financial-planning.com/news/financial-planning-programs-are-redefining-the-talent-pipeline" target="_blank" rel="noopener">
+            <h4>Inside the Programs Reshaping Financial Planning's Talent Pipeline</h4>
+            <span class="outlet">Financial Planning</span> · <span class="date">February 2026</span>
+        </a>
         <a class="media-item" href="https://www.promarket.org/2024/12/16/tracking-sec-movements-sheds-light-on-investigatory-process-and-its-impact-on-firms/" target="_blank" rel="noopener">
             <h4>Tracking SEC Movements Sheds Light on Investigatory Process</h4>
-            <span class="outlet">ProMarket · Stigler Center</span> · <span class="date">December 2024</span>
+            <span class="outlet">ProMarket · Stigler Center, Chicago Booth</span> · <span class="date">December 2024</span>
         </a>
         <a class="media-item" href="https://www.fastcompany.com/91188340/smartphone-data-can-highlight-when-firms-are-under-sec-investigation" target="_blank" rel="noopener">
             <h4>Smartphone Data Can Highlight When Firms Are Under SEC Investigation</h4>
             <span class="outlet">Fast Company</span> · <span class="date">September 2024</span>
         </a>
-        <a class="media-item" href="https://www.thedailyupside.com/policy-power/regulation/sec-smartphone-location-data-could-be-linked-to-share-prices/" target="_blank" rel="noopener">
-            <h4>SEC Smartphone Location Data Could Be Linked to Share Prices</h4>
-            <span class="outlet">The Daily Upside</span> · <span class="date">September 2024</span>
-        </a>
-        <a class="media-item" href="https://gatton.uky.edu/about-us/stay-connected/news/2024/gerken-research-receives-strong-media-attention" target="_blank" rel="noopener">
-            <h4>Gerken Research Receives Strong Media Attention</h4>
-            <span class="outlet">Financial Times, Bloomberg &amp; Money Stuff Podcast</span> · <span class="date">September 2024</span>
+        <a class="media-item" href="#" target="_blank" rel="noopener">
+            <h4>Covered in Bloomberg's Money Stuff and Financial Times</h4>
+            <span class="outlet">Bloomberg · Financial Times</span> · <span class="date">September 2024</span>
         </a>
         <a class="media-item" href="https://www.wsj.com/articles/for-wall-street-analysts-its-location-location-location-11573846610" target="_blank" rel="noopener">
             <h4>For Wall Street Analysts, It's Location, Location, Location</h4>
@@ -931,7 +961,7 @@
     </div>
     <div style="margin-bottom: 2.5rem;">
         <p style="font-size: 0.92rem; color: var(--ink-light); line-height: 1.8; max-width: 720px;">
-            My path to studying financial misconduct began with a personal experience—watching a family member be taken advantage of by an unscrupulous advisor. That led me to FOIA-request my way into building one of the first systematic databases of the financial advisory industry, and eventually to an engineering-trained approach to studying how fraud spreads through networks, how regulators interact with firms, and how the market for financial advice can be made to work better for ordinary investors.
+            My path to studying financial misconduct began with a personal experience—watching a family member be taken advantage of by an unscrupulous advisor. That led me to FOIA-request my way into building one of the first systematic databases of the financial advisory industry, and eventually to an engineering-trained approach to studying how fraud spreads through networks, how regulators interact with firms, and how the market for financial advice can be made to work better for ordinary investors. I co-organize the Kentucky Finance Conference (500+ annual submissions), serve on the UK Retirement Plan Oversight Committee, and referee for the Journal of Finance, Review of Financial Studies, Journal of Financial Economics, and Journal of Political Economy.
         </p>
     </div>
 
@@ -1001,18 +1031,18 @@
         <strong>Will Gerken</strong><br>
         Gatton College of Business and Economics<br>
         University of Kentucky · 550 S. Limestone · Lexington, KY 40526<br>
-        <a href="mailto:will.gerken@uky.edu">will.gerken@uky.edu</a>
+        <a href="/cdn-cgi/l/email-protection#cabda3a6a6e4adafb8a1afa48abfa1b3e4afaebf"><span class="__cf_email__" data-cfemail="d5a2bcb9b9fbb2b0a7beb0bb95a0beacfbb0b1a0">[email&#160;protected]</span></a>
     </div>
     <div class="footer-social">
-        <a href="https://scholar.google.com/citations?user=REPLACE" target="_blank" rel="noopener">Google Scholar</a>
-        <a href="https://ssrn.com/author=REPLACE" target="_blank" rel="noopener">SSRN</a>
-        <a href="https://www.linkedin.com/in/REPLACE" target="_blank" rel="noopener">LinkedIn</a>
+        <a href="https://scholar.google.com/citations?user=DAwj7DcAAAAJ&hl=en" target="_blank" rel="noopener">Google Scholar</a>
+        <a href="https://papers.ssrn.com/sol3/cf_dev/AbsByAuth.cfm?per_id=506496" target="_blank" rel="noopener">SSRN</a>
+        <a href="https://www.linkedin.com/in/will-gerken-7b3202/" target="_blank" rel="noopener">LinkedIn</a>
         <a href="https://doi.org/10.13023/nsjd-rk62" target="_blank" rel="noopener">Data Repository</a>
         <a href="http://gattonweb.uky.edu/Vitas/wge224_Vita.pdf" target="_blank" rel="noopener">Full CV (PDF)</a>
     </div>
 </footer>
 
-<script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 // Nav scroll effect
 const nav = document.getElementById('navbar');
 window.addEventListener('scroll', () => {
@@ -1035,20 +1065,4 @@ document.querySelectorAll('.nav-links a').forEach(link => {
 function toggleAbstract(btn) {
     const abstract = btn.nextElementSibling;
     btn.classList.toggle('open');
-    abstract.classList.toggle('open');
-}
-
-// Scroll fade-in
-const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-        if (entry.isIntersecting) {
-            entry.target.classList.add('visible');
-        }
-    });
-}, { threshold: 0.1 });
-
-document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
-</script>
-
-</body>
-</html>
+  
