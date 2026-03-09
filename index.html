@@ -558,11 +558,14 @@
 
         /* ─── SCROLL ANIMATIONS ─── */
         .fade-in {
+            opacity: 1;
+        }
+        .fade-in.animate {
             opacity: 0;
             transform: translateY(16px);
             transition: opacity 0.6s ease, transform 0.6s ease;
         }
-        .fade-in.visible {
+        .fade-in.animate.visible {
             opacity: 1;
             transform: translateY(0);
         }
@@ -757,7 +760,7 @@
     </div>
 
     <div class="paper">
-        <span class="paper-status status-published">Review of Financial Studies — Accepted</span>
+        <span class="paper-status status-published">Review of Financial Studies (2023) · Vol. 36, 409–449</span>
         <h3><a href="http://ssrn.com/abstract=3479352" target="_blank" rel="noopener">The Value of Differing Points of View: Evidence from Financial Analysts' Geographic Diversity</a></h3>
         <p class="paper-meta">with Marc Painter</p>
         <p class="paper-summary">Analysts incorporate local information (measured via satellite imagery of parking lots) into forecasts. Geographic concentration of analyst coverage increases forecast errors and reduces liquidity.</p>
@@ -955,7 +958,7 @@
     </div>
     <div style="margin-bottom: 2.5rem;">
         <p style="font-size: 0.92rem; color: var(--ink-light); line-height: 1.8; max-width: 720px;">
-            My path to studying financial misconduct began with a personal experience—watching a family member be taken advantage of by an unscrupulous advisor. That led me to FOIA-request my way into building one of the first systematic databases of the financial advisory industry, and eventually to an engineering-trained approach to studying how fraud spreads through networks, how regulators interact with firms, and how the market for financial advice can be made to work better for ordinary investors. I co-organize the Kentucky Finance Conference (500+ annual submissions), serve on the UK Retirement Plan Oversight Committee, and referee for the Journal of Finance, Review of Financial Studies, Journal of Financial Economics, and Journal of Political Economy.
+            My path to studying financial misconduct began with a personal experience: watching a family member be taken advantage of by an unscrupulous advisor. That led me to FOIA-request my way into building one of the first systematic databases of the financial advisory industry, and eventually to an engineering-trained approach to studying how fraud spreads through networks, how regulators interact with firms, and how the market for financial advice can be made to work better for ordinary investors.
         </p>
     </div>
 
@@ -1059,4 +1062,22 @@ document.querySelectorAll('.nav-links a').forEach(link => {
 function toggleAbstract(btn) {
     const abstract = btn.nextElementSibling;
     btn.classList.toggle('open');
-  
+    abstract.classList.toggle('open');
+}
+
+// Scroll fade-in (progressive enhancement)
+document.querySelectorAll('.fade-in').forEach(el => {
+    el.classList.add('animate');
+});
+const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+        if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+        }
+    });
+}, { threshold: 0.1 });
+document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+</script>
+
+</body>
+</html>
