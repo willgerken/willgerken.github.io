@@ -1,0 +1,981 @@
+:root {
+  /* Tri-State Spartans palette — sourced from tristatespartans.com inline theme */
+  --primary: #B91E30;        /* Spartan accent red */
+  --primary-bright: #CE202E; /* Spartan heading red */
+  --primary-dark: #7D1414;
+  --gold: #E0C68A;           /* Spartan gold */
+  --navy: #002D56;           /* Nav/deep accent */
+  --ink: #202020;            /* Body background */
+  --ink-deep: #141414;
+  --paper: #F2F2F2;
+  --silver: #B8B8B8;
+  --silver-dim: #E8E8E8;
+
+  --ice: #F0F7FC;
+  --ice-line: #0D5EAB;
+  --ice-red: #D62328;
+
+  --ok: #2A9D3F;
+  --miss: #E6A817;
+  --err: #C5312B;
+
+  --cell-idle: rgba(13, 94, 171, 0.04);
+  --cell-picked: rgba(185, 30, 48, 0.38);
+  --cell-ok: rgba(42, 157, 63, 0.55);
+  --cell-err: rgba(197, 49, 43, 0.45);
+  --cell-miss: rgba(230, 168, 23, 0.45);
+
+  --font: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+
+/* Respect users who prefer reduced motion — disable transitions/animations. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  background: var(--ink);
+  color: var(--paper);
+  font-family: var(--font);
+  overscroll-behavior: contain;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  min-height: 100svh;
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding: 12px 16px 8px;
+  background: linear-gradient(180deg, var(--ink-deep) 0%, var(--ink) 100%);
+  border-bottom: 2px solid var(--primary);
+}
+.brand {
+  font-weight: 800;
+  font-size: 22px;
+  letter-spacing: 0.5px;
+  color: var(--paper);
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font-family: inherit;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.brand:hover { opacity: 0.85; }
+.brand-dot {
+  display: inline-block;
+  width: 6px; height: 6px;
+  background: var(--gold);
+  border-radius: 50%;
+  vertical-align: middle;
+  margin-top: -4px;
+}
+.scenario-title {
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--gold);
+}
+
+/* Mute toggle in the top bar (right side). Shows speaker on/off icons. */
+.mute-toggle {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 18px;
+  padding: 4px 8px;
+  color: var(--paper);
+  opacity: 0.75;
+  line-height: 1;
+}
+.mute-toggle:hover { opacity: 1; }
+.mute-toggle .mute-on  { display: inline; }
+.mute-toggle .mute-off { display: none; }
+.mute-toggle.is-muted .mute-on  { display: none; }
+.mute-toggle.is-muted .mute-off { display: inline; }
+
+/* Skip-to-next button — appears during contrast animations / after wrong
+   answer. Doesn't grant credit (target stays unlit on the goal). Designed
+   to feel like a "way out" — neutral, not punishing, not rewarding. */
+.btn-skip {
+  display: flex;
+  width: 100%;
+  background: rgba(232, 232, 232, 0.06);
+  border: 1px solid rgba(184, 184, 184, 0.30);
+  color: var(--silver);
+  padding: 10px 12px;
+  margin-top: 8px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-weight: 600;
+  font-size: 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: inherit;
+  letter-spacing: 0.5px;
+}
+.btn-skip:hover { background: rgba(232, 232, 232, 0.10); color: var(--paper); }
+.btn-skip:active { transform: translateY(1px); }
+.btn-skip .skip-icon { font-size: 12px; opacity: 0.7; }
+
+.app {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 12px 16px;
+  gap: 12px;
+  max-width: 600px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.instructions p {
+  margin: 0 0 6px 0;
+  font-size: 16px;
+  line-height: 1.4;
+}
+.instructions .prompt {
+  font-size: 15px;
+  color: var(--silver);
+}
+
+.term {
+  display: inline;
+  background: none;
+  border: none;
+  padding: 1px 4px;
+  margin: 0;
+  color: var(--primary);
+  font: inherit;
+  font-weight: 700;
+  text-decoration: underline dotted;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+.term:active { opacity: 0.6; }
+
+.rink-wrap {
+  width: 100%;
+  background: var(--ink);
+  border-radius: 8px;
+  overflow: hidden;
+  touch-action: none;
+}
+#rink {
+  width: 100%;
+  aspect-ratio: 85 / 75;
+}
+
+.feedback {
+  padding: 10px 12px;
+  background: rgba(255,255,255,0.06);
+  border-left: 3px solid var(--primary);
+  border-radius: 4px;
+  font-size: 15px;
+  line-height: 1.4;
+}
+.feedback p { margin: 0; }
+
+.controls {
+  display: flex;
+  gap: 8px;
+}
+
+.btn {
+  flex: 1;
+  padding: 14px 10px;
+  font-size: 16px;
+  font-weight: 700;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-family: inherit;
+  color: var(--paper);
+  min-height: 52px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  letter-spacing: 0.2px;
+  box-shadow: 0 2px 0 rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.08);
+  transition: transform 0.08s ease, box-shadow 0.08s ease, background 0.15s ease;
+}
+.btn:active {
+  transform: translateY(1px);
+  box-shadow: 0 1px 0 rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.05);
+}
+.btn-icon {
+  font-size: 18px;
+  line-height: 1;
+  display: inline-block;
+  font-weight: 900;
+}
+.btn-primary {
+  background: linear-gradient(180deg, var(--primary-bright) 0%, var(--primary) 100%);
+}
+.btn-primary:hover { background: linear-gradient(180deg, #D4263A 0%, #B91E30 100%); }
+.btn-secondary {
+  background: linear-gradient(180deg, #3A3A3A 0%, #2A2A2A 100%);
+}
+.btn-tertiary {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(224, 198, 138, 0.45);
+  color: var(--gold);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.06);
+}
+.btn-tertiary:hover { background: rgba(224, 198, 138, 0.08); }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* Breakout Reads — 2x2 grid of "call the breakout" choice buttons */
+.controls-choice {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.btn-choice {
+  background: linear-gradient(180deg, rgba(13, 94, 171, 0.24) 0%, rgba(13, 94, 171, 0.10) 100%);
+  border: 1px solid rgba(13, 94, 171, 0.55);
+  color: var(--paper);
+  font-size: 15px;
+  min-height: 50px;
+}
+.btn-choice:hover { background: rgba(13, 94, 171, 0.30); }
+/* 3-up choice row (O-Zone Faceoff: Slot/Wall/Weak and Red/Black/Gold) */
+.controls-choice.cols-3 { grid-template-columns: repeat(3, 1fr); }
+.controls-choice.cols-3 .btn-choice { font-size: 14px; padding: 12px 6px; }
+.read-cue {
+  color: var(--gold);
+  font-weight: 600;
+  font-style: italic;
+  margin: 2px 0 6px 0;
+}
+
+/* Dev/beta tier badge on home minigame labels (T1/T2/T3) */
+.tier-badge {
+  display: inline-block;
+  font-size: 9px;
+  font-weight: 800;
+  line-height: 1;
+  padding: 2px 5px;
+  border-radius: 4px;
+  vertical-align: middle;
+  letter-spacing: 0.5px;
+  margin-left: 2px;
+}
+.tier-badge.tier-1 { background: rgba(224, 198, 138, 0.22); color: var(--gold); border: 1px solid rgba(224, 198, 138, 0.6); }
+.tier-badge.tier-2 { background: rgba(13, 94, 171, 0.22); color: #5BA3F0; border: 1px solid rgba(13, 94, 171, 0.6); }
+.tier-badge.tier-3 { background: rgba(255, 255, 255, 0.06); color: var(--silver); border: 1px solid rgba(184, 184, 184, 0.30); }
+
+.btn-why {
+  width: 100%;
+  margin-top: 6px;
+  background: linear-gradient(180deg, rgba(224,198,138,0.18) 0%, rgba(224,198,138,0.08) 100%);
+  border: 1px solid rgba(224, 198, 138, 0.6);
+  color: var(--gold);
+  font-size: 15px;
+  min-height: 48px;
+  gap: 10px;
+}
+.btn-rotate {
+  width: 100%;
+  margin-top: 6px;
+  background: linear-gradient(180deg, rgba(13, 94, 171, 0.18) 0%, rgba(13, 94, 171, 0.08) 100%);
+  border: 1px solid rgba(13, 94, 171, 0.6);
+  color: #5BA3F0;
+  font-size: 15px;
+  min-height: 48px;
+  gap: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: inherit;
+  font-weight: 700;
+  border-radius: 10px;
+  cursor: pointer;
+  padding: 14px 10px;
+}
+.rush-progress {
+  font-size: 12px;
+  opacity: 0.7;
+  margin-left: 8px;
+}
+.btn-why:hover { background: rgba(224,198,138,0.18); }
+.why-spark {
+  color: var(--gold);
+  font-size: 18px;
+  text-shadow: 0 0 8px rgba(224,198,138,0.5);
+}
+
+.vocab {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 10px;
+  padding: 8px 0 4px;
+  border-top: 1px solid rgba(255,255,255,0.12);
+}
+.vocab .term {
+  font-size: 14px;
+  text-decoration: none;
+  background: rgba(255,255,255,0.05);
+  border-radius: 12px;
+  padding: 4px 10px;
+  font-weight: 500;
+  color: var(--silver-dim);
+  transition: background 0.2s, color 0.2s;
+}
+
+/* Pulse hint on first 1-2 vocab terms when scenario loads — addresses
+   Sofia-persona note that newer kids don't know to TAP vocab chips for
+   definitions. Stops pulsing as soon as kid taps any term (in main.js). */
+@keyframes term-pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(224, 198, 138, 0);
+    background: rgba(255,255,255,0.05);
+  }
+  50% {
+    box-shadow: 0 0 0 4px rgba(224, 198, 138, 0.35);
+    background: rgba(224, 198, 138, 0.18);
+    color: var(--gold);
+  }
+}
+.vocab .term.pulse-hint {
+  animation: term-pulse 1.6s ease-in-out 3;  /* 3 cycles = ~5s */
+}
+@media (prefers-reduced-motion: reduce) {
+  .vocab .term.pulse-hint { animation: none; }
+}
+
+.term-dialog {
+  border: none;
+  border-radius: 12px;
+  padding: 20px;
+  max-width: 90vw;
+  width: 340px;
+  background: #1A1A1A;
+  color: var(--paper);
+  font-family: inherit;
+}
+.term-dialog::backdrop { background: rgba(0,0,0,0.6); }
+.term-dialog h3 {
+  margin: 0 0 8px;
+  color: var(--gold);
+  font-size: 20px;
+}
+.term-dialog p { margin: 6px 0; line-height: 1.45; font-size: 15px; }
+.term-dialog .why { color: var(--silver); font-size: 13px; }
+.term-dialog .btn { margin-top: 12px; width: 100%; }
+
+/* ---- WHY dialog ---- */
+.why-dialog {
+  border: none;
+  border-radius: 16px;
+  padding: 0;
+  max-width: 95vw;
+  width: 480px;
+  max-height: 92vh;
+  overflow-y: auto;
+  background: #1A1A1A;
+  color: var(--paper);
+  font-family: inherit;
+}
+.why-dialog::backdrop { background: rgba(0,0,0,0.75); backdrop-filter: blur(3px); }
+.why-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 18px 20px 12px;
+  background: linear-gradient(180deg, rgba(224,198,138,0.10), rgba(224,198,138,0));
+  border-bottom: 1px solid rgba(224,198,138,0.25);
+}
+.why-head-spark {
+  color: var(--gold);
+  font-size: 22px;
+  text-shadow: 0 0 10px rgba(224,198,138,0.6);
+}
+.why-head h3 { margin: 0; color: var(--gold); font-size: 19px; font-weight: 800; letter-spacing: 0.3px; }
+
+.why-dialog > * { padding-left: 20px; padding-right: 20px; }
+.why-dialog > .why-head { padding-left: 20px; padding-right: 20px; }
+
+.why-lead {
+  margin: 14px 0 12px;
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--paper);
+  font-weight: 600;
+}
+.why-lead:first-child {
+  font-size: 18px;
+  font-weight: 700;
+}
+.why-lead strong {
+  color: var(--gold);
+}
+.why-bullets {
+  margin: 0 0 14px;
+  padding-left: 18px;
+  list-style: none;
+}
+.why-bullets li {
+  position: relative;
+  padding: 4px 0 4px 14px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--silver-dim);
+}
+.why-bullets li::before {
+  content: "▸";
+  position: absolute;
+  left: 0;
+  color: var(--gold);
+  font-weight: 900;
+}
+.why-bullets li strong {
+  color: var(--paper);
+}
+.why-coach-attr {
+  display: block;
+  margin-top: 6px;
+  font-size: 11px;
+  color: var(--gold);
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.why-stat {
+  margin: 14px 0 8px;
+  font-size: 17px;
+  line-height: 1.45;
+}
+.big-num {
+  color: var(--primary-bright);
+  font-size: 28px;
+  font-weight: 900;
+  letter-spacing: -0.5px;
+}
+
+.why-bars { margin: 12px 0 18px; }
+.why-bar-row {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 3px;
+  margin-bottom: 10px;
+}
+.why-bar-label {
+  font-size: 13px;
+  color: var(--silver-dim);
+  font-weight: 600;
+}
+.why-bar-track {
+  height: 28px;
+  background: rgba(255,255,255,0.05);
+  border-radius: 6px;
+  overflow: hidden;
+  position: relative;
+}
+.why-bar-fill {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  padding: 0 10px;
+  font-weight: 900;
+  font-size: 14px;
+  color: var(--paper);
+  white-space: nowrap;
+  border-radius: 6px;
+  min-width: 52px;
+}
+.why-bar-fill.high { background: linear-gradient(90deg, var(--primary), var(--primary-bright)); }
+.why-bar-fill.low { background: linear-gradient(90deg, #3A3A3A, #555); }
+.why-bar-note {
+  font-size: 11px;
+  color: var(--silver);
+  margin-top: 2px;
+}
+
+.why-heatmap {
+  margin: 0 0 18px;
+  padding: 0;
+  background: #F0F7FC;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid rgba(224,198,138,0.3);
+}
+.why-heatmap img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.why-heatmap figcaption {
+  font-size: 12px;
+  color: var(--silver);
+  padding: 8px 12px;
+  background: rgba(0,0,0,0.4);
+  line-height: 1.4;
+}
+
+.why-coach {
+  margin: 0 0 14px;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--silver-dim);
+  padding: 12px 14px;
+  background: rgba(13, 94, 171, 0.1);
+  border-left: 3px solid var(--primary);
+  border-radius: 4px;
+}
+.why-coach strong { color: var(--gold); }
+
+.why-cta {
+  margin: 0 0 14px;
+  font-size: 14px;
+  line-height: 1.5;
+  padding: 12px 14px;
+  background: rgba(224, 198, 138, 0.08);
+  border: 1px dashed rgba(224,198,138,0.4);
+  border-radius: 6px;
+  color: var(--paper);
+}
+.why-cta strong { color: var(--gold); }
+
+.why-source {
+  margin: 0 0 16px;
+  font-size: 11px;
+  color: var(--silver);
+  text-align: center;
+  line-height: 1.4;
+}
+
+.why-dialog .btn {
+  margin: 0 20px 20px;
+  padding-top: 0;
+  padding-bottom: 0;
+  width: calc(100% - 40px);
+}
+
+/* ============ HOME PAGE ============ */
+.home-view {
+  padding: 4px 0 20px;
+}
+.home-title {
+  text-align: center;
+  margin-bottom: 8px;
+}
+.home-title h2 {
+  margin: 0 0 4px;
+  font-size: 22px;
+  font-weight: 900;
+  letter-spacing: 0.5px;
+  color: var(--paper);
+}
+.home-title h2::before {
+  content: "✦ ";
+  color: var(--gold);
+}
+.home-sub {
+  margin: 0;
+  color: var(--silver);
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.home-progress {
+  text-align: center;
+  color: var(--gold);
+  font-size: 14px;
+  letter-spacing: 0.5px;
+  margin: 8px 0 4px;
+  text-transform: uppercase;
+}
+
+/* ============ DAILY DRILL BANNER ============ */
+.daily-drill {
+  margin: 12px 0 16px;
+}
+.daily-drill-tap {
+  display: block;
+  width: 100%;
+  padding: 14px 18px;
+  background: linear-gradient(135deg, rgba(206, 32, 46, 0.18) 0%, rgba(224, 198, 138, 0.15) 100%);
+  border: 1.5px solid var(--gold);
+  border-radius: 12px;
+  color: var(--paper);
+  cursor: pointer;
+  font-family: inherit;
+  text-align: left;
+  transition: transform 0.1s ease, filter 0.15s ease;
+}
+.daily-drill-tap:hover { filter: brightness(1.1); }
+.daily-drill-tap:active { transform: scale(0.99); }
+.daily-drill-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  color: var(--gold);
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+.daily-drill-title {
+  display: block;
+  font-size: 18px;
+  font-weight: 900;
+  color: var(--paper);
+  margin-bottom: 2px;
+}
+.daily-drill-sub {
+  display: block;
+  font-size: 13px;
+  color: var(--silver);
+}
+.daily-streak {
+  margin-top: 8px;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 800;
+  color: #FFA500;
+  letter-spacing: 0.5px;
+}
+
+/* ============ HOME SECTION HEADER (Game Situations) ============ */
+.home-section-header {
+  margin: 24px 0 4px;
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 1.2px;
+  color: var(--gold);
+  text-transform: uppercase;
+}
+.home-section-sub {
+  margin: 0 0 8px;
+  font-size: 12px;
+  color: var(--silver);
+}
+.home-progress strong {
+  color: var(--paper);
+  font-size: 18px;
+  font-weight: 900;
+  margin: 0 3px;
+}
+
+.goal-wrap {
+  margin: 8px 0 16px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.02) 0%, rgba(255,255,255,0) 100%);
+  border-radius: 12px;
+  overflow: hidden;
+  padding: 8px;
+}
+.goal-svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  filter: drop-shadow(0 6px 10px rgba(0,0,0,0.4));
+}
+.goal-svg .target {
+  transition: filter 0.2s ease;
+}
+.goal-svg .target-fresh:hover,
+.goal-svg .target-fresh:active {
+  filter: brightness(1.15) drop-shadow(0 0 6px rgba(224,198,138,0.6));
+}
+.goal-svg .target-locked {
+  pointer-events: none;
+}
+
+.home-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 8px;
+}
+.home-item {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  color: var(--paper);
+  cursor: pointer;
+  font-family: inherit;
+  text-align: left;
+  transition: background 0.12s ease, border-color 0.12s ease;
+}
+.home-item:hover { background: rgba(255,255,255,0.08); }
+.home-item:active { transform: scale(0.99); }
+.home-item-check {
+  font-size: 20px;
+  font-weight: 900;
+  color: var(--silver);
+  min-width: 22px;
+}
+.home-item-fresh .home-item-check { color: var(--gold); }
+.home-item-complete .home-item-check { color: var(--ok); }
+.home-item-locked .home-item-check { color: #5A5A5A; }
+.home-item-body strong {
+  display: block;
+  font-size: 15px;
+  font-weight: 800;
+}
+.home-item-sub {
+  display: block;
+  font-size: 12px;
+  color: var(--silver);
+  margin-top: 2px;
+}
+.home-item-status {
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--gold);
+  padding: 5px 10px;
+  border-radius: 999px;
+  background: rgba(224,198,138,0.12);
+}
+.home-item-complete .home-item-status {
+  color: var(--ok);
+  background: rgba(42,157,63,0.15);
+}
+.home-item-locked {
+  opacity: 0.55;
+  cursor: default;
+}
+.home-item-locked:hover { background: rgba(255,255,255,0.04); }
+.home-item-locked .home-item-status {
+  color: var(--silver);
+  background: rgba(255,255,255,0.06);
+}
+
+.home-reset {
+  display: block;
+  margin: 16px auto 0;
+  padding: 6px 12px;
+  background: none;
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 999px;
+  color: var(--silver);
+  font-size: 11px;
+  font-family: inherit;
+  cursor: pointer;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+.home-reset:hover { color: var(--paper); border-color: rgba(255,255,255,0.25); }
+
+/* ============ "KNOCK IT OFF" DONE BUTTON ============ */
+.hand-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  margin: 4px 0;
+  background: rgba(255,255,255,0.04);
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.08);
+  font-size: 12px;
+  color: var(--silver);
+  width: fit-content;
+}
+.hand-toggle-label {
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--silver-dim);
+}
+.hand-btn {
+  padding: 4px 12px;
+  background: transparent;
+  border: 1px solid rgba(224,198,138,0.35);
+  border-radius: 999px;
+  color: var(--silver);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.hand-btn:hover { background: rgba(224,198,138,0.10); }
+.hand-btn.active {
+  background: var(--gold);
+  color: var(--ink);
+  border-color: var(--gold);
+}
+
+/* Special call-offside button (red, bold, prominent — meant to feel urgent) */
+.btn-call-offside {
+  flex: 1.5;
+  background: linear-gradient(180deg, #E84050 0%, #B91E30 100%);
+  color: #FFFFFF;
+  font-size: 16px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  border: 2px solid #FFD84D;
+  box-shadow: 0 0 12px rgba(255,216,77,0.4), inset 0 1px 0 rgba(255,255,255,0.2);
+}
+.btn-call-offside:active {
+  transform: translateY(1px);
+  box-shadow: 0 0 6px rgba(255,216,77,0.4);
+}
+
+.btn-done {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  margin-top: 6px;
+  padding: 14px 10px;
+  background: linear-gradient(180deg, var(--gold) 0%, #C9A85E 100%);
+  color: var(--ink);
+  font-size: 16px;
+  font-weight: 900;
+  letter-spacing: 0.5px;
+  min-height: 52px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-family: inherit;
+  text-shadow: 0 1px 0 rgba(255,255,255,0.25);
+  box-shadow:
+    0 2px 0 rgba(0,0,0,0.3),
+    inset 0 1px 0 rgba(255,255,255,0.35);
+  transition: transform 0.08s ease, box-shadow 0.08s ease, filter 0.15s ease;
+}
+.btn-done:hover { filter: brightness(1.06); }
+.btn-done:active {
+  transform: translateY(1px);
+  box-shadow: 0 1px 0 rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.25);
+}
+
+/* ============ COACH TALK DIALOG ============ */
+.coach-dialog {
+  border: none;
+  border-radius: 16px;
+  padding: 0;
+  max-width: 92vw;
+  width: 380px;
+  background: linear-gradient(180deg, #1A1A1A 0%, #0E0E0E 100%);
+  color: var(--paper);
+  font-family: inherit;
+  border-top: 3px solid var(--gold);
+}
+.coach-dialog::backdrop { background: rgba(0,0,0,0.7); }
+.coach-body { padding: 22px 22px 10px; }
+.coach-quote {
+  margin: 0 0 10px;
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.4;
+  color: var(--paper);
+  font-style: italic;
+}
+.coach-attr {
+  margin: 0 0 16px;
+  font-size: 13px;
+  color: var(--gold);
+  letter-spacing: 0.5px;
+}
+.coach-stat {
+  margin: 0;
+  font-size: 13px;
+  color: var(--silver-dim);
+  line-height: 1.5;
+  padding: 10px 12px;
+  background: rgba(13, 94, 171, 0.12);
+  border-left: 3px solid var(--primary);
+  border-radius: 4px;
+}
+.coach-dialog .btn {
+  margin: 10px 22px 22px;
+  width: calc(100% - 44px);
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+/* ===== Rush meter (O-Zone Entry) =========================================
+   A SOFT pressure cue, not a timer. Playtest (2026-08-03): a hard countdown
+   "just stresses me out and I start guessing instead of actually reading it,
+   and then I probably just quit" — but with no clock at all "it's only testing
+   if I know the answer, not if I can find it fast," which is a math worksheet,
+   not a rush. So: the bar drains, answering while it's live earns a "quick
+   read" callout, and running out costs NOTHING. Carrot, never stick. */
+.rush-meter {
+  position: relative;
+  height: 6px;
+  margin: 8px 4px 2px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.07);
+  overflow: visible;
+}
+.rush-meter-fill {
+  display: block;
+  height: 100%;
+  width: 100%;
+  border-radius: 3px;
+  background: linear-gradient(90deg, var(--gold), #FFD84D);
+  transform-origin: left center;
+  transition: width linear;
+}
+.rush-meter.is-spent .rush-meter-fill {
+  background: rgba(255, 255, 255, 0.16);
+}
+.rush-meter-label {
+  position: absolute;
+  right: 2px;
+  top: 8px;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  color: var(--gold);
+  opacity: 0.75;
+}
+.rush-meter.is-spent .rush-meter-label {
+  color: var(--silver-dim);
+  opacity: 0.45;
+}
+@media (prefers-reduced-motion: reduce) {
+  .rush-meter-fill { transition: none; }
+}
+
+/* Streak off-switch. Deliberately plain and small — it is an escape hatch, not
+   a feature. Turning it off keeps the count, it just stops displaying it. */
+.streak-off {
+  margin-left: 8px;
+  padding: 2px 7px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  color: var(--silver-dim);
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 999px;
+  cursor: pointer;
+}
+.streak-off:hover { color: #fff; background: rgba(255, 255, 255, 0.16); }
