@@ -3,17 +3,20 @@
 
 window.IceQ = window.IceQ || {};
 
-// POC demo (2026-06-22): the SIX goal-target corners ARE the six showcase games
-// (house, dzone-coverage, breakout-reads, ozone-entry, two-on-one, ozone-faceoff).
-// 2026-08-03: `ozone-entry` (built from Coach's Aug 2 video session) took the BM
-// corner and `breakout` dropped to "More drills" — it duplicated Breakout Reads'
-// vocab and was already flagged for a cull.
-// The other six (defensive-side, lane-coverage, forecheck, cover-the-man,
-// net-front, offside) have corner:null and fall into the "More drills" section
-// below — so the coach sees a tight six, not a wall of twelve. To swap a game in
-// or out of the hero, just move a corner value. (OPEN: Breakout vs Breakout Reads
-// use different vocab — cull one before the coach sees it; cover-the-man, the
-// polished T2, sits one tap away under More if we'd rather swap it back in.)
+// The SIX goal-target corners are the showcase games. Everything else has
+// corner:null and falls into "More drills" below, so a coach lands on a tight
+// six instead of a wall of twelve. To swap a game in or out, move a corner value.
+//
+// The six are chosen for COVERAGE, not just polish — between them they should
+// span the phases of the game and the ways a kid can be asked a question:
+//   House          spatial map, where danger is      (tap a grid)
+//   D-Zone         own-zone man coverage             (drag)
+//   Breakout Reads getting OUT of your own end       (tap a named choice)
+//   2-on-1         defending an odd-man rush         (drag)
+//   O-Zone Entry   offense WITHOUT the puck          (drag)
+//   Offside        a rule, judged on timing          (tap when it happens)
+// Two games teaching the same idea with the same mechanic is a wasted slot —
+// that is why cover-the-man came out and offside went in.
 window.IceQ.SCENARIOS = [
   {
     key: 'house',
@@ -93,9 +96,12 @@ window.IceQ.SCENARIOS = [
     key: 'cover-the-man',
     title: 'Cover the Man',
     subtitle: "Don't puck-chase",
-    // Promoted into BR when ozone-faceoff was gated — the code comment above
-    // already flagged it as the polished understudy sitting one tap away.
-    corner: 'BR',
+    // Dropped from the hero six 2026-08-05. It teaches the same idea as D-Zone
+    // Coverage with the same drag mechanic and fewer reads (3 vs 5), the review
+    // panel found kids bored by it, and it is the only game that was in the
+    // showcase without a coordinate audit. Offside took the slot: it adds a
+    // RULES concept and a timing mechanic, so the six now span more of the game.
+    corner: null,
     available: true,
     theme: 'defensive-positioning',
     tagline: 'Stick on stick beats skating to the puck.',
@@ -140,7 +146,7 @@ window.IceQ.SCENARIOS = [
     key: 'offside',
     title: 'Offside Detection',
     subtitle: 'Watch the play. Tap when offside.',
-    corner: null,
+    corner: 'BR',
     available: true,
     theme: 'rules',
     tagline: 'Different mechanic — timing, not dragging.',
@@ -157,8 +163,10 @@ window.IceQ.scenarioByKey = (k) => window.IceQ.SCENARIOS.find(s => s.key === k);
 // One place to read or re-rank. Edit a number, the badge updates.
 window.IceQ.TIERS = {
   'ozone-entry': 1, 'dzone-coverage': 1, 'breakout-reads': 1, 'two-on-one': 1,
-  'house': 2, 'ozone-faceoff': 2, 'cover-the-man': 2,
-  'defensive-side': 3, 'lane-coverage': 3, 'forecheck': 3,
-  'breakout': 3, 'net-front': 3, 'offside': 3,
+  'house': 2, 'offside': 2, 'ozone-faceoff': 2,
+  'cover-the-man': 3, 'defensive-side': 3, 'lane-coverage': 3,
+  'forecheck': 3, 'breakout': 3, 'net-front': 3,
 };
+// T1/T2/T3 means nothing to a coach — hide the badges in any build he sees.
+window.IceQ.SHOW_TIER_BADGES = false;
 window.IceQ.scenarioTier = (k) => window.IceQ.TIERS[k] || null;

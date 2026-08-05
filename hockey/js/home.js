@@ -334,6 +334,18 @@ window.IceQ.Home = (function () {
     });
     container.appendChild(drillBanner);
 
+    // Beta notice. Deliberately at the TOP of the home screen and deliberately
+    // blunt: this has not been through a season with real kids, and a coach
+    // needs to know that before he points ten of them at it.
+    const beta = document.createElement('div');
+    beta.className = 'beta-note';
+    beta.innerHTML = `
+      <strong>Beta.</strong> Still being checked. The hockey in here has been
+      reviewed but not run past a full team, so treat anything that looks wrong
+      as probably wrong, and tell me. Nothing here should override your coach.
+    `;
+    container.appendChild(beta);
+
     // Scenario list — broken into two sections:
     //   "Goal Targets" (corner-mapped scenarios)
     //   "Game Situations" (list-only scenarios — Net-Front, 2-on-1, Offside)
@@ -348,7 +360,7 @@ window.IceQ.Home = (function () {
       btn.innerHTML = `
         <span class="home-item-check">${st === 'complete' ? '✓' : st === 'locked' ? '·' : '○'}</span>
         <span class="home-item-body">
-          <strong>${scen.title}</strong>${(window.IceQ.scenarioTier && IceQ.scenarioTier(scen.key)) ? ` <span class="tier-badge tier-${IceQ.scenarioTier(scen.key)}">T${IceQ.scenarioTier(scen.key)}</span>` : ''}
+          <strong>${scen.title}</strong>${(IceQ.SHOW_TIER_BADGES && window.IceQ.scenarioTier && IceQ.scenarioTier(scen.key)) ? ` <span class="tier-badge tier-${IceQ.scenarioTier(scen.key)}">T${IceQ.scenarioTier(scen.key)}</span>` : ''}
           <span class="home-item-sub">${scen.subtitle}</span>
         </span>
         <span class="home-item-status">${st === 'locked' ? 'Coming soon' : st === 'complete' ? 'Done' : 'Start'}</span>
