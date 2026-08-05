@@ -1,0 +1,29 @@
+{
+  "data": {
+    "n_sog": 4848,
+    "n_goals": 522,
+    "n_miss": 2929,
+    "n_attempts": 7777,
+    "games_sampled": 120,
+    "last_updated_utc": "2026-04-22T02:42:37+00:00",
+    "source": "NHL public API (api-web.nhle.com)",
+    "filter": "5-on-5 regular time, excludes empty-net + penalty shots + shootouts"
+  },
+  "house": {
+    "sog_in": 2315,
+    "sog_out": 2533,
+    "goals_in": 411,
+    "goals_out": 111,
+    "miss_in": 1233,
+    "miss_out": 1696
+  },
+  "pct": {
+    "sh_pct_total": 10.767326732673267,
+    "sh_pct_in_house": 17.75377969762419,
+    "sh_pct_out_house": 4.382155546782472,
+    "sv_pct_in_house": 82.2462203023758,
+    "sv_pct_out_house": 95.61784445321753,
+    "pct_of_goals_in_house": 78.73563218390805,
+    "pct_of_sog_in_house": 47.7516501650165
+  }
+}

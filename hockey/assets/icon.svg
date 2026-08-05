@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="96" fill="#202020"/>
+  <circle cx="256" cy="256" r="180" fill="#F0F7FC" stroke="#B91E30" stroke-width="10"/>
+  <circle cx="256" cy="256" r="32" fill="#202020"/>
+  <text x="256" y="408" text-anchor="middle" font-family="system-ui,-apple-system,sans-serif" font-weight="900" font-size="115" fill="#B91E30">IQ</text>
+  <rect x="96" y="424" width="320" height="8" fill="#E0C68A" rx="4"/>
+</svg>

@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#B91E30">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="IceQ">
+  <title>IceQ</title>
+  <!-- Unlisted, not secret. Keeps the page out of search results; the repo it is
+       served from is public, so anyone with the URL (or browsing the repo) can
+       reach it. Do not treat this as access control. -->
+  <meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
+  <meta name="googlebot" content="noindex, nofollow">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="assets/icon-192.png">
+  <link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+  <header class="top">
+    <button class="brand" id="btn-home" title="Home">
+      IceQ<span class="brand-dot"></span>
+    </button>
+    <div class="scenario-title" id="current-title">Home</div>
+    <button class="mute-toggle" id="btn-mute" title="Sound on/off" aria-label="Toggle sound">
+      <span class="mute-on">🔊</span>
+      <span class="mute-off">🔇</span>
+    </button>
+  </header>
+
+  <main class="app" id="app-root">
+    <!-- views swap in here via the router in main.js -->
+  </main>
+
+  <!-- ========== HOUSE SCENARIO TEMPLATE ========== -->
+  <template id="tpl-house">
+    <section class="view view-house">
+      <section class="instructions">
+        <p>The <button class="term" data-term="house">house</button> is the most dangerous area in front of your net.</p>
+        <p class="prompt">Tap the ice where the house is. When you're done, hit <strong>Check</strong>.</p>
+      </section>
+
+      <div class="rink-wrap">
+        <div id="rink" aria-label="Half ice rink"></div>
+      </div>
+
+      <section class="feedback" id="feedback" hidden>
+        <p id="feedback-message"></p>
+      </section>
+
+      <nav class="controls">
+        <button class="btn btn-primary" id="btn-check">
+          <span class="btn-icon" aria-hidden="true">✓</span>
+          <span class="btn-label">Check</span>
+        </button>
+        <button class="btn btn-secondary" id="btn-show">
+          <span class="btn-icon" aria-hidden="true">▸</span>
+          <span class="btn-label">Show Me</span>
+        </button>
+        <button class="btn btn-tertiary" id="btn-reset">
+          <span class="btn-icon" aria-hidden="true">↻</span>
+          <span class="btn-label">Reset</span>
+        </button>
+      </nav>
+
+      <button class="btn btn-why" id="btn-why" hidden>
+        <span class="why-spark" aria-hidden="true">✦</span>
+        Why does this matter?
+      </button>
+
+      <button class="btn btn-skip" id="btn-skip" hidden><span class="skip-icon">⏭</span> Skip ahead (no credit)</button>
+
+      <button class="btn btn-done" id="btn-done" hidden>
+        Knock it off the goal ▸
+      </button>
+
+      <section class="vocab">
+        <button class="term" data-term="house">house</button>
+        <button class="term" data-term="slot">slot</button>
+        <button class="term" data-term="high-slot">high slot</button>
+        <button class="term" data-term="low-slot">low slot</button>
+        <button class="term" data-term="net-front">net front</button>
+        <button class="term" data-term="blue-line-battle">blue-line battle</button>
+      </section>
+    </section>
+  </template>
+
+  <!-- ========== FORECHECK LANES SCENARIO TEMPLATE ========== -->
+  <template id="tpl-forecheck">
+    <section class="view view-forecheck">
+      <section class="instructions">
+        <p>We just lost the puck deep in their zone. Three of our forwards <button class="term" data-term="forecheck">forecheck</button> — three different jobs.</p>
+        <p>🐆 <button class="term" data-term="cheetah">Cheetah</button> attacks the puck carrier. 🐊 <button class="term" data-term="gator">Gator</button> supports in the middle. 🦅 <button class="term" data-term="hawk">Hawk</button> stays HIGH as the <button class="term" data-term="outlet">release valve</button>.</p>
+        <p class="prompt"><strong>Trap:</strong> don't pile all three on the puck. Keep Hawk high so you have a passing option when you strip it. <em>(Coaches call these jobs <button class="term" data-term="f1">F1</button>, <button class="term" data-term="f2">F2</button>, <button class="term" data-term="f3">F3</button> — they ROTATE based on where you are.)</em></p>
+      </section>
+      <div class="rink-wrap">
+        <div id="rink" aria-label="Half ice rink"></div>
+      </div>
+      <section class="feedback" id="feedback" hidden><p id="feedback-message"></p></section>
+      <nav class="controls">
+        <button class="btn btn-primary" id="btn-check"><span class="btn-icon">✓</span><span class="btn-label">Check</span></button>
+        <button class="btn btn-secondary" id="btn-show"><span class="btn-icon">▸</span><span class="btn-label">Show Me</span></button>
+        <button class="btn btn-tertiary" id="btn-reset"><span class="btn-icon">↻</span><span class="btn-label">Reset</span></button>
+      </nav>
+      <button class="btn btn-rotate" id="btn-rotate" hidden>🔄 Try the next rush <span id="rush-progress" class="rush-progress"></span></button>
+      <button class="btn btn-why" id="btn-why" hidden><span class="why-spark">✦</span> Why does this matter?</button>
+      <button class="btn btn-skip" id="btn-skip" hidden><span class="skip-icon">⏭</span> Skip ahead (no credit)</button>
+      <button class="btn btn-done" id="btn-done" hidden>Knock it off the goal ▸</button>
+      <section class="vocab">
+        <button class="term" data-term="cheetah">🐆 cheetah</button>
+        <button class="term" data-term="gator">🐊 gator</button>
+        <button class="term" data-term="hawk">🦅 hawk</button>
+        <button class="term" data-term="underbackcheck">underbackcheck</button>
+        <button class="term" data-term="outlet">release valve</button>
+      </section>
+    </section>
+  </template>
+
+  <!-- ========== LANE COVERAGE SCENARIO TEMPLATE ========== -->
+  <template id="tpl-lane-coverage">
+    <section class="view view-lane-coverage">
+      <section class="instructions">
+        <p>The opposing rush is coming at our zone. Three forwards backcheck — but each has a <button class="term" data-term="lane-integrity">LANE</button>, not a job that rotates.</p>
+        <p><strong>Left Wing</strong> takes the left lane. <strong>Center</strong> takes the middle. <strong>Right Wing</strong> takes the right.</p>
+        <p class="prompt">Don't all chase the puck. Cover your lane and force the bad pass.</p>
+      </section>
+      <div class="rink-wrap">
+        <div id="rink" aria-label="Half ice rink"></div>
+      </div>
+      <section class="feedback" id="feedback" hidden><p id="feedback-message"></p></section>
+      <nav class="controls">
+        <button class="btn btn-primary" id="btn-check"><span class="btn-icon">✓</span><span class="btn-label">Check</span></button>
+        <button class="btn btn-secondary" id="btn-show"><span class="btn-icon">▸</span><span class="btn-label">Show Me</span></button>
+        <button class="btn btn-tertiary" id="btn-reset"><span class="btn-icon">↻</span><span class="btn-label">Reset</span></button>
+      </nav>
+      <button class="btn btn-rotate" id="btn-rotate" hidden>🔄 Try the next rush <span id="rush-progress" class="rush-progress"></span></button>
+      <button class="btn btn-why" id="btn-why" hidden><span class="why-spark">✦</span> Why does this matter?</button>
+      <button class="btn btn-skip" id="btn-skip" hidden><span class="skip-icon">⏭</span> Skip ahead (no credit)</button>
+      <button class="btn btn-done" id="btn-done" hidden>Knock it off the goal ▸</button>
+      <section class="vocab">
+        <button class="term" data-term="lane-integrity">lane integrity</button>
+        <button class="term" data-term="strong-side">strong side</button>
+        <button class="term" data-term="weak-side">weak side</button>
+        <button class="term" data-term="backcheck">backcheck</button>
+        <button class="term" data-term="support">support</button>
+      </section>
+    </section>
+  </template>
+
+  <!-- ========== BREAKOUT SCENARIO TEMPLATE ========== -->
+  <template id="tpl-breakout">
+    <section class="view view-breakout">
+      <section class="instructions">
+        <p>Our <strong>D</strong> has the puck deep. The opposing forecheck is closing fast. Three forwards must give the D three <button class="term" data-term="breakout">breakout</button> options.</p>
+        <p>🟡 <strong>Wall</strong> on the boards. 🟢 <strong>Curl</strong> in the middle. 🔵 <strong>Stretch</strong> high.</p>
+        <p class="prompt">Win the breakout, win the game. Don't let the forecheck take all three options away.</p>
+      </section>
+      <div class="rink-wrap">
+        <div id="rink" aria-label="Half ice rink"></div>
+      </div>
+      <section class="feedback" id="feedback" hidden><p id="feedback-message"></p></section>
+      <nav class="controls">
+        <button class="btn btn-primary" id="btn-check"><span class="btn-icon">✓</span><span class="btn-label">Check</span></button>
+        <button class="btn btn-secondary" id="btn-show"><span class="btn-icon">▸</span><span class="btn-label">Show Me</span></button>
+        <button class="btn btn-tertiary" id="btn-reset"><span class="btn-icon">↻</span><span class="btn-label">Reset</span></button>
+      </nav>
+      <button class="btn btn-rotate" id="btn-rotate" hidden>🔄 Try the next breakout <span id="rush-progress" class="rush-progress"></span></button>
+      <button class="btn btn-why" id="btn-why" hidden><span class="why-spark">✦</span> Why does this matter?</button>
+      <button class="btn btn-skip" id="btn-skip" hidden><span class="skip-icon">⏭</span> Skip ahead (no credit)</button>
+      <button class="btn btn-done" id="btn-done" hidden>Knock it off the goal ▸</button>
+      <section class="vocab">
+        <button class="term" data-term="wall-play">wall play</button>
+        <button class="term" data-term="curl">curl</button>
+        <button class="term" data-term="stretch">stretch</button>
+        <button class="term" data-term="d-to-d">D-to-D</button>
+        <button class="term" data-term="outlet">outlet</button>
+      </section>
+    </section>
+  </template>
+
+  <!-- ========== COVER THE MAN SCENARIO TEMPLATE ========== -->
+  <template id="tpl-cover-the-man">
+    <section class="view view-cover">
+      <section class="instructions">
+        <p>Two opponents in your zone — puck carrier in the corner and the <button class="term" data-term="slot">slot</button> man at the net. Your <strong>D-partner (D2)</strong> already has the carrier covered. Your job: cover the <button class="term" data-term="defensive-side">dangerous receiver</button> — don't double-team the puck.</p>
+        <p class="prompt">Use <button class="term" data-term="stick-on-stick">stick on stick</button>, not skating to the puck. Hit <strong>Check</strong> when you're in position.</p>
+      </section>
+      <div class="rink-wrap">
+        <div id="rink" aria-label="Half ice rink"></div>
+      </div>
+      <section class="feedback" id="feedback" hidden><p id="feedback-message"></p></section>
+      <nav class="controls">
+        <button class="btn btn-primary" id="btn-check"><span class="btn-icon">✓</span><span class="btn-label">Check</span></button>
+        <button class="btn btn-secondary" id="btn-show"><span class="btn-icon">▸</span><span class="btn-label">Show Me</span></button>
+        <button class="btn btn-tertiary" id="btn-reset"><span class="btn-icon">↻</span><span class="btn-label">Reset</span></button>
+      </nav>
+      <button class="btn btn-rotate" id="btn-rotate" hidden>🔄 Try the next puck spot <span id="rush-progress" class="rush-progress"></span></button>
+      <button class="btn btn-why" id="btn-why" hidden><span class="why-spark">✦</span> Why does this matter?</button>
+      <button class="btn btn-skip" id="btn-skip" hidden><span class="skip-icon">⏭</span> Skip ahead (no credit)</button>
+      <button class="btn btn-done" id="btn-done" hidden>Knock it off the goal ▸</button>
+      <section class="vocab">
+        <button class="term" data-term="stick-on-stick">stick on stick</button>
+        <button class="term" data-term="support">support</button>
+        <button class="term" data-term="slot">slot</button>
+        <button class="term" data-term="weak-side">weak side</button>
+        <button class="term" data-term="strong-side">strong side</button>
+      </section>
+    </section>
+  </template>
+
+  <!-- ========== NET-FRONT DEFENSE SCENARIO TEMPLATE ========== -->
+  <template id="tpl-net-front">
+    <section class="view view-net-front">
+      <section class="instructions">
+        <p>An opposing forward parks at our net front. Where you stand depends on the threat.</p>
+        <p>If the <strong>shot</strong> is coming (puck at the point) — <button class="term" data-term="box-out">BOX OUT</button> (body between attacker and goalie).</p>
+        <p>If a <strong>pass</strong> is coming (puck in the corner / behind net) — <button class="term" data-term="fronting">FRONT</button> (body between attacker and the puck).</p>
+        <p class="prompt">Drag your defender. The puck shows you the threat.</p>
+      </section>
+      <div class="rink-wrap"><div id="rink" aria-label="Half ice rink"></div></div>
+      <section class="feedback" id="feedback" hidden><p id="feedback-message"></p></section>
+      <nav class="controls">
+        <button class="btn btn-primary" id="btn-check"><span class="btn-icon">✓</span><span class="btn-label">Check</span></button>
+        <button class="btn btn-secondary" id="btn-show"><span class="btn-icon">▸</span><span class="btn-label">Show Me</span></button>
+        <button class="btn btn-tertiary" id="btn-reset"><span class="btn-icon">↻</span><span class="btn-label">Reset</span></button>
+      </nav>
+      <button class="btn btn-rotate" id="btn-rotate" hidden>🔄 Try the next puck spot <span id="rush-progress" class="rush-progress"></span></button>
+      <button class="btn btn-why" id="btn-why" hidden><span class="why-spark">✦</span> Why does this matter?</button>
+      <button class="btn btn-skip" id="btn-skip" hidden><span class="skip-icon">⏭</span> Skip ahead (no credit)</button>
+      <button class="btn btn-done" id="btn-done" hidden>Knock it off the goal ▸</button>
+      <section class="vocab">
+        <button class="term" data-term="box-out">box out</button>
+        <button class="term" data-term="fronting">fronting</button>
+        <button class="term" data-term="net-front">net front</button>
+        <button class="term" data-term="defensive-side">defensive side</button>
+      </section>
+    </section>
+  </template>
+
+  <!-- ========== 2-on-1 DEFENSE SCENARIO TEMPLATE ========== -->
+  <template id="tpl-two-on-one">
+    <section class="view view-two-on-one">
+      <section class="instructions">
+        <p>Two attackers crossing the blue line. ONE defender (you). One goalie behind you.</p>
+        <p>The classic rule: <strong>D plays the pass, goalie plays the shot.</strong> Don't commit to the puck carrier — the cross-ice pass is the killer.</p>
+        <p class="prompt">Drag yourself onto the PASS LINE between the two attackers.</p>
+      </section>
+      <div class="rink-wrap"><div id="rink" aria-label="Half ice rink"></div></div>
+      <section class="feedback" id="feedback" hidden><p id="feedback-message"></p></section>
+      <nav class="controls">
+        <button class="btn btn-primary" id="btn-check"><span class="btn-icon">✓</span><span class="btn-label">Check</span></button>
+        <button class="btn btn-secondary" id="btn-show"><span class="btn-icon">▸</span><span class="btn-label">Show Me</span></button>
+        <button class="btn btn-tertiary" id="btn-reset"><span class="btn-icon">↻</span><span class="btn-label">Reset</span></button>
+      </nav>
+      <button class="btn btn-rotate" id="btn-rotate" hidden>🔄 Try the next rush <span id="rush-progress" class="rush-progress"></span></button>
+      <button class="btn btn-why" id="btn-why" hidden><span class="why-spark">✦</span> Why does this matter?</button>
+      <button class="btn btn-skip" id="btn-skip" hidden><span class="skip-icon">⏭</span> Skip ahead (no credit)</button>
+      <button class="btn btn-done" id="btn-done" hidden>Knock it off the goal ▸</button>
+      <section class="vocab">
+        <button class="term" data-term="gap">gap</button>
+        <button class="term" data-term="gap-control">gap control</button>
+        <button class="term" data-term="stick-on-stick">stick on stick</button>
+        <button class="term" data-term="weak-side">weak side</button>
+      </section>
+    </section>
+  </template>
+
+  <!-- ========== OFFSIDE DETECTION SCENARIO TEMPLATE ========== -->
+  <template id="tpl-offside">
+    <section class="view view-offside">
+      <section class="instructions">
+        <p>Watch the play. Did the attacker enter the zone <strong>before</strong> the puck? That's <button class="term" data-term="offside">offside</button>.</p>
+        <p class="prompt">Hit <strong>Play</strong> to start. Tap <strong>OFFSIDE</strong> the moment you see it. If the play is good (puck first, or attacker tags up), don't tap.</p>
+      </section>
+      <div class="rink-wrap"><div id="rink" aria-label="Half ice rink"></div></div>
+      <section class="feedback" id="feedback" hidden><p id="feedback-message"></p></section>
+      <nav class="controls">
+        <button class="btn btn-primary" id="btn-check"><span class="btn-icon">▶</span><span class="btn-label">Play</span></button>
+        <button class="btn btn-call-offside" id="btn-call"><span class="btn-icon">✋</span><span class="btn-label">OFFSIDE!</span></button>
+        <button class="btn btn-tertiary" id="btn-reset"><span class="btn-icon">↻</span><span class="btn-label">Reset</span></button>
+      </nav>
+      <button class="btn btn-rotate" id="btn-rotate" hidden>🔄 Next play <span id="rush-progress" class="rush-progress"></span></button>
+      <button class="btn btn-why" id="btn-why" hidden><span class="why-spark">✦</span> Why does this matter?</button>
+      <button class="btn btn-skip" id="btn-skip" hidden><span class="skip-icon">⏭</span> Skip ahead (no credit)</button>
+      <button class="btn btn-done" id="btn-done" hidden>Knock it off the goal ▸</button>
+      <section class="vocab">
+        <button class="term" data-term="offside">offside</button>
+        <button class="term" data-term="blue-line-battle">blue line</button>
+      </section>
+    </section>
+  </template>
+
+  <!-- ========== DEFENSIVE SIDE SCENARIO TEMPLATE ========== -->
+  <template id="tpl-defensive-side">
+    <section class="view view-defensive-side">
+      <section class="instructions">
+        <p>The <button class="term" data-term="defensive-side">defensive side of the puck</button> means your body is between the puck and your own net.</p>
+        <p class="prompt">Drag your player (gold) so you're always between the attacker (red) and the net. Your stick reaches toward the puck — that's <button class="term" data-term="feeling-your-check">feeling your check</button>.</p>
+      </section>
+      <div class="hand-toggle" id="hand-toggle">
+        <span class="hand-toggle-label">Your stick:</span>
+        <button class="hand-btn active" data-hand="L">Left</button>
+        <button class="hand-btn" data-hand="R">Right</button>
+      </div>
+      <div class="rink-wrap">
+        <div id="rink" aria-label="Half ice rink"></div>
+      </div>
+      <section class="feedback" id="feedback" hidden><p id="feedback-message"></p></section>
+      <nav class="controls">
+        <button class="btn btn-primary" id="btn-check"><span class="btn-icon">✓</span><span class="btn-label">Check</span></button>
+        <button class="btn btn-secondary" id="btn-show"><span class="btn-icon">▸</span><span class="btn-label">Show Me</span></button>
+        <button class="btn btn-tertiary" id="btn-reset"><span class="btn-icon">↻</span><span class="btn-label">Reset</span></button>
+      </nav>
+      <button class="btn btn-why" id="btn-why" hidden>
+        <span class="why-spark">✦</span> Why does this matter?
+      </button>
+      <button class="btn btn-skip" id="btn-skip" hidden><span class="skip-icon">⏭</span> Skip ahead (no credit)</button>
+      <button class="btn btn-done" id="btn-done" hidden>Knock it off the goal ▸</button>
+      <section class="vocab">
+        <button class="term" data-term="defensive-side">defensive side</button>
+        <button class="term" data-term="stick-on-stick">stick on stick</button>
+        <button class="term" data-term="feeling-your-check">feeling your check</button>
+        <button class="term" data-term="box-out">box out</button>
+        <button class="term" data-term="fronting">fronting</button>
+      </section>
+    </section>
+  </template>
+
+  <!-- ========== D-ZONE COVERAGE SCENARIO TEMPLATE ========== -->
+  <template id="tpl-dzone-coverage">
+    <section class="view view-dzone-coverage">
+      <section class="instructions">
+        <p>Our end. We play <strong>man-to-man in our zone</strong> — read where YOUR man is, get to the <button class="term" data-term="defensive-side">defensive side of the puck</button> (between him and the net) with <button class="term" data-term="stick-on-stick">stick on stick</button>, and everybody protects the <button class="term" data-term="danger-zone">Danger Zone</button>.</p>
+        <p class="prompt">Drag your player (gold) onto the defensive side of your man. Don't <button class="term" data-term="puck-watching">puck-watch</button> and <button class="term" data-term="over-commit">over-commit</button>. Hit <strong>Check</strong>.</p>
+      </section>
+      <div class="rink-wrap">
+        <div id="rink" aria-label="Half ice rink"></div>
+      </div>
+      <section class="feedback" id="feedback" hidden><p id="feedback-message"></p></section>
+      <nav class="controls">
+        <button class="btn btn-primary" id="btn-check"><span class="btn-icon">✓</span><span class="btn-label">Check</span></button>
+        <button class="btn btn-secondary" id="btn-show"><span class="btn-icon">▸</span><span class="btn-label">Show Me</span></button>
+        <button class="btn btn-tertiary" id="btn-reset"><span class="btn-icon">↻</span><span class="btn-label">Reset</span></button>
+      </nav>
+      <button class="btn btn-rotate" id="btn-rotate" hidden>🔄 Try the next situation <span id="rush-progress" class="rush-progress"></span></button>
+      <button class="btn btn-why" id="btn-why" hidden><span class="why-spark">✦</span> Why does this matter?</button>
+      <button class="btn btn-skip" id="btn-skip" hidden><span class="skip-icon">⏭</span> Skip ahead (no credit)</button>
+      <button class="btn btn-done" id="btn-done" hidden>Knock it off the goal ▸</button>
+      <section class="vocab">
+        <button class="term" data-term="defensive-side">defensive side</button>
+        <button class="term" data-term="stick-on-stick">stick on stick</button>
+        <button class="term" data-term="danger-zone">Danger Zone</button>
+        <button class="term" data-term="point">the point</button>
+        <button class="term" data-term="gap">gap</button>
+        <button class="term" data-term="net-front">net front</button>
+        <button class="term" data-term="weak-side">weak side</button>
+      </section>
+    </section>
+  </template>
+
+  <!-- ========== BREAKOUT READS SCENARIO TEMPLATE ========== -->
+  <template id="tpl-breakout-reads">
+    <section class="view view-breakout-reads">
+      <section class="instructions">
+        <p>Our <strong>D</strong> has the puck deep and the <button class="term" data-term="forecheck">forecheck</button> is coming. <strong>Read the pressure</strong> and tap the breakout that beats it.</p>
+        <p class="read-cue" id="read-cue"></p>
+      </section>
+      <div class="rink-wrap">
+        <div id="rink" aria-label="Half ice rink"></div>
+      </div>
+      <section class="feedback" id="feedback" hidden><p id="feedback-message"></p></section>
+      <nav class="controls" id="br-demo-controls">
+        <button class="btn btn-primary" id="btn-watch"><span class="btn-icon">▶</span><span class="btn-label">Watch the 4 breakouts</span></button>
+        <button class="btn btn-tertiary" id="btn-skip-demo">Skip to quiz →</button>
+      </nav>
+      <nav class="controls controls-choice" id="breakout-choices" hidden>
+        <button class="btn btn-choice" data-breakout="d-wheel">D-Wheel</button>
+        <button class="btn btn-choice" data-breakout="d-to-d">D-to-D</button>
+        <button class="btn btn-choice" data-breakout="reverse">Reverse</button>
+        <button class="btn btn-choice" data-breakout="weak-rim">Weak-Side Rim</button>
+      </nav>
+      <nav class="controls" id="br-test-controls" hidden>
+        <button class="btn btn-secondary" id="btn-show"><span class="btn-icon">▸</span><span class="btn-label">Show Me</span></button>
+        <button class="btn btn-tertiary" id="btn-reset"><span class="btn-icon">↻</span><span class="btn-label">Reset</span></button>
+      </nav>
+      <button class="btn btn-rotate" id="btn-rotate" hidden>🔄 Next read <span id="rush-progress" class="rush-progress"></span></button>
+      <button class="btn btn-why" id="btn-why" hidden><span class="why-spark">✦</span> Why does this matter?</button>
+      <button class="btn btn-done" id="btn-done" hidden>Knock it off the goal ▸</button>
+      <section class="vocab">
+        <button class="term" data-term="d-wheel">D-Wheel</button>
+        <button class="term" data-term="d-to-d">D-to-D</button>
+        <button class="term" data-term="reverse">Reverse</button>
+        <button class="term" data-term="weak-rim">Weak-Side Rim</button>
+        <button class="term" data-term="forecheck">forecheck</button>
+      </section>
+    </section>
+  </template>
+
+  <!-- ========== O-ZONE FACEOFF SCENARIO TEMPLATE ========== -->
+  <template id="tpl-ozone-entry">
+    <section class="view view-ozone-entry">
+      <section class="instructions">
+        <p>We're carrying the puck over the blue line. On the rush every attacker owns <strong>one lane</strong> — and the second forward drives the <button class="term" data-term="middle-lane-drive">middle lane</button>.</p>
+        <p class="prompt">Drag <strong>YOU</strong> to where you should be, then hit Check.</p>
+        <p class="read-cue" id="read-cue"></p>
+      </section>
+      <div class="rink-wrap">
+        <div id="rink" aria-label="Half ice rink"></div>
+      </div>
+      <div class="rush-meter" id="oe-rush-meter" hidden aria-hidden="true">
+        <span class="rush-meter-fill" id="oe-rush-fill"></span>
+        <span class="rush-meter-label" id="oe-rush-label">read it</span>
+      </div>
+      <section class="feedback" id="feedback" hidden><p id="feedback-message"></p></section>
+      <nav class="controls" id="oe-demo-controls">
+        <button class="btn btn-primary" id="btn-watch"><span class="btn-icon">▶</span><span class="btn-label">Watch the 4 reads</span></button>
+        <button class="btn btn-tertiary" id="btn-skip-demo">Skip to quiz →</button>
+      </nav>
+      <nav class="controls" id="oe-test-controls" hidden>
+        <button class="btn btn-primary" id="btn-check"><span class="btn-icon">✓</span><span class="btn-label">Check</span></button>
+        <button class="btn btn-secondary" id="btn-show"><span class="btn-icon">▸</span><span class="btn-label">Show Me</span></button>
+        <button class="btn btn-tertiary" id="btn-reset"><span class="btn-icon">↻</span><span class="btn-label">Reset</span></button>
+      </nav>
+      <button class="btn btn-rotate" id="btn-rotate" hidden>🔄 Try the next read <span id="rush-progress" class="rush-progress"></span></button>
+      <button class="btn btn-tertiary btn-replay-demo" id="btn-replay-demo" hidden>▶ Watch the patterns again</button>
+      <button class="btn btn-why" id="btn-why" hidden><span class="why-spark">✦</span> Why does this matter?</button>
+      <button class="btn btn-skip" id="btn-skip" hidden><span class="skip-icon">⏭</span> Skip ahead (no credit)</button>
+      <button class="btn btn-done" id="btn-done" hidden>Knock it off the goal ▸</button>
+      <section class="vocab">
+        <button class="term" data-term="middle-lane-drive">middle lane drive</button>
+        <button class="term" data-term="fourth-attacker">4th attacker</button>
+        <button class="term" data-term="weak-side">weak side</button>
+        <button class="term" data-term="seam">seam</button>
+        <button class="term" data-term="high-slot">high slot</button>
+        <button class="term" data-term="back-door">back door</button>
+        <button class="term" data-term="puck-protection">puck protection</button>
+        <button class="term" data-term="last-man-back">last man back</button>
+      </section>
+    </section>
+  </template>
+
+  <template id="tpl-ozone-faceoff">
+    <section class="view view-ozone-faceoff">
+      <section class="instructions">
+        <p>Offensive-zone faceoff. Three set plays — <strong>RED</strong> (center), <strong>BLACK</strong> (wall wing/D), <strong>GOLD</strong> (wing/D).</p>
+        <div class="hand-toggle" id="fo-mode">
+          <span class="hand-toggle-label">Mode:</span>
+          <button class="hand-btn active" data-mode="run">Coach calls it</button>
+          <button class="hand-btn" data-mode="name">Name the call</button>
+        </div>
+        <p class="read-cue" id="fo-prompt"></p>
+      </section>
+      <div class="rink-wrap">
+        <div id="rink" aria-label="Half ice rink"></div>
+      </div>
+      <section class="feedback" id="feedback" hidden><p id="feedback-message"></p></section>
+      <nav class="controls controls-choice cols-3" id="fo-locs">
+        <button class="btn btn-choice" data-loc="slot">Slot Shot</button>
+        <button class="btn btn-choice" data-loc="wall">Wall Shot</button>
+        <button class="btn btn-choice" data-loc="weak">Weak-Side Shot</button>
+      </nav>
+      <nav class="controls controls-choice cols-3" id="fo-calls" hidden>
+        <button class="btn btn-choice" data-call="red">RED</button>
+        <button class="btn btn-choice" data-call="black">BLACK</button>
+        <button class="btn btn-choice" data-call="gold">GOLD</button>
+      </nav>
+      <nav class="controls">
+        <button class="btn btn-secondary" id="btn-show"><span class="btn-icon">▸</span><span class="btn-label">Show Me</span></button>
+        <button class="btn btn-tertiary" id="btn-reset"><span class="btn-icon">↻</span><span class="btn-label">Reset</span></button>
+      </nav>
+      <button class="btn btn-rotate" id="btn-rotate" hidden>🔄 Next faceoff <span id="rush-progress" class="rush-progress"></span></button>
+      <button class="btn btn-why" id="btn-why" hidden><span class="why-spark">✦</span> Why does this matter?</button>
+      <button class="btn btn-done" id="btn-done" hidden>Knock it off the goal ▸</button>
+      <section class="vocab">
+        <button class="term" data-term="red-faceoff">RED</button>
+        <button class="term" data-term="black-faceoff">BLACK</button>
+        <button class="term" data-term="gold-faceoff">GOLD</button>
+        <button class="term" data-term="ozone-faceoff">O-zone faceoff</button>
+      </section>
+    </section>
+  </template>
+
+  <!-- ========== DIALOGS (shared) ========== -->
+  <dialog id="term-dialog" class="term-dialog">
+    <h3 id="term-title"></h3>
+    <p id="term-def"></p>
+    <p id="term-why" class="why"></p>
+    <button class="btn btn-primary" id="btn-term-close">Got it</button>
+  </dialog>
+
+  <dialog id="why-dialog" class="why-dialog">
+    <header class="why-head">
+      <span class="why-head-spark">✦</span>
+      <h3 id="why-title">Why does this matter?</h3>
+    </header>
+    <div id="why-content"></div>
+    <button class="btn btn-primary" id="btn-why-close">Got it</button>
+  </dialog>
+
+  <dialog id="coach-talk-dialog" class="coach-dialog">
+    <div class="coach-body">
+      <p class="coach-quote" id="coach-quote">—</p>
+      <p class="coach-attr" id="coach-attr">—</p>
+      <p class="coach-stat" id="coach-stat">—</p>
+    </div>
+    <button class="btn btn-primary" id="btn-coach-close">Got it</button>
+  </dialog>
+
+  <script src="assets/konva-9.3.16.min.js"></script>
+  <script src="js/vocab.js"></script>
+  <script src="js/scenarios.js"></script>
+  <script src="js/progress.js"></script>
+  <script src="js/rink.js"></script>
+  <script src="js/player.js"></script>
+  <script src="js/path.js"></script>
+  <script src="js/audio.js"></script>
+  <script src="js/whys.js"></script>
+  <script src="js/house.js"></script>
+  <script src="js/defensive_side.js"></script>
+  <script src="js/forecheck.js"></script>
+  <script src="js/lane_coverage.js"></script>
+  <script src="js/breakout.js"></script>
+  <script src="js/cover_the_man.js"></script>
+  <script src="js/net_front.js"></script>
+  <script src="js/two_on_one.js"></script>
+  <script src="js/offside.js"></script>
+  <script src="js/dzone_coverage.js"></script>
+  <script src="js/breakout_reads.js"></script>
+  <script src="js/ozone_faceoff.js"></script>
+  <script src="js/ozone_entry.js"></script>
+  <script src="js/home.js"></script>
+  <script src="js/main.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('service-worker.js').catch(() => {});
+      });
+    }
+  </script>
+</body>
+</html>
