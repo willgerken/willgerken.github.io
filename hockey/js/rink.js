@@ -21,8 +21,26 @@ window.IceQ.Rink = (function() {
     netDepth: 3.5,
   };
 
+  // A rounded rect cannot have a corner radius larger than half its shortest
+  // side — Konva hands the excess straight to ctx.arc() as a NEGATIVE radius,
+  // which throws IndexSizeError and kills the whole draw. Clamp every corner
+  // radius through here rather than trusting the caller's constant.
+  function safeCornerRadius(w, h, r) {
+    return Math.max(0, Math.min(r, Math.min(w, h) / 2));
+  }
+
   function create(container) {
-    const width = container.clientWidth;
+    // `clientWidth` is 0 when the scenario mounts before the browser has laid
+    // the container out — which happened intermittently on the first visit to
+    // a scenario, because routing + the auto-running teach demo shifted when
+    // layout settled. A 0-wide rink then built a 0x0 ice rect with a 12px
+    // corner radius and threw on the first paint, aborting the scenario's
+    // wiring and leaving dead buttons. Fall back through the layout box, then
+    // the parent, then a sane default so the rink is never built degenerate.
+    const width = container.clientWidth
+      || container.offsetWidth
+      || (container.parentElement && container.parentElement.clientWidth)
+      || 360;
     const height = Math.round(width * RINK.lengthFt / RINK.widthFt);
     const scale = width / RINK.widthFt;
 
@@ -47,7 +65,7 @@ window.IceQ.Rink = (function() {
     iceLayer.add(new Konva.Rect({
       x: 0, y: 0, width, height,
       fill: '#F0F7FC',
-      cornerRadius: 12,
+      cornerRadius: safeCornerRadius(width, height, 12),
     }));
 
     // --- blue line ---
@@ -209,7 +227,7 @@ window.IceQ.Rink = (function() {
       x: 1, y: 1, width: width - 2, height: height - 2,
       stroke: '#1A1F2E',
       strokeWidth: 2,
-      cornerRadius: 12,
+      cornerRadius: safeCornerRadius(width - 2, height - 2, 12),
       fill: null,
     }));
 
