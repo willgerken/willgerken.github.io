@@ -65,6 +65,7 @@ window.IceQ.CoverTheMan = (function () {
 
   function init(rinkContainer) {
     const rink = IceQ.Rink.create(rinkContainer);
+    if (rink.labelNet) rink.labelNet('ours');   // zone cue: whose net is this
     const { toCanvasX, toCanvasY, scale, overlayLayer, gridLayer } = rink;
 
     let playIdx = 0;
@@ -99,11 +100,12 @@ window.IceQ.CoverTheMan = (function () {
     }
     function drawPuck() {
       const p = currentPlay();
-      // Puck offset depends on which side the carrier's stick is on
-      const puckOffsetX = p.puckCarrier.stickSide === 'L' ? -2 : 2;
+      // Puck on the carrier's blade (sprite geometry), drawn after the players.
+      const pos = puckCarrier ? IceQ.Player.puckPosFor(puckCarrier)
+        : { x: toCanvasX(p.puckCarrier.x + (p.puckCarrier.stickSide === 'L' ? -2 : 2)), y: toCanvasY(p.puckCarrier.y + 1) };
       puckNodeCTM = new Konva.Circle({
-        x: toCanvasX(p.puckCarrier.x + puckOffsetX),
-        y: toCanvasY(p.puckCarrier.y + 1),
+        x: pos.x,
+        y: pos.y,
         radius: Math.max(5, scale * 0.7),
         fill: '#0A0A0A', stroke: '#E0C68A', strokeWidth: 1.5,
       });
@@ -131,8 +133,14 @@ window.IceQ.CoverTheMan = (function () {
         scale: Math.max(0.55, scale * 0.075),
         color: 'spartan', label: 'D2', stickSide: p.dPartner.stickSide,
       });
-      gridLayer.add(puckCarrier, slotMan, partnerNode);
-      sceneNodes.push(puckCarrier, slotMan, partnerNode);
+      // Our goalie in our net (zone cue + nobody defends an empty net).
+      const goalie = IceQ.Player.create({
+        x: toCanvasX(0), y: toCanvasY(62.5),
+        scale: Math.max(0.6, scale * 0.08), color: 'spartan', kind: 'goalie',
+      });
+      IceQ.Player.face(goalie, 'y-');
+      gridLayer.add(goalie, puckCarrier, slotMan, partnerNode);
+      sceneNodes.push(goalie, puckCarrier, slotMan, partnerNode);
       drawStickOnStick();
     }
     // Faint dashed line from D2's stick blade toward the puck carrier's
@@ -151,15 +159,14 @@ window.IceQ.CoverTheMan = (function () {
       // Each player's blade extends ~2.5 ft on the stickSide direction.
       // For 'L' stick: blade extends to negative x (relative to player).
       // For 'R' stick: blade extends to positive x.
-      const d2BladeX = d2.x + (d2.stickSide === 'R' ? 2.5 : -2.5);
-      const d2BladeY = d2.y + 1.5;
-      const carrBladeX = carr.x + (carr.stickSide === 'R' ? 2.5 : -2.5);
-      const carrBladeY = carr.y + 1.5;
+      // Real blade tips from the sprite geometry (the old fixed 2.5 ft
+      // offsets started the line at the bottom hand on a phone).
+      const a = partnerNode ? IceQ.Player.puckPosFor(partnerNode, null, 'tip')
+        : { x: toCanvasX(d2.x + (d2.stickSide === 'R' ? 2.5 : -2.5)), y: toCanvasY(d2.y + 1.5) };
+      const b = puckCarrier ? IceQ.Player.puckPosFor(puckCarrier, null, 'tip')
+        : { x: toCanvasX(carr.x + (carr.stickSide === 'R' ? 2.5 : -2.5)), y: toCanvasY(carr.y + 1.5) };
       stickLine = new Konva.Line({
-        points: [
-          toCanvasX(d2BladeX), toCanvasY(d2BladeY),
-          toCanvasX(carrBladeX), toCanvasY(carrBladeY),
-        ],
+        points: [a.x, a.y, b.x, b.y],
         stroke: 'rgba(224, 198, 138, 0.45)',
         strokeWidth: 1.2, dash: [4, 3],
         listening: false,
@@ -197,8 +204,8 @@ window.IceQ.CoverTheMan = (function () {
     }
 
     drawNet();
-    drawPuck();
     drawOpponents();
+    drawPuck();
     drawDefender();
     gridLayer.batchDraw();
 
@@ -294,8 +301,8 @@ window.IceQ.CoverTheMan = (function () {
       playIdx = (playIdx + 1) % PLAYS.length;
       clearScene();
       clearOverlay();
-      drawPuck();
       drawOpponents();
+      drawPuck();
       resetDefender();
       gridLayer.batchDraw();
       return { rushIdx: playIdx, rush: currentPlay(), totalRushes: PLAYS.length };

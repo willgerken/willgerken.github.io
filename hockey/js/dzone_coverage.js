@@ -135,6 +135,7 @@ window.IceQ.DZoneCoverage = (function () {
 
   function init(rinkContainer) {
     const rink = IceQ.Rink.create(rinkContainer);
+    if (rink.labelNet) rink.labelNet('ours');   // zone cue: whose net is this
     const { toCanvasX, toCanvasY, scale, overlayLayer, gridLayer } = rink;
 
     let playIdx = 0;
@@ -174,10 +175,21 @@ window.IceQ.DZoneCoverage = (function () {
       sceneNodes.push(lens, lbl);
     }
 
+    // Puck ON the blade of whichever opponent is holding it (the context
+    // player nearest the authored puck spot), via the sprite geometry, and
+    // drawn after the players so it is never under a sweater.
     function drawPuck() {
       const p = currentPlay();
+      let pos = { x: toCanvasX(p.puck.x), y: toCanvasY(p.puck.y) };
+      let best = null, bestD = Infinity;
+      sceneNodes.forEach(n => {
+        if (!n.getAttr || n.getAttr('iceqKind') !== 'skater') return;
+        const d = Math.hypot(n.x() - pos.x, n.y() - pos.y);
+        if (d < bestD) { bestD = d; best = n; }
+      });
+      if (best && bestD < scale * 8) pos = IceQ.Player.puckPosFor(best);
       const puck = new Konva.Circle({
-        x: toCanvasX(p.puck.x), y: toCanvasY(p.puck.y),
+        x: pos.x, y: pos.y,
         radius: Math.max(5, scale * 0.7),
         fill: '#0A0A0A', stroke: '#E0C68A', strokeWidth: 1.5,
         listening: false,
@@ -200,10 +212,20 @@ window.IceQ.DZoneCoverage = (function () {
       });
     }
 
+    function drawGoalie() {
+      const g = IceQ.Player.create({
+        x: toCanvasX(0), y: toCanvasY(62.5),
+        scale: Math.max(0.6, scale * 0.08), color: 'spartan', kind: 'goalie',
+      });
+      IceQ.Player.face(g, 'y-');   // our goalie, facing the play
+      gridLayer.add(g);
+      sceneNodes.push(g);
+    }
     function drawScene() {
       drawDangerZone();
-      drawPuck();
+      drawGoalie();
       drawContext();
+      drawPuck();
     }
 
     function clearScene() {

@@ -108,6 +108,7 @@ window.IceQ.BreakoutReads = (function () {
 
   function init(rinkContainer) {
     const rink = IceQ.Rink.create(rinkContainer);
+    if (rink.labelNet) rink.labelNet('ours');   // zone cue: whose net is this
     const { toCanvasX: cx0, toCanvasY, scale, overlayLayer, gridLayer } = rink;
 
     // Variety without changing the lesson (Will 2026-08-18: "not repetitive,

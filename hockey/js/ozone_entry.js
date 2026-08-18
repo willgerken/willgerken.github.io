@@ -189,6 +189,7 @@ window.IceQ.OzoneEntry = (function () {
 
   function init(rinkContainer) {
     const rink = IceQ.Rink.create(rinkContainer);
+    if (rink.labelNet) rink.labelNet('theirs');   // zone cue: whose net is this
     const { toCanvasX, toCanvasY, scale, overlayLayer, gridLayer } = rink;
 
     let playIdx = 0;
