@@ -334,18 +334,6 @@ window.IceQ.Home = (function () {
     });
     container.appendChild(drillBanner);
 
-    // Beta notice. Deliberately at the TOP of the home screen and deliberately
-    // blunt: this has not been through a season with real kids, and a coach
-    // needs to know that before he points ten of them at it.
-    const beta = document.createElement('div');
-    beta.className = 'beta-note';
-    beta.innerHTML = `
-      <strong>Beta.</strong> Still being checked. The hockey in here has been
-      reviewed but not run past a full team, so treat anything that looks wrong
-      as probably wrong, and tell me. Nothing here should override your coach.
-    `;
-    container.appendChild(beta);
-
     // Scenario list — broken into two sections:
     //   "Goal Targets" (corner-mapped scenarios)
     //   "Game Situations" (list-only scenarios — Net-Front, 2-on-1, Offside)
@@ -378,8 +366,15 @@ window.IceQ.Home = (function () {
 
     const coreHeader = document.createElement('h3');
     coreHeader.className = 'home-section-header';
-    coreHeader.textContent = '🎯 The Drills';
+    // "The Original Six": the six targets on the goal. Will 2026-08-18: "The
+    // Drills / More drills" did not read; this names the set the way hockey
+    // people name things.
+    coreHeader.textContent = 'The Original Six';
     container.appendChild(coreHeader);
+    const coreSub = document.createElement('p');
+    coreSub.className = 'home-section-sub';
+    coreSub.textContent = 'Same six as the targets on the goal. Knock them all off.';
+    container.appendChild(coreSub);
     const list = document.createElement('nav');
     list.className = 'home-list';
     cornerScenarios.forEach(s => list.appendChild(makeListItem(s)));
@@ -388,11 +383,11 @@ window.IceQ.Home = (function () {
     if (listOnlyScenarios.length) {
       const sectionHeader = document.createElement('h3');
       sectionHeader.className = 'home-section-header';
-      sectionHeader.textContent = 'More drills';
+      sectionHeader.textContent = 'Bonus Reps';
       container.appendChild(sectionHeader);
       const subText = document.createElement('p');
       subText.className = 'home-section-sub';
-      subText.textContent = 'Extra concepts beyond the core six.';
+      subText.textContent = 'Extra ice once the six are down.';
       container.appendChild(subText);
       const list2 = document.createElement('nav');
       list2.className = 'home-list';
@@ -410,6 +405,13 @@ window.IceQ.Home = (function () {
         location.hash = `#/${key}`;
       }
     });
+
+    // One quiet line instead of a beta box at the top (Will: "a bit too on
+    // the nose"). The message that matters survives: the bench outranks the app.
+    const note = document.createElement('p');
+    note.className = 'home-footnote';
+    note.textContent = 'Early version, still being checked against real hockey. Your coach' + String.fromCharCode(8217) + 's word beats the app' + String.fromCharCode(8217) + 's, every time.';
+    container.appendChild(note);
 
     // Reset button (small, bottom-corner)
     const reset = document.createElement('button');
