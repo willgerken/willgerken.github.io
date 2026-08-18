@@ -233,6 +233,33 @@ window.IceQ.Rink = (function() {
 
     iceLayer.draw();
 
+    // Zone cue (Will 2026-08-18: it must be obvious whether we are in the
+    // offensive or defensive zone). Draws "OUR NET" / "THEIR NET" beside the
+    // cage in the team colour, plus a small end-zone tag. Called by each
+    // scenario with which = 'ours' | 'theirs'.
+    function labelNet(which) {
+      const ours = which !== 'theirs';
+      const txt = ours ? 'OUR NET' : 'THEIR NET';
+      const col = ours ? '#E0C68A' : '#CE202E';
+      const fs = Math.max(11, Math.round(scale * 2.1));
+      const lbl = new Konva.Text({
+        x: goalX2 + postW + Math.max(8, scale * 1.6), y: goalY1 + (goalH - fs) / 2,
+        text: txt, fontSize: fs, fontStyle: '900',
+        fontFamily: 'system-ui, -apple-system, "Segoe UI", Roboto, sans-serif',
+        fill: col, stroke: '#1A1F2E', strokeWidth: 0.8, letterSpacing: 1.5, listening: false,
+      });
+      const zone = new Konva.Text({
+        x: 0, y: toCanvasY(1) + 2, width, align: 'center',
+        text: ours ? 'OUR END  ·  defending' : 'THEIR END  ·  attacking',
+        fontSize: Math.max(9, Math.round(scale * 1.4)), fontStyle: '800',
+        fontFamily: 'system-ui, -apple-system, "Segoe UI", Roboto, sans-serif',
+        fill: 'rgba(40,40,40,0.55)', letterSpacing: 2, listening: false,
+      });
+      iceLayer.add(lbl, zone);
+      iceLayer.batchDraw();
+      return { lbl, zone };
+    }
+
     return {
       stage,
       iceLayer,
@@ -244,6 +271,7 @@ window.IceQ.Rink = (function() {
       toCanvasX,
       toCanvasY,
       RINK,
+      labelNet,
     };
   }
 

@@ -1992,6 +1992,7 @@
   function wireHouse() {
     const rinkEl = APP.querySelector('#rink');
     const rink = IceQ.Rink.create(rinkEl);
+    if (rink.labelNet) rink.labelNet('ours');
     const cells = IceQ.House.buildGrid(rink);
 
     const fb = APP.querySelector('#feedback');
