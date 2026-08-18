@@ -197,6 +197,12 @@ window.IceQ.OzoneEntry = (function () {
 
     let you = null;
     let sceneNodes = [];
+    // Skip signal of the contrast currently running (if any). travelPuck /
+    // skateRoute / the two replays check it after every await, so tapping Skip
+    // actually CANCELS the play instead of just returning control while
+    // banners keep landing on the retry screen (2026-08-18 audit).
+    let activeSig = null;
+    const skipped = () => !!(activeSig && activeSig.skipped);
     let f1Node = null;       // our puck carrier (context player labelled F1)
     let puckNode = null;     // the static puck on his blade
     let showMeGlideActive = false;
@@ -471,8 +477,9 @@ window.IceQ.OzoneEntry = (function () {
         }
         puck.to({ x: pts[i].x, y: pts[i].y, duration: d, easing });
         await IceQ.Path.wait(d * 1000 + 15);
+        if (skipped()) { try { puck.stop(); f1 && f1.stop(); } catch (e) {} break; }
       }
-      await IceQ.Path.wait(260);
+      if (!skipped()) await IceQ.Path.wait(260);
       // Back to the start picture so the quiz starts clean.
       try {
         if (puck.isDestroyed()) return;
@@ -489,6 +496,7 @@ window.IceQ.OzoneEntry = (function () {
       if (!you) return;
       cancelShowMeGlide();
       for (let i = 1; i < p.youRoute.length; i++) {
+        if (skipped()) { try { you.stop(); } catch (e) {} return; }
         const [x, y] = p.youRoute[i];
         const d = legDuration(p.youRoute[i - 1], p.youRoute[i], SKATE_FTPS);
         you.to({ x: toCanvasX(x), y: toCanvasY(y), duration: d, easing: Konva.Easings.EaseInOut });
@@ -512,6 +520,7 @@ window.IceQ.OzoneEntry = (function () {
 
     // Demo reveal: route arrow + YOU skating it + the puck finding you.
     async function playReveal() {
+      activeSig = null;      // the demo is never under a contrast's Skip
       clearOverlay();
       drawRouteArrow();
       await IceQ.Path.wait(140);
@@ -526,6 +535,7 @@ window.IceQ.OzoneEntry = (function () {
     async function playWrongConsequence() {
       const p = currentPlay();
       await travelPuck(p.wrongPuck, { stroke: '#CE202E' });
+      if (skipped()) return;
       await IceQ.Path.animateGoalConsequence(rink, { kind: 'goal', message: p.wrongMsg, duration: 1.0 });
     }
 
@@ -545,8 +555,11 @@ window.IceQ.OzoneEntry = (function () {
       const p = currentPlay();
       drawRouteArrow();
       await IceQ.Path.wait(120);
+      if (skipped()) return;
       await skateRoute();
+      if (skipped()) return;
       await travelPuck(p.rightPuck);
+      if (skipped()) return;
       await IceQ.Path.animateGoalConsequence(rink, { kind: 'saved', message: p.rightMsg, duration: 1.0 });
     }
 
@@ -585,6 +598,7 @@ window.IceQ.OzoneEntry = (function () {
 
     async function showContrastReplay(skipSignal) {
       const sig = skipSignal || { skipped: false };
+      activeSig = sig;
       const bail = () => { clearOverlay(); return { skipped: true, completed: false }; };
 
       await raceSkip(playWrongConsequence(), sig, 6000);
@@ -600,7 +614,7 @@ window.IceQ.OzoneEntry = (function () {
       await IceQ.Path.wait(120);
       if (sig.skipped) return bail();
 
-      await raceSkip(playRightAnswer(), sig, 7000);
+      await raceSkip(playRightAnswer(), sig, 9500);
       clearOverlay();
       if (sig.skipped) return bail();
 
