@@ -44,10 +44,12 @@ window.IceQ.DZoneCoverage = (function () {
         // Actually in the corner now: behind the goal line (y=64) and wide.
         { x:  30, y: 68, color: 'opponent', stickSide: 'L' },               // puck carrier, strong corner
         { x:  25, y: 64, color: 'spartan',  stickSide: 'R', label: 'D2' },  // partner angles him to the wall
-        { x:  -5, y: 58, color: 'opponent', stickSide: 'R' },               // your man — at the BACK POST
+        { x:  -7, y: 54, color: 'opponent', stickSide: 'R' },               // your man — at the BACK POST, top of the crease
       ],
       puck:        { x: 29, y: 69 },
-      coverTarget: { x: -4, y: 60 },
+      // Goal-side of him, stick in the lane, but NOT parked in the crease
+      // (y 58-64): a D standing on his goalie is its own kind of wrong.
+      coverTarget: { x: -5, y: 57 },
       // Trap sits in the open ice a puck-watching defender drifts into — NOT on
       // top of the partner who is correctly pressuring the puck.
       chaseZone:   { x: 13, y: 56, r: 9 },
@@ -101,7 +103,7 @@ window.IceQ.DZoneCoverage = (function () {
     },
     {
       key: 'one-d-goes',
-      label: 'loose puck in the corner — your partner already went, cover the net-front',
+      label: 'puck in the corner — your partner already went, cover the net-front',
       role: 'secondD',
       context: [
         { x:  26, y: 65, color: 'spartan',  stickSide: 'R', label: 'D1' },  // partner already on the puck
@@ -109,10 +111,11 @@ window.IceQ.DZoneCoverage = (function () {
         // man wasn't in the corner at all, he was in a shooting position 24 ft
         // out — which is a different read with a different answer.
         { x:  31, y: 69, color: 'opponent', stickSide: 'L' },               // their corner man
-        { x:   1, y: 57, color: 'opponent', stickSide: 'L' },               // net-front man in the slot — your man
+        { x:   1, y: 52, color: 'opponent', stickSide: 'L' },               // net-front man in the slot — your man
       ],
       puck:        { x: 30, y: 68 },
-      coverTarget: { x:  0, y: 60 },
+      // Goal-side of the net-front man at the top of the crease, not IN it.
+      coverTarget: { x:  0, y: 56 },
       // Was centred on (21,59) — the EXACT coordinates of our own D1. The lesson
       // is "only one D goes," and the red DON'T-OVER-COMMIT ring was drawn on
       // top of the partner who correctly went. Now it marks the open ice the
@@ -332,25 +335,25 @@ window.IceQ.DZoneCoverage = (function () {
     if (res.cover) {
       switch (res.role) {
         case 'weakD':
-          return "That's the defensive side of the puck — you're between your man and the net with stick on stick in his lane. D2 has the puck-carrier, so you are not puck-watching. The back-door tap-in is dead.";
+          return "That's goal-side of your man — you're between him and the net with stick on stick in his lane. D2 has the puck-carrier, so you are not puck-watching. The back-door tap-in is dead.";
         case 'wing':
           return "Good gap — you held the point in his shooting lane. The Centre and D own the slot; your check is the point, so you take away his shot. That's man-to-man in your zone.";
         case 'secondD':
-          return "You held the slot — on the defensive side of the net-front man. Only ONE D leaves the Danger Zone; your partner pressured the puck, so you stay home, stick on stick. The middle is covered.";
+          return "You held the slot — goal-side of the net-front man. Only ONE D leaves the Danger Zone; your partner pressured the puck, so you stay home, stick on stick. The middle is covered.";
         default:
-          return "Good — defensive side of the puck, stick on stick, your man can't get to the net.";
+          return "Good — goal-side of your man, stick on stick, he can't get to the net.";
       }
     }
     if (res.chasing) {
       switch (res.role) {
         case 'weakD':
-          return "You went puck-watching toward the corner — but D2 already has the carrier. Your man slipped to the back door on the wrong side of you. Get to the defensive side of the puck: between him and the net, stick on stick.";
+          return "You went puck-watching toward the corner — but D2 already has the carrier. Your man slipped to the back door on the wrong side of you. Get goal-side of him: between him and the net, stick on stick.";
         case 'wing':
-          return "You sank low and went puck-watching — now your point man has a wide-open one-timer. Wingers hold the point and keep their gap up the ice, unless you're SURE you can recover.";
+          return "You sank low — now your point man has a wide-open one-timer. Some teams let the weak-side wing sag; in OUR system wingers hold their point and keep the gap up the ice, unless you're SURE you can recover.";
         case 'secondD':
           return "Both D chased the corner — now the net-front man is alone in the slot with nobody on the defensive side. Only one D goes; the other holds the middle, stick on stick.";
         default:
-          return "You over-committed and lost the defensive side. Find your man, get goal-side, stick on stick.";
+          return "You over-committed and lost your man. Find him, get goal-side, stick on stick.";
       }
     }
     return "You're in between. Not covering your man, and not protecting the middle. Pick one. Read where your check is, get goal-side of him, stick on stick.";

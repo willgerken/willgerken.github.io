@@ -88,7 +88,10 @@ window.IceQ.SCENARIOS = [
     title: 'Breakout',
     subtitle: 'Wall · Curl · Stretch',
     corner: null,
-    available: true,
+    // HIDDEN 2026-08-18 (Will: "hide broken drills until ship-ready"). Audit
+    // found this one not ready; see quality_reports/plans/2026-08-18_hockey_iceq_polish_plan.md.
+    // Flip back to true only after its fixes land AND the click-through passes.
+    available: false,
     theme: 'transition',
     tagline: 'Three forwards, three support spots. Win the breakout, win the game.',
   },
@@ -111,7 +114,10 @@ window.IceQ.SCENARIOS = [
     title: 'Defensive Side of the Puck',
     subtitle: 'Body between puck and net',
     corner: null,
-    available: true,
+    // HIDDEN 2026-08-18 (Will: "hide broken drills until ship-ready"). Audit
+    // found this one not ready; see quality_reports/plans/2026-08-18_hockey_iceq_polish_plan.md.
+    // Flip back to true only after its fixes land AND the click-through passes.
+    available: false,
     theme: 'defensive-positioning',
     tagline: "Feel your check. Watch the puck with your eyes.",
   },
@@ -120,7 +126,10 @@ window.IceQ.SCENARIOS = [
     title: 'Lane Coverage',
     subtitle: 'Three lanes, three jobs',
     corner: null,
-    available: true,
+    // HIDDEN 2026-08-18 (Will: "hide broken drills until ship-ready"). Audit
+    // found this one not ready; see quality_reports/plans/2026-08-18_hockey_iceq_polish_plan.md.
+    // Flip back to true only after its fixes land AND the click-through passes.
+    available: false,
     theme: 'defensive-positioning',
     tagline: 'When the rush comes at you, fill your lane — don\'t chase the puck.',
   },
@@ -129,7 +138,10 @@ window.IceQ.SCENARIOS = [
     title: 'Forecheck Lanes',
     subtitle: 'Cheetah · Gator · Hawk',
     corner: null,
-    available: true,
+    // HIDDEN 2026-08-18 (Will: "hide broken drills until ship-ready"). Audit
+    // found this one not ready; see quality_reports/plans/2026-08-18_hockey_iceq_polish_plan.md.
+    // Flip back to true only after its fixes land AND the click-through passes.
+    available: false,
     theme: 'defensive-positioning',
     tagline: 'F1 / F2 / F3 are JOBS, not players. The animal you become depends on where the puck is.',
   },
@@ -138,7 +150,10 @@ window.IceQ.SCENARIOS = [
     title: 'Net-Front Defense',
     subtitle: 'Box-out vs Front',
     corner: null,
-    available: true,
+    // HIDDEN 2026-08-18 (Will: "hide broken drills until ship-ready"). Audit
+    // found this one not ready; see quality_reports/plans/2026-08-18_hockey_iceq_polish_plan.md.
+    // Flip back to true only after its fixes land AND the click-through passes.
+    available: false,
     theme: 'defensive-positioning',
     tagline: 'Two right answers — pick based on the threat.',
   },

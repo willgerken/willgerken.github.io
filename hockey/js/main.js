@@ -110,14 +110,14 @@
       {
         quote: "On a 2-on-1, the D plays the pass and the goalie plays the shot. The hardest part is trusting your goalie.",
         attr: "— USA Hockey ADM",
-        stat: () => "Lunging at the carrier turns a 50% save into a 90% goal. Patience wins 2-on-1s.",
+        stat: () => "Take away the pass and the shooter has to beat your goalie clean, which he mostly won't. Patience wins 2-on-1s.",
       },
     ],
     'offside': [
       {
-        quote: "Watch the skate, not the body. The skate touches the line first.",
+        quote: "Watch the skates, not the body. Both skates over the line before the puck: that is the whole rule.",
         attr: "— Every linesman ever",
-        stat: () => "A team that never gets called for offside has 5 more attacking shifts per game. That's a lot of chances.",
+        stat: () => "Every offside whistle hands the puck back. Read the blue line and you keep the attack alive.",
       },
     ],
     'cover-the-man': [
@@ -190,7 +190,32 @@
 
   // ===== VIEW RENDERING ====================================================
 
+  // Tear down every Konva stage that lives inside #app before we wipe the DOM.
+  // Without this (2026-08-18 audit) each visit leaked a stage + 3 canvases, and
+  // any Konva.Animation still running (a paused offside replay, a contrast
+  // mid-flight) kept redrawing a detached canvas at 60 fps for the rest of the
+  // session. Home draws no Konva, so "every stage in the document" is safe.
+  function teardownStages() {
+    try {
+      const stages = (window.Konva && Konva.stages) ? Konva.stages.slice() : [];
+      stages.forEach((stage) => {
+        try {
+          // Stop animations/tweens bound to this stage's layers first, so they
+          // release their references and stop ticking.
+          const anims = (Konva.Animation && Konva.Animation.animations) ? Konva.Animation.animations.slice() : [];
+          anims.forEach((a) => {
+            const layers = a.layers || [];
+            const onThisStage = layers.some((l) => l && l.getStage && l.getStage() === stage);
+            if (onThisStage || layers.length === 0) { try { a.stop(); } catch (e) {} }
+          });
+          stage.destroy();
+        } catch (e) { /* best effort */ }
+      });
+    } catch (e) { /* best effort */ }
+  }
+
   function clearApp() {
+    teardownStages();
     APP.innerHTML = '';
     APP.className = 'app';
   }
@@ -231,6 +256,31 @@
     else if (key === 'breakout-reads') wireBreakoutReads();
     else if (key === 'ozone-faceoff') wireOzoneFaceoff();
     else if (key === 'ozone-entry') wireOzoneEntry();
+  }
+
+  // ===== SHOW-ME CREDIT GUARD (shared) =====================================
+  // Show Me (and the right-way replay) glide the kid's sprite onto the answer,
+  // and Check just reads position — so before 2026-08-18 "Show Me, then Check"
+  // was full credit in every drag game (O-Zone Entry even paid the Quick-read
+  // bonus for it). This guard remembers that the current position was
+  // DEMONSTRATED, not placed. Cleared when the kid actually drags (any node on
+  // the stage, Konva bubbles dragstart), or on Reset / Next.
+  //   guard.mark()   after Show Me or a right-way replay parks the sprite
+  //   guard.clear()  on Reset / Next rush
+  //   guard.stale()  true => refuse credit, tell the kid to place it himself
+  const DEMO_MSG = 'That was Show Me’s answer, not yours. Hit Reset, then drag YOU there yourself.';
+  function makeDemoGuard(m, { clearOnDrag = true } = {}) {
+    let demonstrated = false;
+    try {
+      if (clearOnDrag && m && m.rink && m.rink.stage) {
+        m.rink.stage.on('dragstart.demoguard', () => { demonstrated = false; });
+      }
+    } catch (e) { /* stage may not exist in a test harness */ }
+    return {
+      mark: () => { demonstrated = true; },
+      clear: () => { demonstrated = false; },
+      stale: () => demonstrated,
+    };
   }
 
   // ===== O-ZONE ENTRY SCENARIO WIRING =====================================
@@ -389,6 +439,8 @@
       }
     });
 
+    const guard = makeDemoGuard(m);
+
     btnCheck.addEventListener('click', async () => {
       if (replayInFlight) return;
       const r = m.check();
@@ -397,6 +449,7 @@
       const msg = IceQ.OzoneEntry.phrasedFeedback(r);
       stopRushMeter();
 
+      if (r.cover && guard.stale()) { showFb(DEMO_MSG); return; }
       if (r.cover) {
         try { IceQ.Audio && IceQ.Audio.savePling(); } catch {}
         try { IceQ.Path.celebrate(m.rink); } catch (e) {}
@@ -418,11 +471,14 @@
       // Wrong. First time you make this KIND of mistake, watch it play out.
       // Every time after, you get the answer straight — you already sat through
       // the lesson once and the repeat is just dead time.
+      try { IceQ.Audio && IceQ.Audio.wrongThunk && IceQ.Audio.wrongThunk(); } catch (e) {}
       if (contrastSeenForRole.has(r.role)) {
-        showFb(`${msg} You've seen this read before, so here's the answer — hit Reset and put it there yourself.`);
+        showFb(`${msg} You've seen this read before, so here's the answer. Hit Reset and put it there yourself.`);
         m.showMe();
+        guard.mark();
         btnWhy.hidden = false;
         if (playsCompleted.size < totalPlays) btnRotate.hidden = false;
+        else btnDone.hidden = false;
         return;
       }
 
@@ -439,7 +495,9 @@
         replayInFlight = false;
         setChromeDuringContrast(false);
         m.reset();
+        guard.clear();
         if (playsCompleted.size < totalPlays) btnRotate.hidden = false;
+        else btnDone.hidden = false;
         btnWhy.hidden = false;
       }
     });
@@ -453,18 +511,27 @@
 
     btnShow.addEventListener('click', () => {
       m.showMe();
-      showFb('Gold = where you should end up. Red = the lane that kills the play. Hit Reset and try it yourself — Show Me gives no credit.');
+      guard.mark();
+      showFb('Gold = where you should end up. Red = the lane that kills the play. Hit Reset and try it yourself. Show Me gives no credit.');
       btnWhy.hidden = false;
     });
     btnReset.addEventListener('click', () => {
       skipSignal.skipped = true;
       m.reset(); hideFb();
-      btnWhy.hidden = true; btnDone.hidden = true; btnRotate.hidden = true;
+      guard.clear();
+      const info = m.currentRushInfo();
+      // Reset must not hide the way forward for a read the kid already earned.
+      const earned = playsCompleted.has(info.rushIdx);
+      btnWhy.hidden = true;
+      btnDone.hidden = !(earned && playsCompleted.size >= totalPlays);
+      btnRotate.hidden = !(earned && playsCompleted.size < totalPlays);
+      startRushMeter();
     });
     btnRotate.addEventListener('click', () => {
       m.nextRush(); updateProg();
       setNarration(m.cue());
       hideFb();
+      guard.clear();
       btnRotate.hidden = true; btnWhy.hidden = true;
       startRushMeter();          // fresh read, fresh clock
     });
@@ -645,11 +712,20 @@
     const showFb = (s) => { fbMsg.textContent = s; fb.hidden = false; };
 
     let rushesCompleted = new Set();
+    const guard = makeDemoGuard(m);
     const updateProg = () => {
       const info = m.currentRushInfo();
       if (rushProg) rushProg.textContent = `(${info.rushIdx + 1}/${info.totalRushes})`;
     };
     updateProg();
+    // Show the way forward for a rush the kid has already earned (Reset and a
+    // late wrong answer must not hide Done / Next).
+    const showEarnedChrome = () => {
+      const info = m.currentRushInfo();
+      const earned = rushesCompleted.has(info.rushIdx);
+      if (rushesCompleted.size >= info.totalRushes) btnDone.hidden = false;
+      else if (earned) btnRotate.hidden = false;
+    };
 
     // v0.13 contrast state. skipSignal is shared across one contrast run so
     // any mid-playback Skip click propagates into the orchestrator. playing
@@ -685,11 +761,15 @@
       } finally {
         playing = false;
         setButtonsForContrast(false);
+        // The replay parks D on the answer: demonstrated, not placed, so
+        // Check must not pay for it until the kid drags.
+        guard.mark();
         // After contrast (whether skipped or completed), offer the next rush.
-        // No credit is awarded for the current rush — kid has to actually
+        // No credit is awarded for the current rush: kid has to actually
         // position correctly on a later attempt to get credit.
         btnRotate.hidden = false;
         btnWhy.hidden = false;
+        showEarnedChrome();
       }
     }
 
@@ -702,8 +782,10 @@
       } finally {
         playing = false;
         setButtonsForContrast(false);
+        guard.mark();
         btnRotate.hidden = false;
         btnWhy.hidden = false;
+        showEarnedChrome();
       }
     }
 
@@ -712,6 +794,7 @@
       const r = m.check();
       const info = m.currentRushInfo();
       let msg = IceQ.TwoOnOne.phrasedFeedback(r);
+      if (r.pass && guard.stale()) { showFb(DEMO_MSG); btnRotate.hidden = false; return; }
       if (r.pass) {
         try { IceQ.Audio.savePling(); } catch (e) {}
         try { IceQ.Path.celebrate(m.rink); } catch (e) {}
@@ -727,6 +810,7 @@
         return;
       }
       // Wrong answer — severity decides the replay style.
+      try { IceQ.Audio && IceQ.Audio.wrongThunk && IceQ.Audio.wrongThunk(); } catch (e) {}
       //   dist > 14       -> full contrast (wrong play + consequence, then right)
       //   TOL < dist <= 14 -> just the right play, no goal consequence
       //   (pass branch handled above)
@@ -740,6 +824,7 @@
     btnShow.addEventListener('click', () => {
       if (playing) return;
       m.showMe();
+      guard.mark();
       showFb('Gold = where to stand. Red = where you DON\'T chase. Hit Reset and try.');
       btnWhy.hidden = false;
     });
@@ -749,15 +834,18 @@
       skipSignal.skipped = true;
       if (m.stopContrast) m.stopContrast();
       m.reset(); fb.hidden = true;
+      guard.clear();
       btnWhy.hidden = true; btnDone.hidden = true; btnRotate.hidden = true;
       btnSkip.hidden = true;
       btnCheck.disabled = false;
       btnShow.disabled = false;
       btnReset.disabled = false;
       playing = false;
+      showEarnedChrome();
     });
     btnRotate.addEventListener('click', () => {
       m.nextRush(); updateProg();
+      guard.clear();
       const info = m.currentRushInfo();
       showFb(`Now: ${info.rush.label}.`);
       btnRotate.hidden = true;
@@ -809,11 +897,23 @@
     // while one is in flight.
     let replayInFlight = false;
 
+    // "(3/10 · 2 done)": position in the deck AND how many are actually
+    // earned, so a wrap-around never reads as "it started over".
     const updateProg = () => {
       const info = m.currentRushInfo();
-      if (rushProg) rushProg.textContent = `(${info.rushIdx + 1}/${info.totalRushes})`;
+      if (rushProg) rushProg.textContent = `(${info.rushIdx + 1}/${info.totalRushes} · ${playsCompleted.size} done)`;
     };
     updateProg();
+    // Advance to the next play the kid has NOT yet earned (wrapping), so a
+    // miss on play 10 still has a way forward and the deck converges.
+    function advanceToNextIncomplete() {
+      const total = m.currentRushInfo().totalRushes;
+      for (let i = 0; i < total; i++) {
+        m.nextRush();
+        if (!playsCompleted.has(m.currentRushInfo().rushIdx)) break;
+      }
+      updateProg();
+    }
 
     function setChromeDuringContrast(on) {
       // Lock the play/whistle/reset chrome during contrast and surface Skip.
@@ -846,6 +946,7 @@
       if (replayInFlight) return;
       const r = m.tapOffside();
       if (r) {
+        try { IceQ.Audio && IceQ.Audio.whistle && IceQ.Audio.whistle(); } catch (e) {}
         // Whistle stops the play short — re-enable Play so kid can replay
         // without first hitting Reset (Agent C flagged this bug in old code).
         // (Will be re-disabled if contrast kicks off in handleResult.)
@@ -862,6 +963,7 @@
         // hints. No contrast replay needed — kid saw the right thing happen.
         try { IceQ.Audio.savePling(); } catch (e) {}
         playsCompleted.add(info.rushIdx);
+        updateProg();
         if (playsCompleted.size < info.totalRushes) {
           msg += ' Tap "Next play".';
           btnRotate.hidden = false;
@@ -877,6 +979,7 @@
       // replay so the kid SEES what happened vs what should have happened.
       // No credit for contrast-driven attempts — they have to read the
       // play correctly on a fresh attempt to advance.
+      try { IceQ.Audio && IceQ.Audio.wrongThunk && IceQ.Audio.wrongThunk(); } catch (e) {}
       showFb(msg);
       replayInFlight = true;
       // Fresh signal per replay — defensive against stale references.
@@ -891,13 +994,14 @@
       } finally {
         replayInFlight = false;
         setChromeDuringContrast(false);
-        // After contrast: offer Next play (more rushes ahead) and Why.
-        // Critically: NO CREDIT awarded — kid must replay.
-        const postInfo = m.currentRushInfo();
-        if (postInfo.rushIdx + 1 < postInfo.totalRushes) {
+        // After contrast: offer Next play and Why. NO CREDIT awarded, the
+        // kid must replay this one later; Next goes to the next un-earned
+        // play (wrapping), so even a miss on play 10 has a way forward.
+        if (playsCompleted.size < m.currentRushInfo().totalRushes) {
           btnRotate.hidden = false;
         }
         btnWhy.hidden = false;
+        updateProg();
       }
     }
     btnReset.addEventListener('click', () => {
@@ -918,9 +1022,9 @@
       // us out cleanly).
       skipSignal.skipped = true;
       if (m.stopContrast) m.stopContrast();
-      m.nextRush(); updateProg();
+      advanceToNextIncomplete();
       const info = m.currentRushInfo();
-      showFb(`Now: ${info.rush.label}. Hit Play.`);
+      showFb(`Play ${info.rushIdx + 1} of ${info.totalRushes}. Hit Play and watch the blue line.`);
       btnRotate.hidden = true;
       btnCheck.disabled = false;
       btnCall.disabled = false;
@@ -939,8 +1043,7 @@
           if (replayInFlight) {
             replayInFlight = false;
             setChromeDuringContrast(false);
-            const postInfo = m.currentRushInfo();
-            if (postInfo.rushIdx + 1 < postInfo.totalRushes) {
+            if (playsCompleted.size < m.currentRushInfo().totalRushes) {
               btnRotate.hidden = false;
             }
             btnWhy.hidden = false;
@@ -1498,16 +1601,23 @@
     // unlock Done. Mirrors the multi-rush pattern in Forecheck / Lane
     // Coverage / Net Front.
     let playsCompleted = new Set();
+    const guard = makeDemoGuard(m);
     function updateProg() {
       const info = m.currentRushInfo();
       if (rushProg) rushProg.textContent = `(${info.rushIdx + 1}/${info.totalRushes})`;
     }
     updateProg();
+    const showEarnedChrome = () => {
+      const info = m.currentRushInfo();
+      if (playsCompleted.size >= info.totalRushes) btnDone.hidden = false;
+      else if (playsCompleted.has(info.rushIdx)) btnRotate.hidden = false;
+    };
 
     btnCheck.addEventListener('click', () => {
       const r = m.check();
       const info = m.currentRushInfo();
       let msg = IceQ.CoverTheMan.phrasedFeedback(r);
+      if (r.cover && guard.stale()) { showFb(DEMO_MSG); return; }
       if (r.cover) {
         try { IceQ.Audio && IceQ.Audio.savePling(); } catch {}
         try { IceQ.Path.celebrate(m.rink); } catch (e) {}
@@ -1519,21 +1629,24 @@
           btnDone.hidden = false;
         }
       }
+      if (!r.cover) { try { IceQ.Audio && IceQ.Audio.wrongThunk && IceQ.Audio.wrongThunk(); } catch (e) {} }
       showFb(msg);
       btnWhy.hidden = false;
     });
     btnShow.addEventListener('click', () => {
       m.showMe();
+      guard.mark();
       showFb('Gold zone = where to cover the slot man. Red zone = where you DON\'T chase. Hit Reset and try.');
       btnWhy.hidden = false;
       // Done not unlocked by Show Me.
     });
     btnReset.addEventListener('click', () => {
-      m.reset(); hideFb(); btnWhy.hidden = true; btnDone.hidden = true;
-      btnRotate.hidden = true;
+      m.reset(); hideFb(); guard.clear();
+      btnWhy.hidden = true; btnDone.hidden = true; btnRotate.hidden = true;
+      showEarnedChrome();
     });
     btnRotate.addEventListener('click', () => {
-      m.nextRush(); updateProg();
+      m.nextRush(); updateProg(); guard.clear();
       const info = m.currentRushInfo();
       showFb(`Now: ${info.rush.label}.`);
       btnRotate.hidden = true;
@@ -1562,16 +1675,23 @@
     const hideFb = () => { fb.hidden = true; fbMsg.textContent = ''; };
 
     let playsCompleted = new Set();
+    const guard = makeDemoGuard(m);
     function updateProg() {
       const info = m.currentRushInfo();
       if (rushProg) rushProg.textContent = `(${info.rushIdx + 1}/${info.totalRushes})`;
     }
     updateProg();
+    const showEarnedChrome = () => {
+      const info = m.currentRushInfo();
+      if (playsCompleted.size >= info.totalRushes) btnDone.hidden = false;
+      else if (playsCompleted.has(info.rushIdx)) btnRotate.hidden = false;
+    };
 
     btnCheck.addEventListener('click', () => {
       const r = m.check();
       const info = m.currentRushInfo();
       let msg = IceQ.DZoneCoverage.phrasedFeedback(r);
+      if (r.cover && guard.stale()) { showFb(DEMO_MSG); return; }
       if (r.cover) {
         try { IceQ.Audio && IceQ.Audio.savePling(); } catch {}
         try { IceQ.Path.celebrate(m.rink); } catch (e) {}
@@ -1583,21 +1703,24 @@
           btnDone.hidden = false;
         }
       }
+      if (!r.cover) { try { IceQ.Audio && IceQ.Audio.wrongThunk && IceQ.Audio.wrongThunk(); } catch (e) {} }
       showFb(msg);
       btnWhy.hidden = false;
     });
     btnShow.addEventListener('click', () => {
       m.showMe();
+      guard.mark();
       showFb('Gold zone = where to stand and cover your man. Red = where you DON\'T over-commit. Hit Reset and try.');
       btnWhy.hidden = false;
       // Done not unlocked by Show Me.
     });
     btnReset.addEventListener('click', () => {
-      m.reset(); hideFb(); btnWhy.hidden = true; btnDone.hidden = true;
-      btnRotate.hidden = true;
+      m.reset(); hideFb(); guard.clear();
+      btnWhy.hidden = true; btnDone.hidden = true; btnRotate.hidden = true;
+      showEarnedChrome();
     });
     btnRotate.addEventListener('click', () => {
-      m.nextRush(); updateProg();
+      m.nextRush(); updateProg(); guard.clear();
       const info = m.currentRushInfo();
       showFb(`Now: ${info.rush.label}.`);
       btnRotate.hidden = true;
@@ -1676,6 +1799,7 @@
         if (skipRequested) break;
         await IceQ.Path.wait(650);
       }
+      try { IceQ.Progress.markDemoSeen('breakout-reads'); } catch (e) {}
       demoRunning = false;
       m.goToRead(0);
       setMode('test');
@@ -1684,12 +1808,15 @@
     if (btnWatch) btnWatch.addEventListener('click', () => { runDemo(); });
     if (btnSkipDemo) btnSkipDemo.addEventListener('click', () => {
       if (demoRunning) { skipRequested = true; }   // skip mid-walkthrough
-      else { m.goToRead(0); setMode('test'); }      // skip straight from intro
+      else {                                        // skip straight from intro
+        try { IceQ.Progress.markDemoSeen('breakout-reads'); } catch (e) {}
+        m.goToRead(0); setMode('test');
+      }
     });
 
     choiceBtns.forEach(btn => {
       btn.addEventListener('click', () => {
-        if (btn.disabled) return;
+        if (btn.disabled || demoRunning) return;
         const r = m.choose(btn.dataset.breakout);
         const info = m.currentRushInfo();
         showFb(IceQ.BreakoutReads.phrasedFeedback(r));
@@ -1697,7 +1824,9 @@
         if (r.correct) {
           try { IceQ.Audio && IceQ.Audio.savePling(); } catch {}
           try { IceQ.Path.celebrate(m.rink); } catch (e) {}
-          m.showMe();                 // reveal the play that beats this pressure
+          // Reveal the play that beats this pressure AND run it (D carries /
+          // passes / rims with the puck on the stick), not just an arrow.
+          try { m.playReveal(); } catch (e) { m.showMe(); }
           readsCompleted.add(info.rushIdx);
           setChoices(false);          // lock until Reset / Next read
           if (readsCompleted.size >= totalReads) {
@@ -1707,6 +1836,7 @@
           }
         }
         // wrong → choices stay live for a retry
+        if (!r.correct) { try { IceQ.Audio && IceQ.Audio.wrongThunk && IceQ.Audio.wrongThunk(); } catch (e) {} }
       });
     });
 
@@ -1730,7 +1860,15 @@
     btnWhy.addEventListener('click', () => openWhy('breakout-reads'));
     btnDone.addEventListener('click', () => onDone('breakout-reads'));
 
-    setMode('intro');
+    // Same demo-first-then-bypass rule as O-Zone Entry: the first visit just
+    // RUNS the walkthrough (offering it got it skipped every time), every
+    // visit after goes straight to the quiz.
+    if (IceQ.Progress.demoSeen('breakout-reads')) {
+      m.goToRead(0); setMode('test');
+    } else {
+      setMode('intro');
+      setTimeout(() => { if (!demoRunning) runDemo(); }, 550);
+    }
   }
 
   // ===== O-ZONE FACEOFF SCENARIO WIRING ===================================

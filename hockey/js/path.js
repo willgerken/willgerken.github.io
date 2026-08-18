@@ -494,36 +494,67 @@ window.IceQ.Path = (function () {
       return { skipped: true, completed: false };
     }
 
+    // Every phase is RACED against (a) the skip flag, polled every 80 ms, and
+    // (b) a hard ceiling. Reason (2026-08-18 audit): several modules resolve a
+    // phase only inside a Konva tween onFinish or a paused Konva.Animation, so
+    // anything that stalls rAF (hidden tab, locked phone) or a module bug that
+    // never resolves (offside's paused replay) left the kid on a frozen banner
+    // with Check disabled. The ceiling means the chrome ALWAYS comes back.
+    // Ported from ozone_entry.js, which grew this locally first.
+    var PHASE_CEILING_MS = (ctx.phaseCeilingMs | 0) || 9000;
+    function racePhase(p, ceilingMs) {
+      return new Promise(function (resolve) {
+        var done = false;
+        var poll = null, cap = null;
+        function finish(tag) {
+          if (done) return;
+          done = true;
+          if (poll) clearInterval(poll);
+          if (cap) clearTimeout(cap);
+          resolve(tag);
+        }
+        Promise.resolve(p).then(function () { finish('ok'); }, function (err) {
+          if (window.console) console.error('[showContrast] phase failed:', err);
+          finish('error');
+        });
+        poll = setInterval(function () { if (sig.skipped) finish('skipped'); }, 80);
+        cap = setTimeout(function () {
+          if (window.console) console.warn('[showContrast] phase hit the ' + ceilingMs + ' ms ceiling; moving on');
+          finish('timeout');
+        }, ceilingMs || PHASE_CEILING_MS);
+      });
+    }
+
     return (async function () {
       // Phase 1: brief intro label
-      await flashLabel(ctx.rink, { text: wrongLabel, color: '#CE202E', holdMs: 400, skipSignal: sig });
+      await racePhase(flashLabel(ctx.rink, { text: wrongLabel, color: '#CE202E', holdMs: 400, skipSignal: sig }), 3000);
       if (sig.skipped) return bail();
 
       // Phase 2: animate wrong play (kid's choice plays out, ends bad)
       if (typeof ctx.playWrong === 'function') {
-        await ctx.playWrong();
+        await racePhase(ctx.playWrong());
       }
       if (sig.skipped) return bail();
 
       // Phase 3: divider label
-      await flashLabel(ctx.rink, { text: middleLabel, color: '#E0C68A', holdMs: 700, fontSize: 32, skipSignal: sig });
+      await racePhase(flashLabel(ctx.rink, { text: middleLabel, color: '#E0C68A', holdMs: 700, fontSize: 32, skipSignal: sig }), 3000);
       if (sig.skipped) return bail();
 
       // Phase 4: reset positions for the right-way replay
       if (typeof ctx.resetPositions === 'function') {
-        await ctx.resetPositions();
+        await racePhase(ctx.resetPositions(), 3000);
       }
       await wait(200);
       if (sig.skipped) return bail();
 
       // Phase 5: animate right play (correct read, ends good)
       if (typeof ctx.playRight === 'function') {
-        await ctx.playRight();
+        await racePhase(ctx.playRight());
       }
       if (sig.skipped) return bail();
 
       // Phase 6: success label
-      await flashLabel(ctx.rink, { text: rightLabel, color: '#3DB46A', holdMs: 600, skipSignal: sig });
+      await racePhase(flashLabel(ctx.rink, { text: rightLabel, color: '#3DB46A', holdMs: 600, skipSignal: sig }), 3000);
 
       return { skipped: false, completed: true };
     })();

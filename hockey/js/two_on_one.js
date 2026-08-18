@@ -23,14 +23,14 @@ window.IceQ.TwoOnOne = (function () {
   const RUSHES = [
     {
       side: 'R',
-      label: 'right wing carrying, weak-side wing on his hip',
+      label: 'right wing carrying, weak-side wing driving the far lane',
       carrier: { x:  18, y: 18 },
       receiver: { x: -10, y: 22 },
       receiverPath: 'straight',  // first encounter — keep simple
     },
     {
       side: 'L',
-      label: 'left wing carrying, weak-side wing on his hip',
+      label: 'left wing carrying, weak-side wing driving the far lane',
       carrier: { x: -18, y: 18 },
       receiver: { x:  10, y: 22 },
       receiverPath: 'curl-back-door',  // shows the back-door threat
@@ -45,7 +45,12 @@ window.IceQ.TwoOnOne = (function () {
   ];
 
   const TOL_FT = 7;
-  const DEFENDER_START = { x: 0, y: 8 };
+  // The D starts GOAL-SIDE of the rush (y grows toward our net). At y=8 he
+  // was 10-18 ft above the attackers' entry, i.e. already beaten before the
+  // kid touched him; a AAA kid reads that instantly. Backing in at y=38 with
+  // the rush arriving at 18-26 is a real gap, and it is 11+ ft from every
+  // target, so standing still never passes.
+  const DEFENDER_START = { x: 0, y: 38 };
 
   function targetForRush(rush) {
     // Optimal D position: on the pass line, shaded toward the RECEIVER, a
@@ -502,7 +507,7 @@ window.IceQ.TwoOnOne = (function () {
         if (sig.skipped) { puckNode.visible(origPuckVisible); return; }
 
         // Phase c: GOAL.
-        try { IceQ.Audio.goalHorn(); } catch (e) {}
+        try { IceQ.Audio.goalAgainst ? IceQ.Audio.goalAgainst() : null; } catch (e) {}
         await IceQ.Path.animateGoalConsequence(rink, { kind: 'goal', duration: 1.2 });
 
         // Restore the original puck's visibility — resetPositions will move
