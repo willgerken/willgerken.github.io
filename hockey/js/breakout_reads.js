@@ -49,6 +49,7 @@ window.IceQ.BreakoutReads = (function () {
       outlets: [ { x: 37, y: 42, label: 'RW' }, { x: -37, y: 28, label: 'LW' } ],
       pressure: [ { x: 4, y: 30 } ],
       path: [ [6, 69], [16, 60], [22, 46], [22, 34] ],
+      carryLegs: 3,        // D-Wheel: the D skates the whole route with the puck
       cue: "No real pressure yet — you've got time and space behind the net.",
       teach: "No pressure yet, so you've got time — skate it out yourself, up the boards, and start the rush with speed.",
     },
@@ -65,7 +66,11 @@ window.IceQ.BreakoutReads = (function () {
       d:  { x: 26, y: 60 }, d2: { x: -12, y: 64 },
       outlets: [ { x: 37, y: 46, label: 'RW' } ],
       pressure: [ { x: 22, y: 53 }, { x: 8, y: 45 } ],
-      path: [ [26, 61], [10, 68], [-12, 65] ],
+      // Behind the net means BEHIND it: the cage sits x=-3..3, y=64..67.5, so
+      // the pass crosses the goal-line axis at y~71, two feet clear of the back
+      // bar. (An earlier version clipped the cage at y~66.)
+      path: [ [26, 61], [16, 70], [0, 71.5], [-12, 66] ],
+      carryLegs: 1,        // D takes one stride below the goal line, then moves it
       cue: "F1 is all over you. Your partner D is wide open across the ice.",
       teach: "F1 is right on you, but your partner D is wide open — move it across to him. The simplest play beats the pressure.",
     },
@@ -76,7 +81,8 @@ window.IceQ.BreakoutReads = (function () {
       d:  { x: 20, y: 60 }, d2: { x: -20, y: 60 },
       outlets: [ { x: 37, y: 44, label: 'RW' }, { x: -37, y: 44, label: 'LW' } ],
       pressure: [ { x: 13, y: 55 }, { x: 6, y: 47 } ],
-      path: [ [20, 60], [12, 66], [0, 70], [-14, 64], [-18, 58] ],
+      path: [ [20, 60], [12, 66], [0, 71], [-14, 65], [-18, 58] ],
+      carryLegs: 2,        // fake up, carry behind the net, then reverse it to the partner
       cue: "They're leaning hard to your strong side, expecting you to wheel up the boards.",
       teach: "They've cheated hard to your strong side expecting the wheel — so fake up, then reverse it behind the net the OTHER way.",
     },
@@ -94,6 +100,7 @@ window.IceQ.BreakoutReads = (function () {
       outlets: [ { x: -37, y: 44, label: 'LW' } ],
       pressure: [ { x: 19, y: 56 }, { x: 28, y: 50 } ],
       path: [ [24, 61], [14, 71], [0, 73], [-16, 71], [-34, 65], [-39, 52], [-37, 45] ],
+      carryLegs: 0,        // a rim: puck leaves the stick and rides the wall
       cue: "They've jammed your strong-side wall. The weak-side wing is open up the far boards.",
       teach: "They've jammed your strong-side wall — don't force it. Rim it hard around the boards to the open weak-side wing.",
     },
@@ -101,10 +108,22 @@ window.IceQ.BreakoutReads = (function () {
 
   function init(rinkContainer) {
     const rink = IceQ.Rink.create(rinkContainer);
-    const { toCanvasX, toCanvasY, scale, overlayLayer, gridLayer } = rink;
+    const { toCanvasX: cx0, toCanvasY, scale, overlayLayer, gridLayer } = rink;
+
+    // Variety without changing the lesson (Will 2026-08-18: "not repetitive,
+    // vary positions, keep the hockey-IQ logic"): each visit is either the
+    // authored side or its mirror image. Every read is left/right symmetric
+    // in meaning (strong side / weak side), so flipping x and swapping the
+    // RW/LW labels keeps the read identical while the picture changes.
+    const MIRROR = Math.random() < 0.5;
+    const toCanvasX = (ftX) => cx0(MIRROR ? -ftX : ftX);
+    const sideLabel = (l) => MIRROR ? (l === 'RW' ? 'LW' : l === 'LW' ? 'RW' : l) : l;
 
     let readIdx = 0;
     let sceneNodes = [];
+    let dNode = null;        // our puck-carrying D (drives the carry legs)
+    let puckNode = null;     // the static puck on his blade
+    let goalieNode = null;
     function currentRead() { return READS[readIdx]; }
 
     function clearScene() {
@@ -116,35 +135,55 @@ window.IceQ.BreakoutReads = (function () {
       overlayLayer.batchDraw();
     }
 
+    // color 'spartan' = us, breaking OUT, so we face up-ice ('y-'); the
+    // forecheckers attack our net and keep the authored +y facing. Stick side
+    // is chosen so the blade points to the middle of the ice, which is where
+    // a breakout D actually holds the puck (away from the wall/forechecker).
     function addPlayer(o, color, label, withPuck) {
+      const ours = color === 'spartan';
+      const xEff = MIRROR ? -o.x : o.x;
+      // Facing y-, the sprite is flipped, so the side that points to the middle
+      // swaps relative to the authored (+y) orientation.
+      const stickSide = ours ? (xEff >= 0 ? 'L' : 'R') : (xEff >= 0 ? 'R' : 'L');
       const node = IceQ.Player.create({
         x: toCanvasX(o.x), y: toCanvasY(o.y),
         scale: Math.max(0.55, scale * (label ? 0.08 : 0.07)),
         color, label: label || '',
-        stickSide: o.x >= 0 ? 'R' : 'L',
+        stickSide,
       });
+      if (ours) IceQ.Player.face(node, 'y-');
       gridLayer.add(node);
       sceneNodes.push(node);
       if (withPuck) {
-        const puck = new Konva.Circle({
-          x: toCanvasX(o.x - (o.x >= 0 ? 2 : -2)), y: toCanvasY(o.y - 3),
+        dNode = node;
+        const pp = IceQ.Player.puckPosFor(node);
+        puckNode = new Konva.Circle({
+          x: pp.x, y: pp.y,
           radius: Math.max(5, scale * 0.7),
           fill: '#0A0A0A', stroke: '#E0C68A', strokeWidth: 1.5,
           listening: false,
         });
-        gridLayer.add(puck);
-        sceneNodes.push(puck);
+        gridLayer.add(puckNode);
+        sceneNodes.push(puckNode);
       }
       return node;
     }
 
     function drawScene() {
       const r = currentRead();
+      // OUR goalie in OUR net: the zone cue (this is our end, we are getting
+      // out) and the reason nobody rims a puck through the crease.
+      goalieNode = IceQ.Player.create({
+        x: toCanvasX(0), y: toCanvasY(62.5),
+        scale: Math.max(0.55, scale * 0.07), color: 'spartan', kind: 'goalie',
+      });
+      IceQ.Player.face(goalieNode, 'y-');
+      gridLayer.add(goalieNode); sceneNodes.push(goalieNode);
       // Our D with the puck + partner D
       addPlayer(r.d, 'spartan', 'D', true);
       addPlayer(r.d2, 'spartan', 'D2', false);
       // Open outlet forwards (context)
-      (r.outlets || []).forEach(o => addPlayer(o, 'spartan', o.label, false));
+      (r.outlets || []).forEach(o => addPlayer(o, 'spartan', sideLabel(o.label), false));
       // Forecheck pressure (red) + a pressure arrow from the lead forechecker
       (r.pressure || []).forEach((p, i) => {
         addPlayer(p, 'opponent', '', false);
@@ -167,7 +206,12 @@ window.IceQ.BreakoutReads = (function () {
       clearOverlay();
       const r = currentRead();
       const pts = [];
-      r.path.forEach(([x, y]) => { pts.push(toCanvasX(x), toCanvasY(y)); });
+      r.path.forEach(([x, y], i) => {
+        // The route starts where the puck IS (on the D's blade), not at the
+        // D's centre, so the arrow leaves the stick instead of the sweater.
+        if (i === 0 && puckNode) { pts.push(puckNode.x(), puckNode.y()); return; }
+        pts.push(toCanvasX(x), toCanvasY(y));
+      });
       const arrow = new Konva.Arrow({
         points: pts,
         stroke: '#E0C68A', fill: '#E0C68A',
@@ -207,33 +251,62 @@ window.IceQ.BreakoutReads = (function () {
     // is driven by IceQ.Path.wait (setTimeout) — NOT tween onFinish — so the
     // demo loop never stalls even if rAF is throttled; the .to() tweens drive
     // the visual on a real device. Fire-and-forget, self-cleaning.
-    async function travelPuck(canvasPts) {
-      if (!canvasPts || canvasPts.length < 2 || typeof Konva === 'undefined') return;
-      const puck = new Konva.Circle({
-        x: canvasPts[0].x, y: canvasPts[0].y,
-        radius: Math.max(5, scale * 0.75),
-        fill: '#0A0A0A', stroke: '#FFD84D', strokeWidth: 2,
-        opacity: 0, listening: false,
-      });
-      overlayLayer.add(puck);
-      puck.to({ opacity: 1, duration: 0.15 });
-      await IceQ.Path.wait(170);
-      for (let i = 1; i < canvasPts.length; i++) {
-        puck.to({ x: canvasPts[i].x, y: canvasPts[i].y, duration: 0.34, easing: Konva.Easings.EaseInOut });
-        await IceQ.Path.wait(360);
+    // Speeds in ft/s (same constants O-Zone Entry settled on): a D carrying
+    // the puck, a pass, a rim off the wall. Per-leg time is distance / speed,
+    // clamped, so a 10 ft leg snaps and a 40 ft rim carries.
+    const CARRY_FTPS = 18, PASS_FTPS = 42, RIM_FTPS = 38;
+    const LEG_MIN = 0.18, LEG_MAX = 1.3;
+    const legSec = (aFt, bFt, ftps) => Math.max(LEG_MIN, Math.min(LEG_MAX, Math.hypot(bFt[0] - aFt[0], bFt[1] - aFt[1]) / ftps));
+
+    // Play the route: on the CARRY legs the D sprite skates the path and the
+    // puck rides his blade (Player.puckPosFor every frame); after that the
+    // puck leaves the stick and travels alone (pass or rim), only the last
+    // leg easing out (a rim does not stop dead at every vertex). The static
+    // puck is the one that moves, so there is never a second puck on the ice.
+    async function travelPuck(featPts, carryLegs, kind) {
+      if (!featPts || featPts.length < 2 || typeof Konva === 'undefined') return;
+      const d = dNode, puck = puckNode;
+      if (!d || !puck) return;
+      const dStart = d.position();
+      const canvas = featPts.map(([x, y]) => ({ x: toCanvasX(x), y: toCanvasY(y) }));
+      // Where the D's blade is relative to his centre, so a carry keeps the
+      // puck ON the blade and the route stays the puck's route.
+      const off = { x: IceQ.Player.puckPosFor(d).x - dStart.x, y: IceQ.Player.puckPosFor(d).y - dStart.y };
+      const nCarry = Math.max(0, Math.min(carryLegs | 0, featPts.length - 1));
+      // Carry legs: move D so his blade follows the path.
+      for (let i = 1; i <= nCarry; i++) {
+        const sec = legSec(featPts[i - 1], featPts[i], CARRY_FTPS);
+        await tweenPair(d, { x: canvas[i].x - off.x, y: canvas[i].y - off.y }, puck, canvas[i], sec, i === nCarry ? 'out' : 'linear');
       }
-      puck.to({ opacity: 0, duration: 0.3 });
-      await IceQ.Path.wait(320);
-      try { puck.destroy(); overlayLayer.batchDraw(); } catch (e) {}
+      // Pass / rim legs: puck alone.
+      for (let i = nCarry + 1; i < featPts.length; i++) {
+        const sec = legSec(featPts[i - 1], featPts[i], kind === 'rim' ? RIM_FTPS : PASS_FTPS);
+        await tweenPair(null, null, puck, canvas[i], sec, i === featPts.length - 1 ? 'out' : 'linear');
+      }
+      await IceQ.Path.wait(350);
+      // Back to the start picture (D and puck), so the quiz starts clean.
+      if (!d.isDestroyed() && !puck.isDestroyed()) {
+        d.position(dStart); puck.position(IceQ.Player.puckPosFor(d)); gridLayer.batchDraw();
+      }
+    }
+    // Tween a skater and/or the puck to a point; resolves on a timer (not a
+    // tween callback) so a throttled tab cannot stall the demo loop.
+    function tweenPair(skater, skaterTo, puck, puckTo, sec, ease) {
+      const easing = ease === 'out' ? Konva.Easings.EaseOut : Konva.Easings.Linear;
+      // A scene change (Next / Reset / route away) mid-play destroys these
+      // nodes; tweening a detached node makes Konva log an error, so check.
+      const alive = (n) => n && !n.isDestroyed() && n.getLayer();
+      if (skater && skaterTo && alive(skater)) skater.to({ x: skaterTo.x, y: skaterTo.y, duration: sec, easing });
+      if (puck && puckTo && alive(puck)) puck.to({ x: puckTo.x, y: puckTo.y, duration: sec, easing });
+      return IceQ.Path.wait(Math.round(sec * 1000) + 20);
     }
 
-    // Demo reveal: draw the gold route arrow + label, then send the puck down
-    // it. Returns a promise that resolves when the puck finishes.
+    // Demo reveal: draw the gold route arrow + label, then run the play.
+    // Returns a promise that resolves when the puck finishes.
     function playReveal() {
       showCorrect();
       const r = currentRead();
-      const canvasPts = r.path.map(([x, y]) => ({ x: toCanvasX(x), y: toCanvasY(y) }));
-      return travelPuck(canvasPts);
+      return travelPuck(r.path, r.carryLegs, r.answer === 'weak-rim' ? 'rim' : 'pass');
     }
 
     function choose(key) {

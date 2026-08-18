@@ -114,7 +114,7 @@ window.IceQ.OzoneEntry = (function () {
       role: 'dJoin',
       label: 'clean entry, middle lane filled — you are the WEAK-SIDE D',
       cue: "Clean entry. F2 already has the middle lane and your partner D is back. You're the weak-side D. Now what?",
-      teach: "Middle lane's filled and your partner has the back door covered — so you JOIN as the 4th attacker, late into the high slot. Four attackers beat two defenders.",
+      teach: "Middle lane's filled and your partner is staying home behind you — so you JOIN as the 4th attacker, late into the high slot. Four attackers beat two defenders. (This is a WITH-the-puck rule in THEIR end. Back in our end, D-Zone rules: one D leaves the middle, and only to the puck.)",
       context: [
         { x:  29, y: 24, color: 'spartan',  label: 'F1', stickSide: 'R' },  // carrier wide right
         { x:   2, y: 44, color: 'spartan',  label: 'F2', stickSide: 'R' },  // middle lane driver
@@ -196,6 +196,8 @@ window.IceQ.OzoneEntry = (function () {
 
     let you = null;
     let sceneNodes = [];
+    let f1Node = null;       // our puck carrier (context player labelled F1)
+    let puckNode = null;     // the static puck on his blade
     let showMeGlideActive = false;
 
     function cancelShowMeGlide() {
@@ -231,19 +233,26 @@ window.IceQ.OzoneEntry = (function () {
       sceneNodes.push(lbl);
     }
 
+    // The puck sits on F1's blade (Player.puckPosFor), drawn AFTER the players
+    // so it is never under a sweater. p.puck is only a fallback if a play has
+    // no F1. (Read 4's authored puck was 11.7 ft from anybody: an orphan.)
     function drawPuck() {
       const p = currentPlay();
-      const puck = new Konva.Circle({
-        x: toCanvasX(p.puck.x), y: toCanvasY(p.puck.y),
+      const pos = f1Node ? IceQ.Player.puckPosFor(f1Node) : { x: toCanvasX(p.puck.x), y: toCanvasY(p.puck.y) };
+      puckNode = new Konva.Circle({
+        x: pos.x, y: pos.y,
         radius: Math.max(5, scale * 0.7),
         fill: '#0A0A0A', stroke: '#E0C68A', strokeWidth: 1.5,
         listening: false,
       });
-      gridLayer.add(puck);
-      sceneNodes.push(puck);
+      gridLayer.add(puckNode);
+      sceneNodes.push(puckNode);
     }
 
+    // We are attacking DOWN the canvas (their net at y=64), so our sprites keep
+    // the authored +y facing; their skaters and goalie face us ('y-').
     function drawContext() {
+      f1Node = null;
       currentPlay().context.forEach(o => {
         const node = IceQ.Player.create({
           x: toCanvasX(o.x), y: toCanvasY(o.y),
@@ -251,6 +260,8 @@ window.IceQ.OzoneEntry = (function () {
           color: o.color, stickSide: o.stickSide || 'L',
           label: o.label || '', kind: o.kind || 'skater',
         });
+        if (o.color === 'opponent') IceQ.Player.face(node, 'y-');
+        if (o.label === 'F1') f1Node = node;
         gridLayer.add(node);
         sceneNodes.push(node);
       });
@@ -258,8 +269,8 @@ window.IceQ.OzoneEntry = (function () {
 
     function drawScene() {
       drawLanes();
-      drawPuck();
       drawContext();
+      drawPuck();
     }
 
     function clearScene() {
@@ -430,27 +441,45 @@ window.IceQ.OzoneEntry = (function () {
 
     // Send a puck down a feet-polyline. Timing driven by IceQ.Path.wait (NOT
     // tween onFinish) so a throttled rAF can't stall the demo loop.
+    // The STATIC puck is the one that travels (no second puck on the ice), it
+    // starts on F1's blade, F1 skates the first (carry) leg with it on his
+    // stick, then it leaves the stick for the pass/shot legs. Only the final
+    // leg eases out; a pass does not stop dead at every vertex.
     async function travelPuck(feetPts, opts) {
       opts = opts || {};
       if (!feetPts || feetPts.length < 2 || typeof Konva === 'undefined') return;
+      const puck = puckNode;
+      if (!puck) return;
       const pts = feetPts.map(([x, y]) => ({ x: toCanvasX(x), y: toCanvasY(y) }));
-      const puck = new Konva.Circle({
-        x: pts[0].x, y: pts[0].y,
-        radius: Math.max(5, scale * 0.75),
-        fill: '#0A0A0A', stroke: opts.stroke || '#FFD84D', strokeWidth: 2,
-        opacity: 0, listening: false,
-      });
-      overlayLayer.add(puck);
-      puck.to({ opacity: 1, duration: 0.1 });
-      await IceQ.Path.wait(105);
+      const f1 = f1Node;
+      const f1Start = f1 ? f1.position() : null;
+      const puckStart = puck.position();
+      const off = f1 ? { x: puckStart.x - f1Start.x, y: puckStart.y - f1Start.y } : null;
+      if (opts.stroke) puck.stroke(opts.stroke);
       for (let i = 1; i < pts.length; i++) {
-        const d = legDuration(feetPts[i - 1], feetPts[i], puckLegRate(feetPts, i));
-        puck.to({ x: pts[i].x, y: pts[i].y, duration: d, easing: Konva.Easings.EaseInOut });
+        const rate = puckLegRate(feetPts, i);
+        const d = legDuration(feetPts[i - 1], feetPts[i], rate);
+        const last = i === pts.length - 1;
+        const easing = last ? Konva.Easings.EaseOut : Konva.Easings.Linear;
+        // Scene may have been rebuilt mid-play (Next / Reset / route away):
+        // never tween a detached node (Konva logs an error).
+        if (puck.isDestroyed() || !puck.getLayer()) return;
+        if (i === 1 && f1 && rate === CARRY_FTPS && !f1.isDestroyed()) {
+          // Carry: F1 moves so his blade follows the route; puck rides along.
+          f1.to({ x: pts[i].x - off.x, y: pts[i].y - off.y, duration: d, easing });
+        }
+        puck.to({ x: pts[i].x, y: pts[i].y, duration: d, easing });
         await IceQ.Path.wait(d * 1000 + 15);
       }
-      puck.to({ opacity: 0, duration: 0.18 });
-      await IceQ.Path.wait(190);
-      try { puck.destroy(); overlayLayer.batchDraw(); } catch (e) {}
+      await IceQ.Path.wait(260);
+      // Back to the start picture so the quiz starts clean.
+      try {
+        if (puck.isDestroyed()) return;
+        puck.stroke('#E0C68A');
+        if (f1 && f1Start && !f1.isDestroyed()) f1.position(f1Start);
+        puck.position(f1 ? IceQ.Player.puckPosFor(f1) : puckStart);
+        gridLayer.batchDraw();
+      } catch (e) {}
     }
 
     // Glide YOU along the full route (not just a straight line to the target).
@@ -619,7 +648,7 @@ window.IceQ.OzoneEntry = (function () {
         case 'f2drive':
           return "That's the middle lane drive. You took the lane F1 wasn't in and drove it to the net, so their weak-side D had to turn and skate with you instead of watching the puck. That's what opens the seam, and it puts you right there for the rebound.";
         case 'dJoin':
-          return "You joined as the 4th attacker. Middle lane was filled and your partner had the back door, so late into the high slot is free offense. Two defenders can't cover four attackers.";
+          return "You joined as the 4th attacker. Middle lane was filled and your partner stayed home behind you, so late into the high slot is free offense. Two defenders can't cover four attackers.";
         case 'dStay':
           // Staying is the read. Sliding over to the sneaking winger is the
           // better version of it, so it gets named — but not staying put is
@@ -638,7 +667,7 @@ window.IceQ.OzoneEntry = (function () {
         case 'mld-left':
           return "You curled and hovered at the top of the circle. That's the habit to kill: a driving man forces their D to turn and skate; a hovering man is easy to cover. Drive it to the net.";
         case 'd-join':
-          return "You stayed at the blue line. Middle lane was already filled and your partner had the back door, so nobody was joining and the rush died 3-on-2. This is the one where you go.";
+          return "You stayed at the blue line. Middle lane was already filled and your partner was staying home, so nobody was joining and the rush died 3-on-2. This is the one where you go.";
         case 'd-stay':
           return "You jumped into the rush. Your partner already pinched, so you were the last man back with their winger sneaking up the ice early. Turnover and it's a breakaway. Read it before you go.";
         default:

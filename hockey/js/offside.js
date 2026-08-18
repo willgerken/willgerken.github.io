@@ -142,7 +142,7 @@ window.IceQ.Offside = (function () {
     },
     {
       key: 'tag-up-attempt',
-      label: 'attacker drifts in early — does NOT tag back',
+      label: 'attacker drifts in early — does NOT tag up',
       level: 'basic',
       // For now treat as OFFSIDE: receiver sits in the zone and never
       // tags up. v0.12 will properly model tag-up (animate back to blue
@@ -273,11 +273,19 @@ window.IceQ.Offside = (function () {
 
   // ----- Rink builder ----------------------------------------------------
   function buildHorizontalRink(container) {
-    const cw = container.clientWidth;
+    // Same first-layout hazard rink.js fixed on 2026-08-05: clientWidth can be
+    // 0 when a scenario mounts before layout settles; a 0-wide rounded rect
+    // hands Konva a negative arc radius and the whole init throws (dead
+    // buttons). Fall back down the chain and clamp the corner radius.
+    const cw = container.clientWidth
+      || container.offsetWidth
+      || (container.parentElement && container.parentElement.clientWidth)
+      || 360;
     // Aim for ~800x340 but scale to container. Aspect 200ft × 85ft.
     const width = cw;
     const height = Math.round(width * RINK_WIDTH / RINK_LENGTH);
     const scale = width / RINK_LENGTH;
+    const cornerR = Math.max(0, Math.min(12, Math.floor(Math.min(width, height) / 2) - 1));
 
     const stage = new Konva.Stage({ container, width, height, listening: true });
     const iceLayer = new Konva.Layer({ listening: false });
@@ -292,7 +300,7 @@ window.IceQ.Offside = (function () {
     iceLayer.add(new Konva.Rect({
       x: 0, y: 0, width, height,
       fill: '#F0F7FC',
-      cornerRadius: 12,
+      cornerRadius: cornerR,
     }));
 
     // --- zone tints ---
@@ -527,7 +535,7 @@ window.IceQ.Offside = (function () {
     iceLayer.add(new Konva.Rect({
       x: 1, y: 1, width: width - 2, height: height - 2,
       stroke: '#1A1F2E', strokeWidth: 2,
-      cornerRadius: 12, fill: null,
+      cornerRadius: cornerR, fill: null,
     }));
 
     iceLayer.draw();
@@ -596,7 +604,12 @@ window.IceQ.Offside = (function () {
   // as they reach the zone, mimicking how a real player coasts in.
   // Konva's Easings.EaseOut signature is (t, b, c, d) returning eased value.
   function easeOutT(rawT) {
-    return Konva.Easings.EaseOut(rawT, 0, 1, 1);
+    // Was Konva EaseOut (quadratic): 2x average speed off the line, then a
+    // dead stop, which read as "blast off, then coast to a freeze" and put a
+    // 10U carrier at ~50 mph for the first half-second. Now a mild taper:
+    // 1.15x at the start, 0.85x at the end, monotonic, evaluation uses the
+    // same curve so what the kid sees is what gets judged.
+    return rawT * (1.15 - 0.15 * rawT);
   }
 
   // ----- Init ------------------------------------------------------------
@@ -658,6 +671,13 @@ window.IceQ.Offside = (function () {
     // passes, goal flashes) so stopContrast() can cancel them cleanly when
     // the kid taps Skip / Reset / Next.
     let contrastHandles = [];
+    // Pucks left lying on the ice by a consequence (a shot stopped on the
+    // goalie's pad). Cleared whenever the scene resets.
+    let loosePucks = [];
+    function clearLoosePucks() {
+      loosePucks.forEach(function (n) { try { n.destroy(); } catch (e) {} });
+      loosePucks = [];
+    }
     // replayAnimation is the specific Konva.Animation driving a replay rush
     // (separate from `animation`, which is the original live rush). Tracked
     // separately so we can stop it without confusing the live-rush state.
@@ -671,12 +691,78 @@ window.IceQ.Offside = (function () {
 
     function currentPlay() { return PLAYS[playIdx]; }
 
+    // How far AHEAD of the carrier's centre the puck rides, in feet, taken
+    // from the same blade geometry that draws it, so the judgment ("did the
+    // skate cross before the PUCK") matches the picture at every screen size.
+    function puckLeadFt() {
+      try {
+        if (carrierNode) return IceQ.Player.bladeTipPx(carrierNode).y / scale;
+      } catch (e) { /* fall through */ }
+      return 3;
+    }
+    // Canvas position for the puck when the carrier is at feet (cFt).
+    function puckCanvasAt(cFt) {
+      const centre = { x: toCanvasX(cFt.x), y: toCanvasY(cFt.y) };
+      if (carrierNode) return IceQ.Player.puckPosFor(carrierNode, centre);
+      return { x: toCanvasX(cFt.x + 3), y: toCanvasY(cFt.y + 1.5) };
+    }
+
     // ---- scene setup ---------------------------------------------------
+    let goalieNode = null;
+    let dNodes = [];
+    // D pair keeps a gap AHEAD of the carrier (toward our net), splits the
+    // lanes, and never backs past the top of the circles.
+    function positionDefenders(cFt) {
+      if (!dNodes.length) return;
+      // Both D back in ahead of the puck and finish protecting the house
+      // (net-front lanes either side of the slot). Fixed lanes = never a
+      // side-flip mid-rush, and the attackers finish 15-30 ft out, so the D
+      // are past them, not under them, at the freeze frame.
+      const GAP = 14, STOP_X = NET_X - 8;
+      const mid = RINK_WIDTH / 2;
+      const dx = Math.min(cFt.x + GAP, STOP_X);
+      // Wide (±16) through the neutral zone so a receiver cutting to the
+      // middle skates BETWEEN them, converging to net-front lanes (±7) as
+      // they get deep. Real D do exactly this: gap wide, collapse late.
+      const from = ATK_BLUE_X - 20, to = STOP_X;
+      const prog = Math.max(0, Math.min(1, (dx - from) / (to - from)));
+      const lane = 16 - 9 * prog;
+      dNodes[0].position({ x: toCanvasX(dx), y: toCanvasY(mid - lane) });
+      dNodes[1].position({ x: toCanvasX(dx - 1.5), y: toCanvasY(mid + lane) });
+    }
     function drawScene() {
-      [carrierNode, receiverNode, receiver2Node, puckNode].forEach(n => n && n.destroy());
+      [carrierNode, receiverNode, receiver2Node, puckNode, goalieNode].forEach(n => n && n.destroy());
       receiver2Node = null;
       const p = currentPlay();
-      const tokenScale = Math.max(0.55, scale * 0.07);
+      // 0.55 made a skater ~13 ft wide on a 200 ft rink (and ~19 ft on a
+      // phone); 0.45 keeps skates readable and stops bodies stacking.
+      const tokenScale = Math.max(0.45, scale * 0.06);
+
+      // Our goalie in the crease. A rush toward an EMPTY net is one of the
+      // "wonky physics" things kids flag, and the goalie is also the zone
+      // cue: our colours in the net at the right end = they are attacking us.
+      goalieNode = IceQ.Player.create({
+        x: toCanvasX(NET_X - 1.5), y: toCanvasY(RINK_WIDTH / 2),
+        scale: tokenScale, color: 'spartan', kind: 'goalie',
+      });
+      IceQ.Player.face(goalieNode, 'x-');
+      gridLayer.add(goalieNode);
+
+      // Our D pair backing in ahead of the rush (skater-back = body to the
+      // play, skates toward own net). Purely visual: a rush into an EMPTY
+      // zone is not hockey, and two of our sweaters retreating with the play
+      // is also the clearest cue that THEY are attacking US.
+      dNodes.forEach(n => n && n.destroy());
+      dNodes = [-1, 1].map(side => {
+        const g = IceQ.Player.create({
+          x: 0, y: 0, scale: tokenScale, color: 'spartan', kind: 'skater-back',
+          label: 'D', stickSide: side < 0 ? 'L' : 'R',
+        });
+        IceQ.Player.face(g, 'x+');
+        gridLayer.add(g);
+        return g;
+      });
+      positionDefenders({ x: p.carrier.startX, y: p.carrier.startY });
 
       carrierNode = IceQ.Player.create({
         x: toCanvasX(p.carrier.startX), y: toCanvasY(p.carrier.startY),
@@ -703,13 +789,18 @@ window.IceQ.Offside = (function () {
         });
       }
 
-      // Puck: separate Konva.Circle that we re-position EACH FRAME to sit
-      // just in front of the carrier (offset toward direction of play).
-      // This keeps the visual "puck on stick" without having to bake it
-      // into the Player module.
+      // This rink runs +x (left to right). Sprites are authored facing +y, so
+      // without this every skater crab-walked sideways with his stick
+      // pointing at the side boards (2026-08-18 audit, kids noticed).
+      [carrierNode, receiverNode, receiver2Node].forEach(n => n && IceQ.Player.face(n, 'x+'));
+
+      // Puck: separate Konva.Circle re-positioned EACH FRAME onto the
+      // carrier's blade via Player.puckPosFor (sprite geometry + rotation),
+      // instead of a fixed +3 ft that landed inside the sweater on phones
+      // and on the wrong side of the stick on 8 of 10 plays.
+      const puck0 = IceQ.Player.puckPosFor(carrierNode);
       puckNode = new Konva.Circle({
-        x: toCanvasX(p.carrier.startX + 3),  // 3 ft ahead = "on stick"
-        y: toCanvasY(p.carrier.startY + 1.5),
+        x: puck0.x, y: puck0.y,
         radius: Math.max(4, scale * 0.55),
         fill: '#0A0A0A',
         stroke: '#E0C68A', strokeWidth: 1.5,
@@ -802,7 +893,11 @@ window.IceQ.Offside = (function () {
 
     // ---- run the rush --------------------------------------------------
     function startPlay(onComplete) {
-      if (isPlaying || playCompleted) return;
+      if (isPlaying) return;
+      // Play always means "run this rush". A finished play (natural end OR a
+      // whistle) used to make this a silent no-op while main.js had already
+      // greyed the button: Play looked dead after any completed play.
+      if (playCompleted || result || whistled) reset();
       const p = currentPlay();
       isPlaying = true;
       playCompleted = false;
@@ -817,15 +912,13 @@ window.IceQ.Offside = (function () {
           const cEnd = carrierPosFt(p, 1);
           const rEnd = receiverPosFt(p, 1);
           carrierNode.position({ x: toCanvasX(cEnd.x), y: toCanvasY(cEnd.y) });
+          positionDefenders(cEnd);
           receiverNode.position({ x: toCanvasX(rEnd.x), y: toCanvasY(rEnd.y) });
           if (receiver2Node && p.receiver2) {
             const r2End = receiverObjPosFt(p, p.receiver2, 1);
             receiver2Node.position({ x: toCanvasX(r2End.x), y: toCanvasY(r2End.y) });
           }
-          puckNode.position({
-            x: toCanvasX(cEnd.x + 3),
-            y: toCanvasY(cEnd.y + 1.5),
-          });
+          puckNode.position(puckCanvasAt(cEnd));
           gridLayer.batchDraw();
           animation.stop();
           isPlaying = false;
@@ -839,6 +932,7 @@ window.IceQ.Offside = (function () {
         // Carrier (linear-in-feet, eased in time).
         const cFt = carrierPosFt(p, t);
         carrierNode.position({ x: toCanvasX(cFt.x), y: toCanvasY(cFt.y) });
+        positionDefenders(cFt);
 
         // Receiver1 (path-type-aware).
         const rFt = receiverPosFt(p, t);
@@ -852,10 +946,7 @@ window.IceQ.Offside = (function () {
 
         // Puck rides slightly forward of carrier — shifted in +x direction
         // (direction of play) so it visually trails on the stick blade.
-        puckNode.position({
-          x: toCanvasX(cFt.x + 3),
-          y: toCanvasY(cFt.y + 1.5),
-        });
+        puckNode.position(puckCanvasAt(cFt));
       }, gridLayer);
       animation.start();
     }
@@ -882,7 +973,7 @@ window.IceQ.Offside = (function () {
 
       const carrierFt = carrierPosFt(p, t);
       const receiverFt = receiverPosFt(p, t);
-      const puckX = carrierFt.x + 3;       // matches per-frame puck offset
+      const puckX = carrierFt.x + puckLeadFt();  // matches the drawn puck
 
       const receiverWasInZoneBeforePuck =
         receiverEverCrossedFirst(p, rawElapsed);
@@ -921,7 +1012,7 @@ window.IceQ.Offside = (function () {
         const t = easeOutT(Math.min(1, raw));
         const c = carrierPosFt(play, t);
         const r = receiverPosFt(play, t);
-        const puckX = c.x + 3;
+        const puckX = c.x + puckLeadFt();
         if (r1At == null && r.x >= ATK_BLUE_X) r1At = raw;
         if (hasR2 && r2At == null) {
           const r2 = receiverObjPosFt(play, play.receiver2, t);
@@ -959,7 +1050,7 @@ window.IceQ.Offside = (function () {
         const t = easeOutT(Math.min(1, raw));
         const c = carrierPosFt(play, t);
         const r = receiverPosFt(play, t);
-        const puckX = c.x + 3;
+        const puckX = c.x + puckLeadFt();
         if (r1At == null && r.x >= ATK_BLUE_X) r1At = raw;
         if (hasR2 && r2At == null) {
           const r2 = receiverObjPosFt(play, play.receiver2, t);
@@ -1009,7 +1100,7 @@ window.IceQ.Offside = (function () {
           kind: 'too-early',
           offside: true, whistled: true, played: true,
           verdict: 'TOO EARLY',
-          message: 'Too early — wait for the SKATE to actually be over the blue line.',
+          message: 'Too early — wait until BOTH skates are over the blue line.',
           offendingRole: p.offendingRole || 'receiver',
           offendingHint: p.offendingHint || null,
         };
@@ -1038,7 +1129,7 @@ window.IceQ.Offside = (function () {
           kind: 'missed',
           offside: true, whistled: false, played: true,
           verdict: 'MISSED',
-          message: 'You missed it — watch the SKATES, not the body.',
+          message: 'You missed it — watch the SKATES, not the body. Both skates over before the puck = offside.',
           offendingRole: off ? off.role : (p.offendingRole || 'receiver'),
           offendingHint: p.offendingHint || null,
         };
@@ -1122,16 +1213,14 @@ window.IceQ.Offside = (function () {
           const cFt = carrierPosFt(p2, t);
           const rFt = receiverPosFt(p2, t);
           carrierNode.position({ x: toCanvasX(cFt.x), y: toCanvasY(cFt.y) });
+          positionDefenders(cFt);
           receiverNode.position({ x: toCanvasX(rFt.x), y: toCanvasY(rFt.y) });
           let r2Ft = null;
           if (receiver2Node && p2.receiver2) {
             r2Ft = receiverObjPosFt(p2, p2.receiver2, t);
             receiver2Node.position({ x: toCanvasX(r2Ft.x), y: toCanvasY(r2Ft.y) });
           }
-          puckNode.position({
-            x: toCanvasX(cFt.x + 3),
-            y: toCanvasY(cFt.y + 1.5),
-          });
+          puckNode.position(puckCanvasAt(cFt));
           gridLayer.batchDraw();
           animation.stop();
           isPlaying = false;
@@ -1142,15 +1231,13 @@ window.IceQ.Offside = (function () {
         const cFt = carrierPosFt(p2, t);
         const rFt = receiverPosFt(p2, t);
         carrierNode.position({ x: toCanvasX(cFt.x), y: toCanvasY(cFt.y) });
+        positionDefenders(cFt);
         receiverNode.position({ x: toCanvasX(rFt.x), y: toCanvasY(rFt.y) });
         if (receiver2Node && p2.receiver2) {
           const r2Ft = receiverObjPosFt(p2, p2.receiver2, t);
           receiver2Node.position({ x: toCanvasX(r2Ft.x), y: toCanvasY(r2Ft.y) });
         }
-        puckNode.position({
-          x: toCanvasX(cFt.x + 3),
-          y: toCanvasY(cFt.y + 1.5),
-        });
+        puckNode.position(puckCanvasAt(cFt));
       }, gridLayer);
       animation.start();
     }
@@ -1180,7 +1267,7 @@ window.IceQ.Offside = (function () {
 
       // Caption near the ring.
       const caption = p.offside
-        ? "SKATE over the line BEFORE the puck — offside."
+        ? "BOTH SKATES over the line BEFORE the puck — offside."
         : "PUCK crossed first — clean entry.";
       const cap = new Konva.Text({
         x: toCanvasX(ATK_BLUE_X) - 80, y: toCanvasY(78),
@@ -1223,16 +1310,14 @@ window.IceQ.Offside = (function () {
       if (carrierNode) carrierNode.position({
         x: toCanvasX(play.carrier.startX), y: toCanvasY(play.carrier.startY),
       });
+      positionDefenders({ x: play.carrier.startX, y: play.carrier.startY });
       if (receiverNode) receiverNode.position({
         x: toCanvasX(play.receiver.startX), y: toCanvasY(play.receiver.startY),
       });
       if (receiver2Node && play.receiver2) receiver2Node.position({
         x: toCanvasX(play.receiver2.startX), y: toCanvasY(play.receiver2.startY),
       });
-      if (puckNode) puckNode.position({
-        x: toCanvasX(play.carrier.startX + 3),
-        y: toCanvasY(play.carrier.startY + 1.5),
-      });
+      if (puckNode) puckNode.position(puckCanvasAt({ x: play.carrier.startX, y: play.carrier.startY }));
       gridLayer.batchDraw();
 
       let resolveFn;
@@ -1249,16 +1334,14 @@ window.IceQ.Offside = (function () {
         const cFt = carrierPosFt(play, t);
         const rFt = receiverPosFt(play, t);
         carrierNode.position({ x: toCanvasX(cFt.x), y: toCanvasY(cFt.y) });
+        positionDefenders(cFt);
         receiverNode.position({ x: toCanvasX(rFt.x), y: toCanvasY(rFt.y) });
         let r2Ft = null;
         if (receiver2Node && play.receiver2) {
           r2Ft = receiverObjPosFt(play, play.receiver2, t);
           receiver2Node.position({ x: toCanvasX(r2Ft.x), y: toCanvasY(r2Ft.y) });
         }
-        puckNode.position({
-          x: toCanvasX(cFt.x + 3),
-          y: toCanvasY(cFt.y + 1.5),
-        });
+        puckNode.position(puckCanvasAt(cFt));
         return { t: t, cFt: cFt, rFt: rFt, r2Ft: r2Ft };
       }
 
@@ -1288,8 +1371,17 @@ window.IceQ.Offside = (function () {
               });
             } catch (e) {}
           }
-          // Leave the animation running so we keep honoring skipSignal, but
-          // don't advance the positions. Resolve when skip / stop comes.
+          // Hold the freeze-frame so the kid can read the overlay, then
+          // resolve. Before 2026-08-18 this branch never resolved at all, so
+          // every wrong answer parked the game on this frame until the kid
+          // found "Skip ahead (no credit)". Skip / stop still cut it short.
+          const holdMs = (opts.holdMs != null) ? opts.holdMs : 1100;
+          setTimeout(function () {
+            if (stopped) return;
+            stopped = true;
+            try { replayAnimation.stop(); } catch (e) {}
+            resolveFn({ paused: true, completed: true });
+          }, holdMs);
           return;
         }
         // Past end? Settle at end and resolve.
@@ -1335,7 +1427,7 @@ window.IceQ.Offside = (function () {
         const t = easeOutT(Math.min(1, raw));
         const c = carrierPosFt(play, t);
         const r = receiverPosFt(play, t);
-        const puckX = c.x + 3;
+        const puckX = c.x + puckLeadFt();
         if (r1Cross == null && r.x >= ATK_BLUE_X) r1Cross = raw;
         if (hasR2 && r2Cross == null) {
           const r2 = receiverObjPosFt(play, play.receiver2, t);
@@ -1426,67 +1518,70 @@ window.IceQ.Offside = (function () {
         // the carrier drives to the net. We don't bother re-running the
         // rush animation itself (the kid just watched it) — we just tween
         // carrier + puck from their final rush position to the net.
+        // The carrier CARRIES the puck to the top of the crease: one
+        // Konva.Animation moves the sprite and re-seats the puck on the blade
+        // every frame (before 2026-08-18 the sprite and a puck copy ran on
+        // two different easings, so the puck visibly left the stick and
+        // parked on open ice by the goal mouth).
         const cEnd = carrierPosFt(p, 1);
-        const netFt = { x: NET_X - 4, y: RINK_WIDTH / 2 };    // just shy of the goal mouth
-        const fromCanvas = {
-          x: toCanvasX(cEnd.x + 3),
-          y: toCanvasY(cEnd.y + 1.5),
-        };
-        const toCanvas = {
-          x: toCanvasX(netFt.x),
-          y: toCanvasY(netFt.y),
-        };
-        // Tween the carrier alongside (so the kid sees the attacker drive)
-        let carrierResolve;
-        const carrierPromise = new Promise(function (res) { carrierResolve = res; });
-        carrierNode.to({
-          x: toCanvasX(netFt.x - 4),
-          y: toCanvasY(netFt.y + 2),
-          duration: 0.6,
-          easing: Konva.Easings.EaseIn,
-          onFinish: carrierResolve,
-        });
-        trackHandle({
-          stop: function () {
-            try { carrierNode.getTween && carrierNode.getTween() && carrierNode.getTween().pause(); } catch (e) {}
-            carrierResolve();
-          },
-        });
-        // Hide the static puck; animate a puck-on-stick copy along the path.
-        const origPuckVisible = puckNode.visible();
+        const driveEndFt = { x: NET_X - 9, y: RINK_WIDTH / 2 + 2 };
+        const driveHandle = trackHandle(carryTo(cEnd, driveEndFt, 0.7, sig));
+        await driveHandle.promise;
+        if (sig.skipped) return;
+
+        // Step b: SHOT from the blade. It hits the goalie's pad and stops
+        // there (persist), no goal, no horn. Will 2026-08-18: celebrating a
+        // goal after a missed offside is the kind of weirdness that turns
+        // off real hockey people. The point is that the whole chance should
+        // never have happened; the goalie bailing the linesman out makes
+        // that read cleanly.
+        const shotFrom = puckCanvasAt(driveEndFt);
+        const padFt = { x: NET_X - 3.2, y: RINK_WIDTH / 2 - 1.2 };  // goalie's pad, in front of the line
         puckNode.visible(false);
-        const passHandle = trackHandle(IceQ.Path.animatePuckPass(
-          gridLayer, fromCanvas, toCanvas,
-          { duration: 0.6 }
-        ));
-        await Promise.all([carrierPromise, passHandle.promise]);
-        if (sig.skipped) { puckNode.visible(origPuckVisible); return; }
-
-        // Step b: shot into the net. Short fast pass from the carrier's
-        // stick to a point just behind the goal line.
-        const goalFt = { x: GOAL_LINE_X + 1, y: RINK_WIDTH / 2 };
         const shotHandle = trackHandle(IceQ.Path.animatePuckPass(
-          gridLayer, toCanvas,
-          { x: toCanvasX(goalFt.x), y: toCanvasY(goalFt.y) },
-          { duration: 0.25 }
+          gridLayer, shotFrom,
+          { x: toCanvasX(padFt.x), y: toCanvasY(padFt.y) },
+          { duration: 0.22, persist: true }
         ));
+        // Remember the parked puck so resetPositions / reset can clear it
+        // (otherwise a second puck sits in the crease through the replay).
+        loosePucks.push(shotHandle.node);
         await shotHandle.promise;
-        if (sig.skipped) { puckNode.visible(origPuckVisible); return; }
+        if (sig.skipped) return;
 
-        // Step c: ILLEGAL goal flash. The kid is the LINESMAN, not on a
-        // team — there's no "goal against" here. The puck went in only
-        // because the linesman missed the offside, so the framing is
-        // "GOAL ALLOWED — MISSED CALL" (an illegal goal that stands).
-        // No horn — the horn celebrates a legitimate goal, and this one
-        // shouldn't have counted. Silence is the right reaction. The
-        // savePling for the CORRECT call comes in playRightMissedCall.
+        // Step c: the consequence, framed for the LINESMAN: the whistle was
+        // yours and you left it in your pocket, so they got a free chance.
         await IceQ.Path.animateGoalConsequence(rink, {
-          kind: 'goal',
-          message: 'GOAL ALLOWED \u2014 MISSED CALL',
+          kind: 'saved',
+          message: 'FREE CHANCE OFF AN OFFSIDE PLAY',
           duration: 1.2,
         });
-        puckNode.visible(origPuckVisible);
       })();
+    }
+
+    // Move the carrier from feet A to feet B over `sec` seconds with the
+    // puck riding his blade the whole way. Returns { promise, stop }.
+    function carryTo(fromFt, toFt, sec, sig) {
+      let resolveFn; const promise = new Promise(function (r) { resolveFn = r; });
+      let stopped = false;
+      const t0 = performance.now();
+      const anim = new Konva.Animation(function () {
+        if (stopped) return false;
+        if (sig && sig.skipped) { stopped = true; anim.stop(); resolveFn({ skipped: true }); return false; }
+        let u = (performance.now() - t0) / (sec * 1000);
+        if (u >= 1) u = 1;
+        const e = u < 0.5 ? 2 * u * u : 1 - Math.pow(-2 * u + 2, 2) / 2;   // easeInOutQuad
+        const cFt = { x: fromFt.x + (toFt.x - fromFt.x) * e, y: fromFt.y + (toFt.y - fromFt.y) * e };
+        if (carrierNode) carrierNode.position({ x: toCanvasX(cFt.x), y: toCanvasY(cFt.y) });
+        positionDefenders(cFt);
+        if (puckNode) puckNode.position(puckCanvasAt(cFt));
+        if (u >= 1) { stopped = true; anim.stop(); resolveFn({ completed: true }); return false; }
+      }, gridLayer);
+      anim.start();
+      return {
+        promise: promise,
+        stop: function () { if (stopped) return; stopped = true; try { anim.stop(); } catch (e) {} resolveFn({ stopped: true }); },
+      };
     }
 
     // Play was LEGAL, kid whistled early. Linesman waves it off — no goal,
@@ -1634,6 +1729,7 @@ window.IceQ.Offside = (function () {
             if (sig.skipped) return;
             overlayLayer.destroyChildren();
             overlayLayer.batchDraw();
+            clearLoosePucks();
             // Re-position (not re-create) the existing nodes. replayRush
             // does this internally but we also want the in-between
             // "BUT INSTEAD..." frame to show players at the start, not
@@ -1643,6 +1739,7 @@ window.IceQ.Offside = (function () {
               x: toCanvasX(cp.carrier.startX),
               y: toCanvasY(cp.carrier.startY),
             });
+            positionDefenders({ x: cp.carrier.startX, y: cp.carrier.startY });
             if (receiverNode) receiverNode.position({
               x: toCanvasX(cp.receiver.startX),
               y: toCanvasY(cp.receiver.startY),
@@ -1652,10 +1749,7 @@ window.IceQ.Offside = (function () {
               y: toCanvasY(cp.receiver2.startY),
             });
             if (puckNode) {
-              puckNode.position({
-                x: toCanvasX(cp.carrier.startX + 3),
-                y: toCanvasY(cp.carrier.startY + 1.5),
-              });
+              puckNode.position(puckCanvasAt({ x: cp.carrier.startX, y: cp.carrier.startY }));
               puckNode.visible(true);
             }
             gridLayer.batchDraw();
@@ -1691,6 +1785,7 @@ window.IceQ.Offside = (function () {
     function reset() {
       if (animation) { animation.stop(); animation = null; }
       stopAllContrast();
+      clearLoosePucks();
       isPlaying = false;
       playCompleted = false;
       whistled = false;
@@ -1791,13 +1886,13 @@ window.IceQ.Offside = (function () {
 
   function phrasedFeedback(res) {
     if (!res || res.kind === 'not-played') {
-      return 'Hit Play. Watch the BLUE LINE — tap OFFSIDE the moment a skate crosses it BEFORE the puck. If the puck crosses first, DON\'T tap.';
+      return 'Hit Play. Watch the BLUE LINE — tap OFFSIDE the moment a player has BOTH skates over it BEFORE the puck. If the puck crosses first, DON\'T tap.';
     }
     if (res.kind === 'good-call') {
       if (res.offendingHint) {
         return 'Good eye — ' + offenderPhrase(res, 'the') + ' was over the blue line before the puck. That\'s offside.';
       }
-      return 'Good eye — the skate was over the blue line before the puck. That\'s offside.';
+      return 'Good eye — both skates were over the blue line before the puck. That\'s offside.';
     }
     if (res.kind === 'no-call') {
       return 'Clean entry — patient read. Linesman skill.';
@@ -1806,13 +1901,13 @@ window.IceQ.Offside = (function () {
       if (res.offendingHint) {
         return 'You missed it — ' + offenderPhrase(res, 'the') + ' crossed before the puck. Watch ALL the skaters, not just the carrier.';
       }
-      return 'You missed it — watch the SKATES, not the body. The moment a skate is over the line BEFORE the puck, blow the whistle.';
+      return 'You missed it — watch the SKATES, not the body. The moment both skates are over the line BEFORE the puck, blow the whistle.';
     }
     if (res.kind === 'false-call') {
-      return 'Bad call — the puck crossed first, that was a clean entry. Patience: wait for a SKATE to be early before you blow the whistle.';
+      return 'Bad call — the puck crossed first, that was a clean entry. Patience: wait until a player is fully over the line early before you blow the whistle.';
     }
     if (res.kind === 'too-early') {
-      return 'Too early — the receiver wasn\'t over the line yet. Wait until you actually SEE the skate cross before the puck.';
+      return 'Too early — the receiver wasn\'t over the line yet. Wait until you actually SEE both skates cross before the puck.';
     }
     return '';
   }

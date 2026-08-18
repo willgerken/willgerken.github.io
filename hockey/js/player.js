@@ -63,6 +63,7 @@ window.IceQ.Player = (function () {
     const S = scale;
 
     const group = new Konva.Group({ x, y, draggable });
+    tagGroup(group, { stickSide, scale: S, kind, renderer: 'primitive' });
 
     if (kind === 'goalie') {
       buildGoalie(group, c, S);
@@ -932,6 +933,74 @@ window.IceQ.Player = (function () {
   // This wrapper preserves the exported `create` function name so existing
   // call sites are unaffected.
   const _createOriginal = create;
+  // ---- Blade geometry (2026-08-18 puck-physics pass) --------------------
+  // Every scenario used to hard-code the puck offset in FEET (+3, +1.5 etc.).
+  // Sprites are clamped to a minimum pixel size, so on a phone (~4 px/ft) a
+  // 3 ft offset lands INSIDE the sweater, and half the modules also picked the
+  // wrong side. These helpers derive "where is this player's blade" from the
+  // sprite itself, in the group's LOCAL px, then rotate by the group's
+  // rotation, so a puck placed with puckPosFor() is on the blade at any scale,
+  // either stick side, facing any direction.
+  //
+  // Sprite viewBox is 60x60 centred on (30,30); blade tip authored at
+  // (59, 48.5) with the stick on the RIGHT, i.e. (+29, +18.5) units from
+  // centre; heel at (51, 45) -> (+21, +15). Rendered at 70*S px per 60
+  // units. Primitive renderer draws the blade near (+17S, +20S).
+  function tagGroup(group, { stickSide, scale, kind, renderer }) {
+    try {
+      group.setAttr('iceqStickSide', stickSide);
+      group.setAttr('iceqScale', scale);
+      group.setAttr('iceqKind', kind);
+      group.setAttr('iceqRenderer', renderer);
+    } catch (e) { /* noop */ }
+  }
+  function bladeTipPx(group, where = 'puck') {
+    const S = group.getAttr('iceqScale') || 1;
+    const side = group.getAttr('iceqStickSide') === 'L' ? -1 : 1;
+    const isImage = group.getAttr('iceqRenderer') === 'image';
+    const k = isImage ? (SPRITE_PX_FORWARD * S) / 60 : 1;
+    // 'tip' = end of the blade; 'puck' = where a carried puck actually sits
+    // (blade heel-to-middle, a touch ahead of the blade line).
+    let ux, uy;
+    if (isImage) {
+      if (where === 'tip') { ux = 29; uy = 18.5; } else { ux = 25; uy = 19.5; }
+      return { x: side * ux * k, y: uy * k };
+    }
+    return where === 'tip'
+      ? { x: side * 19 * S, y: 21 * S }
+      : { x: side * 16 * S, y: 21 * S };
+  }
+  // Canvas position of the puck for a player group at its CURRENT position
+  // and rotation (or at an explicit centre {x,y} if given).
+  function puckPosFor(group, centre, where = 'puck') {
+    const c = centre || group.position();
+    const o = bladeTipPx(group, where);
+    const rot = ((group.rotation && group.rotation()) || 0) * Math.PI / 180;
+    const cos = Math.cos(rot), sin = Math.sin(rot);
+    return { x: c.x + o.x * cos - o.y * sin, y: c.y + o.x * sin + o.y * cos };
+  }
+  // Point the sprite along a direction of play. Sprites are authored facing
+  // +y (down the canvas). 'y+' = as authored, 'y-' = up the canvas,
+  // 'x+' = right (the horizontal offside rink), 'x-' = left.
+  function face(group, dir) {
+    const rot = dir === 'x+' ? -90 : dir === 'x-' ? 90 : dir === 'y-' ? 180 : 0;
+    group.rotation(rot);
+    // Keep jersey labels / role letters upright: counter-rotate every Text
+    // child about its own centre (Konva rotates text about its top-left).
+    try {
+      group.find('Text').forEach((t) => {
+        if (t.getAttr('iceqUpright') == null) {
+          const w = t.width() || 0, h = t.height() || t.fontSize() || 0;
+          t.offsetX(w / 2); t.offsetY(h / 2);
+          t.x(t.x() + w / 2); t.y(t.y() + h / 2);
+          t.setAttr('iceqUpright', true);
+        }
+        t.rotation(-rot);
+      });
+    } catch (e) { /* cosmetic */ }
+    return group;
+  }
+
   function createWrapped(opts = {}) {
     const {
       x = 0, y = 0, scale = 1.0, color = 'spartan',
@@ -957,6 +1026,7 @@ window.IceQ.Player = (function () {
     const c = COLORS[color] || COLORS.spartan;
     const S = scale;
     const group = new Konva.Group({ x, y, draggable });
+    tagGroup(group, { stickSide, scale: S, kind, renderer: 'image' });
 
     const ok = buildSkaterImage(group, color, S, stickSide, kind === 'skater-back');
     if (!ok) {
@@ -1027,6 +1097,9 @@ window.IceQ.Player = (function () {
 
   return {
     create: createWrapped,
+    bladeTipPx,
+    puckPosFor,
+    face,
     COLORS,
     // Exposed for A/B testing — toggle to false to render via primitives.
     // (Read at call time inside createWrapped, so flipping it after page

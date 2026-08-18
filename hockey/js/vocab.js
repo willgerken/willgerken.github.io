@@ -166,7 +166,7 @@ window.IceQ.vocab = {
   'f1': {
     title: 'F1 (Cheetah)',
     def: "First forechecker IN — closest to the puck. Direct pressure.",
-    why: "See 'cheetah'. Note: F1 is a JOB, not a fixed player. On the next rush, a different forward might be F1.",
+    why: "See 'cheetah'. F1 is a JOB, not a fixed player: on the forecheck it is whoever is first to the puck; on our own rush it is whoever is first over the line with it. F2 and F3 are the next two in, same idea.",
   },
   'f2': {
     title: 'F2 (Gator)',
@@ -278,7 +278,7 @@ window.IceQ.vocab = {
   'offside': {
     title: 'Offside',
     def: "When an attacking player crosses the offensive blue line BEFORE the puck. Play stops, faceoff goes back outside the zone.",
-    why: "Watch for the skate ahead of the puck — that's offside. If the player tags up (touches their own blue line again), the play stays alive.",
+    why: "Watch for a player with BOTH skates over the line ahead of the puck. That's offside. If he tags up (skates back OUT over the blue line before touching the puck), the play stays alive.",
   },
   'breakout': {
     title: 'Breakout',
@@ -298,7 +298,7 @@ window.IceQ.vocab = {
   'fourth-attacker': {
     title: '4th Attacker',
     def: "The weak-side D joining the rush late, arriving in the high slot behind the forwards as a trailer.",
-    why: "Two defenders can cover three forwards. A fourth attacker they didn't count is the one who's open.",
+    why: "Two defenders can cover three forwards. A fourth attacker they didn't count is the one who's open. This is a WITH-the-puck rule in THEIR end. Back in our end without it, D-Zone rules: only one D leaves the middle, and only to the puck.",
   },
   'seam': {
     title: 'The Seam',
@@ -340,12 +340,12 @@ window.IceQ.vocab = {
   'goal-side': {
     title: 'Goal-Side',
     def: "Standing between your guy and your own net, so he would have to go through you to get there.",
-    why: "Goal-side, he has to beat you. Not goal-side, he just skates and you are chasing. Same idea as the defensive side of the puck.",
+    why: "Goal-side, he has to beat you. Not goal-side, he just skates and you are chasing. Cousin of the defensive side of the puck: that one is puck-YOU-net, this one is your man-YOU-net. In our end you usually want both; when they disagree, stay goal-side of your man and put your stick in the passing lane.",
   },
   'puck-watching': {
     title: 'Puck-Watching',
     def: "Staring at the puck and forgetting about the guy you are supposed to be covering.",
-    why: "Everybody watches the puck. The kid who watches his MAN is the one who breaks up the play.",
+    why: "Puck-watching is not LOOKING at the puck, it is LOSING your man while you look. Everybody watches the puck. The kid who watches his MAN is the one who breaks up the play.",
   },
   'shooting-lane': {
     title: 'Shooting Lane',

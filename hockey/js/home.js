@@ -350,7 +350,10 @@ window.IceQ.Home = (function () {
     //   "Goal Targets" (corner-mapped scenarios)
     //   "Game Situations" (list-only scenarios — Net-Front, 2-on-1, Offside)
     const cornerScenarios = IceQ.SCENARIOS.filter(s => s.corner);
-    const listOnlyScenarios = IceQ.SCENARIOS.filter(s => !s.corner);
+    // Only ship what is ready: gated drills are hidden outright rather than
+    // listed as "Coming soon" (2026-08-18, Will: hide broken drills until
+    // ship-ready; a wall of greyed rows reads as vaporware).
+    const listOnlyScenarios = IceQ.SCENARIOS.filter(s => !s.corner && s.available);
 
     function makeListItem(scen) {
       const st = stateOf(scen);

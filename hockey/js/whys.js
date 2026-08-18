@@ -252,7 +252,7 @@ window.IceQ.WHYS = {
         items: [
           'An attacker\'s skates must NOT cross the offensive blue line before the puck does.',
           'If a player crosses early, they can "tag up" by touching their own blue line again — the play stays alive.',
-          'Watch the SKATE, not the body. The skate is what touches the line.',
+          'Watch the SKATES, not the body. It is offside when BOTH skates are over the line before the puck.',
         ],
       },
       {
@@ -270,7 +270,7 @@ window.IceQ.WHYS = {
       },
       {
         type: 'source',
-        text: 'USA Hockey Rule 6 — Offside. Tag-up rule allowed at most levels.',
+        text: 'USA Hockey Rule 630 — Off-sides. Tag-up rule applies at most levels.',
       },
     ],
   }),
@@ -374,8 +374,8 @@ window.IceQ.WHYS = {
       {
         type: 'bullets',
         items: [
-          '**Goals come from passes, not from puck carriers.** The puck carrier almost always passes before shooting at this level. Cover the receiver — kill the play.',
-          '**Two players on one puck = three open opponents.** That\'s a power play we just gave them.',
+          '**Most goals come off a pass, not a solo carry.** The receiver in the slot is the dangerous man. Cover him and the play dies.',
+          '**Two of us on one puck = one of them wide open.** Usually the guy in front of our net.',
           '**Stick on stick beats body on puck.** A stick in the passing lane takes away the option without committing your body.',
           '**The puck carrier is being pressured by your D-man already.** You don\'t need to pile on. Stay home.',
         ],
@@ -394,8 +394,8 @@ window.IceQ.WHYS = {
       }] : []),
       {
         type: 'quote',
-        text: 'A good hockey player plays where the puck is. A great hockey player plays where the puck is going to be — that\'s reading the pass before it happens.',
-        attr: '— Wayne Gretzky',
+        text: 'Cover the man, not the puck. The puck can only go where a man is.',
+        attr: '— Coach',
       },
       {
         type: 'cta',
@@ -442,8 +442,8 @@ window.IceQ.WHYS = {
       },
       {
         type: 'quote',
-        text: 'A good hockey player plays where the puck is. A great hockey player plays where the puck is going to be.',
-        attr: '— Wayne Gretzky',
+        text: 'Skate to open ice. If you are standing where a defender already is, you are helping him.',
+        attr: '— Coach',
       },
       {
         type: 'cta',
@@ -488,8 +488,8 @@ window.IceQ.WHYS = {
       },
       {
         type: 'quote',
-        text: 'A good hockey player plays where the puck is. A great hockey player plays where the puck is going to be — that\'s reading the forecheck before the puck\'s on your stick.',
-        attr: '— Wayne Gretzky',
+        text: 'Know your outlet before the puck gets to you. The read happens BEFORE the pass.',
+        attr: '— Coach',
       },
       {
         type: 'cta',
@@ -535,8 +535,8 @@ window.IceQ.WHYS = {
       },
       {
         type: 'quote',
-        text: 'A good hockey player plays where the puck is. A great hockey player plays where the puck is going to be.',
-        attr: '— Wayne Gretzky',
+        text: 'Play the pass. The shooter has to beat the goalie; the pass beats everybody.',
+        attr: '— Coach',
       },
       {
         type: 'quote',

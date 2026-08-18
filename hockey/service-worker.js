@@ -1,10 +1,11 @@
 // Minimal offline cache. Bump CACHE version when you ship new content.
-const CACHE = 'iceq-v0.44';
+const CACHE = 'iceq-v0.46';
 const CORE = [
   './',
   'index.html',
   'manifest.json',
   'css/app.css',
+  'js/konva_compat.js',
   'js/vocab.js',
   'js/scenarios.js',
   'js/progress.js',

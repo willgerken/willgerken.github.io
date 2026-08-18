@@ -84,36 +84,122 @@ window.IceQ.Audio = (function () {
     });
   }
 
-  // Small "save" pling: short upward chirp. Used for correct reads and
-  // good no-calls. Calmer than the goal horn — we don't want every right
-  // answer to feel like a celebration, that gets old fast.
+  // Small "save" pling for correct reads and good no-calls. Calmer than the
+  // goal horn: every right answer should not feel like a celebration.
+  //
+  // 2026-08-18 (Will: "the beep is a little repetitive"): the pling now
+  // rotates through four short two-note motifs so ten right answers in a
+  // row do not sound like a microwave. Same length, same volume, same
+  // register, so it still reads as "yes" without ever being the same twice
+  // in a row. Pure Web Audio, no assets. AUDIO ONLY: nothing here touches
+  // game logic.
+  var PLING_MOTIFS = [
+    [[660, 990]],                 // the original rising fifth-ish
+    [[587, 880]],                 // a step lower
+    [[523, 784], [1046]],         // rise then a little top note
+    [[698, 932]],                 // brighter
+  ];
+  var plingIdx = 0;
   function savePling() {
     if (isMuted()) return;
     var ac = getAudioContext();
     if (!ac) return;
-
+    var motif = PLING_MOTIFS[plingIdx % PLING_MOTIFS.length];
+    plingIdx++;
     var now = ac.currentTime;
-    var dur = 0.22;
+    var t = now;
+    motif.forEach(function (seg, i) {
+      var dur = seg.length > 1 ? 0.2 : 0.12;
+      var osc = ac.createOscillator();
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(seg[0], t);
+      if (seg.length > 1) osc.frequency.exponentialRampToValueAtTime(seg[1], t + dur * 0.7);
+      var gain = ac.createGain();
+      gain.gain.setValueAtTime(0, t);
+      gain.gain.linearRampToValueAtTime(0.12, t + 0.02);
+      gain.gain.linearRampToValueAtTime(0, t + dur);
+      osc.connect(gain); gain.connect(ac.destination);
+      osc.start(t); osc.stop(t + dur + 0.05);
+      t += dur * 0.85;
+    });
+  }
 
+  // Wrong answer: a soft, low "thunk". Not a buzzer, not punitive; a kid who
+  // hears this ten times should not feel scolded, just told.
+  function wrongThunk() {
+    if (isMuted()) return;
+    var ac = getAudioContext();
+    if (!ac) return;
+    var now = ac.currentTime;
     var osc = ac.createOscillator();
-    osc.type = 'triangle';
-    osc.frequency.setValueAtTime(660, now);
-    osc.frequency.exponentialRampToValueAtTime(990, now + 0.15);
-
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(220, now);
+    osc.frequency.exponentialRampToValueAtTime(140, now + 0.18);
     var gain = ac.createGain();
     gain.gain.setValueAtTime(0, now);
-    gain.gain.linearRampToValueAtTime(0.12, now + 0.02);
-    gain.gain.linearRampToValueAtTime(0, now + dur);
+    gain.gain.linearRampToValueAtTime(0.14, now + 0.01);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+    osc.connect(gain); gain.connect(ac.destination);
+    osc.start(now); osc.stop(now + 0.3);
+  }
 
-    osc.connect(gain);
+  // Goal AGAINST: a flat, dull two-tone buzzer, deliberately nothing like
+  // the horn. In a rink the horn belongs to the home team; a goal against
+  // should not sound like a party (2-on-1 used to play the horn here).
+  function goalAgainst() {
+    if (isMuted()) return;
+    var ac = getAudioContext();
+    if (!ac) return;
+    var now = ac.currentTime;
+    [0, 0.22].forEach(function (off) {
+      var osc = ac.createOscillator();
+      osc.type = 'square';
+      osc.frequency.value = 165;
+      var gain = ac.createGain();
+      gain.gain.setValueAtTime(0, now + off);
+      gain.gain.linearRampToValueAtTime(0.06, now + off + 0.02);
+      gain.gain.linearRampToValueAtTime(0, now + off + 0.18);
+      osc.connect(gain); gain.connect(ac.destination);
+      osc.start(now + off); osc.stop(now + off + 0.2);
+    });
+  }
+
+  // Referee whistle: short, bright, noisy. For Offside calls.
+  function whistle() {
+    if (isMuted()) return;
+    var ac = getAudioContext();
+    if (!ac) return;
+    var now = ac.currentTime;
+    var dur = 0.32;
+    var gain = ac.createGain();
+    gain.gain.setValueAtTime(0, now);
+    gain.gain.linearRampToValueAtTime(0.10, now + 0.015);
+    gain.gain.setValueAtTime(0.10, now + dur - 0.06);
+    gain.gain.linearRampToValueAtTime(0, now + dur);
     gain.connect(ac.destination);
-    osc.start(now);
-    osc.stop(now + dur + 0.05);
+    // Two close partials + a fast vibrato = the "pea" in the whistle.
+    [2650, 2780].forEach(function (f, i) {
+      var osc = ac.createOscillator();
+      osc.type = 'square';
+      osc.frequency.value = f;
+      var lfo = ac.createOscillator();
+      lfo.frequency.value = 38;
+      var lfoGain = ac.createGain();
+      lfoGain.gain.value = 60;
+      lfo.connect(lfoGain); lfoGain.connect(osc.frequency);
+      var vg = ac.createGain(); vg.gain.value = i === 0 ? 0.6 : 0.4;
+      osc.connect(vg); vg.connect(gain);
+      osc.start(now); lfo.start(now);
+      osc.stop(now + dur + 0.02); lfo.stop(now + dur + 0.02);
+    });
   }
 
   return {
     goalHorn: goalHorn,
     savePling: savePling,
+    wrongThunk: wrongThunk,
+    goalAgainst: goalAgainst,
+    whistle: whistle,
     isMuted: isMuted,
     setMuted: setMuted,
     toggleMuted: toggleMuted,
