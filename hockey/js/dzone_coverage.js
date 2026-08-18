@@ -139,7 +139,20 @@ window.IceQ.DZoneCoverage = (function () {
     const { toCanvasX, toCanvasY, scale, overlayLayer, gridLayer } = rink;
 
     let playIdx = 0;
-    function currentPlay() { return PLAYS[playIdx]; }
+    // Variety without changing the read (Will 2026-08-18): each visit is the
+    // authored side or its mirror image. Every read here is left/right
+    // symmetric in meaning, so flipping x (and stick sides) keeps the lesson
+    // and changes the picture. Data is mirrored, not the transform, so
+    // evaluate() keeps comparing like with like.
+    const MIRROR = Math.random() < 0.5;
+    const flipSide = (sd) => (sd === 'L' ? 'R' : sd === 'R' ? 'L' : sd);
+    const mx = (o) => o ? Object.assign({}, o, { x: -o.x }) : o;
+    const ACTIVE_PLAYS = MIRROR ? PLAYS.map(pl => Object.assign({}, pl, {
+      context: (pl.context || []).map(c => Object.assign({}, c, { x: -c.x, stickSide: flipSide(c.stickSide) })),
+      puck: mx(pl.puck), coverTarget: mx(pl.coverTarget),
+      chaseZone: mx(pl.chaseZone), start: mx(pl.start),
+    })) : PLAYS;
+    function currentPlay() { return ACTIVE_PLAYS[playIdx]; }
 
     let defender = null;
     let sceneNodes = [];   // context players + puck + danger lens — cleared on nextPlay

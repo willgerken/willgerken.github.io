@@ -118,7 +118,19 @@ window.IceQ.TwoOnOne = (function () {
       showMeGlideActive = false;
     }
 
-    function currentRush() { return RUSHES[rushIdx]; }
+    // Session mirror (see dzone_coverage.js): same three reads, other side.
+    const MIRROR = Math.random() < 0.5;
+    const swapLR = (t) => t.replace(/\b(right|left)\b/gi, (m) => {
+      const up = m[0] === m[0].toUpperCase();
+      const w = m.toLowerCase() === 'right' ? 'left' : 'right';
+      return up ? w[0].toUpperCase() + w.slice(1) : w;
+    });
+    const ACTIVE_RUSHES = MIRROR ? RUSHES.map(r => Object.assign({}, r, {
+      carrier: Object.assign({}, r.carrier, { x: -r.carrier.x }),
+      receiver: Object.assign({}, r.receiver, { x: -r.receiver.x }),
+      label: swapLR(r.label || ''),
+    })) : RUSHES;
+    function currentRush() { return ACTIVE_RUSHES[rushIdx]; }
 
     function drawNet() {
       gridLayer.add(new Konva.Rect({
@@ -165,9 +177,11 @@ window.IceQ.TwoOnOne = (function () {
         // v0.14: opt-in to the new SVG image sprites. Demo scenario.
         useImageSprite: true,
       });
+      // Puck on the carrier's blade from the sprite geometry (was a fixed
+      // 2/4 ft offset that drifted off the blade at phone scale).
+      const puck0 = IceQ.Player.puckPosFor(carrier);
       const puck = new Konva.Circle({
-        x: toCanvasX(carrierStart.x - (r.carrier.x >= 0 ? 2 : -2)),
-        y: toCanvasY(carrierStart.y + 4),
+        x: puck0.x, y: puck0.y,
         radius: Math.max(5, scale * 0.7),
         fill: '#0A0A0A', stroke: '#E0C68A', strokeWidth: 1.5,
       });
@@ -179,7 +193,7 @@ window.IceQ.TwoOnOne = (function () {
         useImageSprite: true,
       });
 
-      gridLayer.add(puck, carrier, receiver);
+      gridLayer.add(carrier, receiver, puck);
       sceneNodes.push(puck, carrier, receiver);
       attackerNodes = [carrier, receiver];
       carrierNode = carrier;
@@ -194,11 +208,10 @@ window.IceQ.TwoOnOne = (function () {
         x: toCanvasX(r.carrier.x), y: toCanvasY(r.carrier.y),
         duration: RUSH_DUR, easing: Konva.Easings.EaseOut,
       });
-      puck.to({
-        x: toCanvasX(r.carrier.x - (r.carrier.x >= 0 ? 2 : -2)),
-        y: toCanvasY(r.carrier.y + 4),
-        duration: RUSH_DUR, easing: Konva.Easings.EaseOut,
-      });
+      {
+        const pEnd = IceQ.Player.puckPosFor(carrier, { x: toCanvasX(r.carrier.x), y: toCanvasY(r.carrier.y) });
+        puck.to({ x: pEnd.x, y: pEnd.y, duration: RUSH_DUR, easing: Konva.Easings.EaseOut });
+      }
 
       // Helper visuals (pass lane, arrows, optional curl arc) — drawn AFTER
       // the rush settles so they don't compete with the motion.
@@ -485,24 +498,55 @@ window.IceQ.TwoOnOne = (function () {
         const origPuckVisible = puckNode.visible();
         puckNode.visible(false);
 
-        const carrierCanvas  = { x: carrierNode.x(), y: carrierNode.y() };
-        const receiverCanvas = { x: receiverNode.x(), y: receiverNode.y() };
         const sideSign = r.receiver.x >= 0 ? 1 : -1;
         const backPostFt = netBackPost(sideSign);
         const backPostCanvas = { x: toCanvasX(backPostFt.xFt), y: toCanvasY(backPostFt.yFt) };
 
-        // Phase a: carrier passes cross-ice to receiver (~0.5s, slight arc).
+        // Phase 0: the rush KEEPS COMING. Carrier drives his lane to the top
+        // of the circle with the puck on his blade; the receiver drives the
+        // back post. (Before 2026-08-18 the attackers stood still and the
+        // "tap-in" was a 43 ft one-timer at 73 mph.)
+        const carrierDriveFt  = { x: r.carrier.x * 0.9, y: 42 };
+        const receiverDriveFt = { x: sideSign * 7, y: 57 };
+        const carrierDrive  = { x: toCanvasX(carrierDriveFt.x),  y: toCanvasY(carrierDriveFt.y) };
+        const receiverDrive = { x: toCanvasX(receiverDriveFt.x), y: toCanvasY(receiverDriveFt.y) };
+        puckNode.visible(true);
+        const driveSec = 0.75;
+        carrierNode.to({ x: carrierDrive.x, y: carrierDrive.y, duration: driveSec, easing: Konva.Easings.EaseIn });
+        receiverNode.to({ x: receiverDrive.x, y: receiverDrive.y, duration: driveSec, easing: Konva.Easings.EaseIn });
+        {
+          const pEnd = IceQ.Player.puckPosFor(carrierNode, carrierDrive);
+          puckNode.to({ x: pEnd.x, y: pEnd.y, duration: driveSec, easing: Konva.Easings.EaseIn });
+        }
+        await IceQ.Path.wait(driveSec * 1000 + 30);
+        if (sig.skipped) return;
+        puckNode.visible(false);
+
+        // Phase a: cross-ice pass, blade to blade. If the kid's D is standing
+        // in the lane (his sprite within ~5 ft of the line), it becomes a
+        // SAUCER: higher arc, over the stick. A puck through a body is the
+        // physics that turns hockey kids off; a saucer over a stick is a play.
+        const passFrom = IceQ.Player.puckPosFor(carrierNode, carrierDrive);
+        const passTo   = IceQ.Player.puckPosFor(receiverNode, receiverDrive);
+        let arc = 8;
+        if (defender) {
+          const dx = passTo.x - passFrom.x, dy = passTo.y - passFrom.y;
+          const L2 = dx * dx + dy * dy || 1;
+          const tt = Math.max(0, Math.min(1, ((defender.x() - passFrom.x) * dx + (defender.y() - passFrom.y) * dy) / L2));
+          const dist = Math.hypot(defender.x() - (passFrom.x + tt * dx), defender.y() - (passFrom.y + tt * dy));
+          if (dist < 5 * scale) arc = 26;
+        }
         const passHandle = trackHandle(IceQ.Path.animatePuckPass(
-          gridLayer, carrierCanvas, receiverCanvas,
-          { duration: 0.5, arcHeight: 8 }
+          gridLayer, passFrom, passTo,
+          { duration: 0.42, arcHeight: arc }
         ));
         await passHandle.promise;
         if (sig.skipped) { puckNode.visible(origPuckVisible); return; }
 
-        // Phase b: receiver one-times it to the back post (~0.4s, straight).
+        // Phase b: tap-in from the receiver's blade at the back post, ~7 ft.
         const tapHandle = trackHandle(IceQ.Path.animatePuckPass(
-          gridLayer, receiverCanvas, backPostCanvas,
-          { duration: 0.4 }
+          gridLayer, passTo, backPostCanvas,
+          { duration: 0.18 }
         ));
         await tapHandle.promise;
         if (sig.skipped) { puckNode.visible(origPuckVisible); return; }
@@ -527,13 +571,9 @@ window.IceQ.TwoOnOne = (function () {
         if (sig.skipped) return;
         if (!carrierNode || !receiverNode || !puckNode) return;
         const r = currentRush();
-        const puckOffsetX = r.carrier.x >= 0 ? -2 : 2;
         carrierNode.position({ x: toCanvasX(r.carrier.x), y: toCanvasY(r.carrier.y) });
         receiverNode.position({ x: toCanvasX(r.receiver.x), y: toCanvasY(r.receiver.y) });
-        puckNode.position({
-          x: toCanvasX(r.carrier.x + puckOffsetX),
-          y: toCanvasY(r.carrier.y + 4),
-        });
+        puckNode.position(IceQ.Player.puckPosFor(carrierNode));
         puckNode.visible(true);
         gridLayer.batchDraw();
         await IceQ.Path.wait(150);
@@ -574,13 +614,24 @@ window.IceQ.TwoOnOne = (function () {
         // Phase b: carrier is forced to shoot — puck travels from carrier to
         // a point just in front of the goalie (~5 ft above goal line, dead
         // center). Hide the static puck during the animated copy.
+        // The carrier still drives (the D took the PASS away, not the rush),
+        // then has to shoot from the top of the circle into a set goalie.
         const origPuckVisible = puckNode.visible();
+        const cDrive = { x: toCanvasX(r.carrier.x * 0.9), y: toCanvasY(40) };
+        carrierNode.to({ x: cDrive.x, y: cDrive.y, duration: 0.6, easing: Konva.Easings.EaseIn });
+        receiverNode.to({ x: toCanvasX(r.receiver.x * 0.8), y: toCanvasY(r.receiver.y + 16), duration: 0.6, easing: Konva.Easings.EaseIn });
+        {
+          const pEnd = IceQ.Player.puckPosFor(carrierNode, cDrive);
+          puckNode.to({ x: pEnd.x, y: pEnd.y, duration: 0.6, easing: Konva.Easings.EaseIn });
+        }
+        await IceQ.Path.wait(630);
+        if (sig.skipped) return;
         puckNode.visible(false);
-        const carrierCanvas = { x: carrierNode.x(), y: carrierNode.y() };
+        const carrierCanvas = IceQ.Player.puckPosFor(carrierNode, cDrive);
         const goalieCanvas  = { x: toCanvasX(0), y: toCanvasY(58) };
         const shotHandle = trackHandle(IceQ.Path.animatePuckPass(
           gridLayer, carrierCanvas, goalieCanvas,
-          { duration: 0.5 }
+          { duration: 0.32 }
         ));
         await shotHandle.promise;
         if (sig.skipped) { puckNode.visible(origPuckVisible); return; }
@@ -599,6 +650,11 @@ window.IceQ.TwoOnOne = (function () {
         try { IceQ.Audio.savePling(); } catch (e) {}
         await IceQ.Path.animateGoalConsequence(rink, { kind: 'saved', duration: 1.0 });
         puckNode.visible(origPuckVisible);
+        // Rush back to its start picture so the retry begins clean.
+        carrierNode.position({ x: toCanvasX(r.carrier.x), y: toCanvasY(r.carrier.y) });
+        receiverNode.position({ x: toCanvasX(r.receiver.x), y: toCanvasY(r.receiver.y) });
+        puckNode.position(IceQ.Player.puckPosFor(carrierNode));
+        gridLayer.batchDraw();
       })();
     }
 
@@ -628,13 +684,13 @@ window.IceQ.TwoOnOne = (function () {
 
     function nextRush() {
       stopAllContrast();
-      rushIdx = (rushIdx + 1) % RUSHES.length;
+      rushIdx = (rushIdx + 1) % ACTIVE_RUSHES.length;
       clearOverlay();
       drawAttackers();
       defender.moveToTop();
       resetDefender();
       gridLayer.batchDraw();
-      return { rushIdx, rush: currentRush(), totalRushes: RUSHES.length };
+      return { rushIdx, rush: currentRush(), totalRushes: ACTIVE_RUSHES.length };
     }
 
     return {
@@ -643,7 +699,7 @@ window.IceQ.TwoOnOne = (function () {
       showMe: showCorrect,
       reset: () => { stopAllContrast(); clearOverlay(); resetDefender(); },
       nextRush,
-      currentRushInfo: () => ({ rushIdx, rush: currentRush(), totalRushes: RUSHES.length }),
+      currentRushInfo: () => ({ rushIdx, rush: currentRush(), totalRushes: ACTIVE_RUSHES.length }),
       isDone: () => evaluate().pass,
       // v0.13 contrast playback. playWrongConsequence and playRightAnswer each
       // take an optional skipSignal; showContrastReplay runs the whole
