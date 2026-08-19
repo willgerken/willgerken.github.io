@@ -81,6 +81,17 @@ window.IceQ.SCENARIOS = [
     theme: 'set-plays',
     tagline: 'Coach calls it — you run it. Then flip it: name the call.',
   },
+  // ===== Veterans (13U+). Not on the goal; listed under their own header. =====
+  {
+    key: 'ozone-cycle',
+    title: 'O-Zone Cycle',
+    subtitle: 'Time the drop',
+    corner: null,
+    available: true,
+    level: 'veteran',
+    theme: 'offense',
+    tagline: 'F1 up the wall, trailer underneath. Tap DROP in the pocket. Sometimes the read is to keep it.',
+  },
   // ===== "More drills" — beyond the six showcase targets. No corner on the goal;
   // they render in the secondary list below for extra practice. =====
   {
@@ -167,6 +178,9 @@ window.IceQ.SCENARIOS = [
     tagline: 'Different mechanic — timing, not dragging.',
   },
 ];
+
+// 'rookie' (default) vs 'veteran' (13U+): drives the home page grouping.
+window.IceQ.scenarioLevel = (s) => (s && s.level) || 'rookie';
 
 window.IceQ.scenarioByKey = (k) => window.IceQ.SCENARIOS.find(s => s.key === k);
 

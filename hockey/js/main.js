@@ -208,6 +208,15 @@
             const onThisStage = layers.some((l) => l && l.getStage && l.getStage() === stage);
             if (onThisStage || layers.length === 0) { try { a.stop(); } catch (e) {} }
           });
+          // Any straggling async chain that still holds a layer reference
+          // (a tween onFinish, a module's own wait-loop) would draw into a
+          // dead canvas and throw. Neuter draw on the dead layers first.
+          try {
+            (stage.getLayers ? stage.getLayers() : []).forEach((l) => {
+              l.batchDraw = function () { return this; };
+              l.draw = function () { return this; };
+            });
+          } catch (e) { /* noop */ }
           stage.destroy();
         } catch (e) { /* best effort */ }
       });
@@ -256,6 +265,7 @@
     else if (key === 'breakout-reads') wireBreakoutReads();
     else if (key === 'ozone-faceoff') wireOzoneFaceoff();
     else if (key === 'ozone-entry') wireOzoneEntry();
+    else if (key === 'ozone-cycle') wireOzoneCycle();
   }
 
   // ===== SHOW-ME CREDIT GUARD (shared) =====================================
@@ -552,6 +562,118 @@
       setNarration('Watch how each read works — then you make them.');
       setTimeout(() => { if (!demoRunning) runDemo(); }, 550);
     }
+  }
+
+  // ===== O-ZONE CYCLE (Veterans) WIRING =================================
+  // Timing-tap mechanic (see js/ozone_cycle.js): Play runs the cycle, DROP is
+  // the kid's call. Wrong calls play their consequence live, then a short
+  // BUT INSTEAD replay shows the pocket. No credit without the right call on
+  // that play; Next goes to the next un-earned play.
+  function wireOzoneCycle() {
+    const m = IceQ.OzoneCycle.init(APP.querySelector('#rink'));
+    const fb = APP.querySelector('#feedback');
+    const fbMsg = APP.querySelector('#feedback-message');
+    const cueEl = APP.querySelector('#read-cue');
+    const btnCheck = APP.querySelector('#btn-check');   // Play
+    const btnCall = APP.querySelector('#btn-call');     // DROP
+    const btnShow = APP.querySelector('#btn-show');
+    const btnReset = APP.querySelector('#btn-reset');
+    const btnWhy = APP.querySelector('#btn-why');
+    const btnDone = APP.querySelector('#btn-done');
+    const btnRotate = APP.querySelector('#btn-rotate');
+    const btnSkip = APP.querySelector('#btn-skip');
+    const rushProg = APP.querySelector('#rush-progress');
+    const showFb = (t) => { fbMsg.textContent = t; fb.hidden = false; };
+    const setCue = () => { if (cueEl) cueEl.textContent = m.cue(); };
+
+    let playsCompleted = new Set();
+    let skipSignal = { skipped: false };
+    let busy = false;
+    const updateProg = () => {
+      const info = m.currentRushInfo();
+      if (rushProg) rushProg.textContent = `(${info.rushIdx + 1}/${info.totalRushes} · ${playsCompleted.size} done)`;
+    };
+    updateProg(); setCue();
+
+    function lock(on) {
+      btnCheck.disabled = on; btnCall.disabled = on; btnShow.disabled = on; btnReset.disabled = on;
+      if (on) { btnRotate.hidden = true; btnDone.hidden = true; btnWhy.hidden = true; }
+      btnSkip.hidden = !on;
+    }
+    function offerNext() {
+      const total = m.currentRushInfo().totalRushes;
+      if (playsCompleted.size >= total) btnDone.hidden = false;
+      else btnRotate.hidden = false;
+      btnWhy.hidden = false;
+      updateProg();
+    }
+    function advanceToNextIncomplete() {
+      const total = m.currentRushInfo().totalRushes;
+      for (let i = 0; i < total; i++) { m.nextRush(); if (!playsCompleted.has(m.currentRushInfo().rushIdx)) break; }
+      updateProg(); setCue();
+    }
+
+    async function settle(r) {
+      // Live consequence first (the kid watches what his call did), then the
+      // verdict, then the BUT INSTEAD replay on a wrong call.
+      busy = true; lock(true);
+      skipSignal = { skipped: false };
+      try {
+        await Promise.race([r.consequence, new Promise(res => setTimeout(res, 9000))]);
+        showFb(IceQ.OzoneCycle.phrasedFeedback(r));
+        if (r.correct) {
+          try { IceQ.Audio && IceQ.Audio.savePling(); } catch (e) {}
+          playsCompleted.add(m.currentRushInfo().rushIdx);
+        } else {
+          try { IceQ.Audio && IceQ.Audio.wrongThunk && IceQ.Audio.wrongThunk(); } catch (e) {}
+          await m.showContrastReplay(r, skipSignal);
+        }
+      } catch (err) {
+        if (window.console) console.error('ozone-cycle settle failed:', err);
+      } finally {
+        busy = false; lock(false);
+        m.reset();
+        offerNext();
+      }
+    }
+
+    btnCheck.addEventListener('click', () => {
+      if (busy) return;
+      fb.hidden = true;
+      btnCheck.disabled = true;
+      m.startPlay(() => { const r = m.result(); btnCheck.disabled = false; if (r) settle(r); });
+    });
+    btnCall.addEventListener('click', () => {
+      if (busy) return;
+      const r = m.tapDrop();
+      if (!r) return;
+      try { IceQ.Audio && IceQ.Audio.whistle && false; } catch (e) {}
+      btnCheck.disabled = false;
+      settle(r);
+    });
+    btnShow.addEventListener('click', async () => {
+      if (busy) return;
+      busy = true; lock(true); skipSignal = { skipped: false };
+      try { await m.showMe(); } catch (e) {} finally { busy = false; lock(false); m.reset(); btnWhy.hidden = false; showFb('That ring is the pocket. Now hit Play and time it yourself. Show Me gives no credit.'); }
+    });
+    btnReset.addEventListener('click', () => {
+      skipSignal.skipped = true; m.stopContrast(); m.reset(); fb.hidden = true;
+      btnWhy.hidden = true; btnRotate.hidden = true; btnDone.hidden = true; btnSkip.hidden = true;
+      btnCheck.disabled = false; btnCall.disabled = false; btnShow.disabled = false; btnReset.disabled = false;
+      busy = false;
+      if (playsCompleted.has(m.currentRushInfo().rushIdx)) offerNext();
+    });
+    btnRotate.addEventListener('click', () => {
+      skipSignal.skipped = true; m.stopContrast();
+      advanceToNextIncomplete();
+      fb.hidden = true; btnRotate.hidden = true; btnWhy.hidden = true;
+    });
+    btnSkip.addEventListener('click', () => {
+      skipSignal.skipped = true; m.stopContrast(); btnSkip.hidden = true;
+      setTimeout(() => { if (busy) { busy = false; lock(false); m.reset(); offerNext(); } }, 1000);
+    });
+    btnWhy.addEventListener('click', () => openWhy('ozone-cycle'));
+    btnDone.addEventListener('click', () => onDone('ozone-cycle'));
   }
 
   function wireNetFront() {
