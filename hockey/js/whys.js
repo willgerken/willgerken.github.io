@@ -502,6 +502,22 @@ window.IceQ.WHYS = {
     ],
   }),
 
+  'pinch-read': () => ({
+    title: 'Why is pinching a read, not a habit?',
+    blocks: [
+      { type: 'lead', text: 'A good pinch keeps the puck in their end. A bad one hands them a 2-on-1 the other way. Same move, opposite result, and the difference is two things you can see before you go.' },
+      { type: 'bullets', items: [
+        '**Is anybody high?** If F3 is above the circles, the point is covered when you leave it. If everybody is below the dots, a missed pinch is an odd-man rush against.',
+        '**Can you win the race?** A winger standing flat-footed on the wall, or a bobbled rim, is yours. A winger already flying with speed is not, and he will be around you.',
+        '**Peeling is not losing.** Giving up the zone on purpose and keeping the numbers even is a defensive play, not a failure.',
+        '**Decide early.** A pinch that starts late is a coin flip. If you are not sure by the time the puck is at the hash marks, peel.',
+      ]},
+      { type: 'quote', text: 'Pinch with support. Peel without it. Never guess.', attr: '— Coach' },
+      { type: 'cta', text: 'Next practice: ask your coach "When do you want our D to pinch, and who has to be high for that?"' },
+      { type: 'source', text: 'Standard D-zone-exit / O-zone-possession read taught at 12U+; the F3-high rule is the usual trigger.' },
+    ],
+  }),
+
   'ozone-cycle': () => ({
     title: 'Why does the timing of the drop matter?',
     blocks: [

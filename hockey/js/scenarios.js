@@ -92,6 +92,16 @@ window.IceQ.SCENARIOS = [
     theme: 'offense',
     tagline: 'F1 up the wall, trailer underneath. Tap DROP in the pocket. Sometimes the read is to keep it.',
   },
+  {
+    key: 'pinch-read',
+    title: 'Pinch or Peel',
+    subtitle: "The D's read on the rim",
+    corner: null,
+    available: true,
+    level: 'veteran',
+    theme: 'defense',
+    tagline: 'Rim up your wall. Who is high? Can you win the race? Pinch to keep it in, or peel and live to defend.',
+  },
   // ===== "More drills" — beyond the six showcase targets. No corner on the goal;
   // they render in the secondary list below for extra practice. =====
   {

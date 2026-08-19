@@ -266,6 +266,7 @@
     else if (key === 'ozone-faceoff') wireOzoneFaceoff();
     else if (key === 'ozone-entry') wireOzoneEntry();
     else if (key === 'ozone-cycle') wireOzoneCycle();
+    else if (key === 'pinch-read') wirePinchRead();
   }
 
   // ===== SHOW-ME CREDIT GUARD (shared) =====================================
@@ -647,7 +648,6 @@
       if (busy) return;
       const r = m.tapDrop();
       if (!r) return;
-      try { IceQ.Audio && IceQ.Audio.whistle && false; } catch (e) {}
       btnCheck.disabled = false;
       settle(r);
     });
@@ -674,6 +674,80 @@
     });
     btnWhy.addEventListener('click', () => openWhy('ozone-cycle'));
     btnDone.addEventListener('click', () => onDone('ozone-cycle'));
+  }
+
+  // ===== PINCH OR PEEL (Veterans) WIRING ================================
+  // Same shape as the cycle: Play runs the rim, PINCH / PEEL is the call,
+  // the consequence plays live, wrong -> BUT INSTEAD with the cue ringed.
+  function wirePinchRead() {
+    const m = IceQ.PinchRead.init(APP.querySelector('#rink'));
+    const fb = APP.querySelector('#feedback');
+    const fbMsg = APP.querySelector('#feedback-message');
+    const cueEl = APP.querySelector('#read-cue');
+    const btnCheck = APP.querySelector('#btn-check');
+    const btnPinch = APP.querySelector('#btn-pinch');
+    const btnPeel = APP.querySelector('#btn-peel');
+    const btnShow = APP.querySelector('#btn-show');
+    const btnReset = APP.querySelector('#btn-reset');
+    const btnWhy = APP.querySelector('#btn-why');
+    const btnDone = APP.querySelector('#btn-done');
+    const btnRotate = APP.querySelector('#btn-rotate');
+    const btnSkip = APP.querySelector('#btn-skip');
+    const rushProg = APP.querySelector('#rush-progress');
+    const showFb = (t) => { fbMsg.textContent = t; fb.hidden = false; };
+    const setCue = () => { if (cueEl) cueEl.textContent = m.cue(); };
+    let playsCompleted = new Set();
+    let skipSignal = { skipped: false };
+    let busy = false;
+    const updateProg = () => { const info = m.currentRushInfo(); if (rushProg) rushProg.textContent = `(${info.rushIdx + 1}/${info.totalRushes} · ${playsCompleted.size} done)`; };
+    updateProg(); setCue();
+    function lock(on) {
+      btnCheck.disabled = on; btnPinch.disabled = on; btnPeel.disabled = on; btnShow.disabled = on; btnReset.disabled = on;
+      if (on) { btnRotate.hidden = true; btnDone.hidden = true; btnWhy.hidden = true; }
+      btnSkip.hidden = !on;
+    }
+    function offerNext() {
+      const total = m.currentRushInfo().totalRushes;
+      if (playsCompleted.size >= total) btnDone.hidden = false; else btnRotate.hidden = false;
+      btnWhy.hidden = false; updateProg();
+    }
+    function advanceToNextIncomplete() {
+      const total = m.currentRushInfo().totalRushes;
+      for (let i = 0; i < total; i++) { m.nextRush(); if (!playsCompleted.has(m.currentRushInfo().rushIdx)) break; }
+      updateProg(); setCue();
+    }
+    async function settle(r) {
+      busy = true; lock(true); skipSignal = { skipped: false };
+      try {
+        await Promise.race([r.consequence, new Promise(res => setTimeout(res, 9000))]);
+        showFb(IceQ.PinchRead.phrasedFeedback(r));
+        if (r.correct) { try { IceQ.Audio && IceQ.Audio.savePling(); } catch (e) {} playsCompleted.add(m.currentRushInfo().rushIdx); }
+        else { try { IceQ.Audio && IceQ.Audio.wrongThunk && IceQ.Audio.wrongThunk(); } catch (e) {} await m.showContrastReplay(r, skipSignal); }
+      } catch (err) { if (window.console) console.error('pinch-read settle failed:', err); }
+      finally { busy = false; lock(false); m.reset(); offerNext(); }
+    }
+    btnCheck.addEventListener('click', () => {
+      if (busy) return; fb.hidden = true; btnCheck.disabled = true;
+      m.startPlay(() => { const r = m.result(); btnCheck.disabled = false; if (r) settle(r); });
+    });
+    const call = (which) => () => { if (busy) return; const r = m.choose(which); if (!r) return; btnCheck.disabled = false; settle(r); };
+    btnPinch.addEventListener('click', call('pinch'));
+    btnPeel.addEventListener('click', call('peel'));
+    btnShow.addEventListener('click', async () => {
+      if (busy) return; busy = true; lock(true); skipSignal = { skipped: false };
+      try { await m.showMe(); } catch (e) {} finally { busy = false; lock(false); m.reset(); btnWhy.hidden = false; showFb('Those rings are the cues: who is high, and whether the winger has the jump. Now hit Play and call it yourself.'); }
+    });
+    btnReset.addEventListener('click', () => {
+      skipSignal.skipped = true; m.stopContrast(); m.reset(); fb.hidden = true;
+      btnWhy.hidden = true; btnRotate.hidden = true; btnDone.hidden = true; btnSkip.hidden = true;
+      [btnCheck, btnPinch, btnPeel, btnShow, btnReset].forEach(b => { b.disabled = false; });
+      busy = false;
+      if (playsCompleted.has(m.currentRushInfo().rushIdx)) offerNext();
+    });
+    btnRotate.addEventListener('click', () => { skipSignal.skipped = true; m.stopContrast(); advanceToNextIncomplete(); fb.hidden = true; btnRotate.hidden = true; btnWhy.hidden = true; });
+    btnSkip.addEventListener('click', () => { skipSignal.skipped = true; m.stopContrast(); btnSkip.hidden = true; setTimeout(() => { if (busy) { busy = false; lock(false); m.reset(); offerNext(); } }, 1000); });
+    btnWhy.addEventListener('click', () => openWhy('pinch-read'));
+    btnDone.addEventListener('click', () => onDone('pinch-read'));
   }
 
   function wireNetFront() {
