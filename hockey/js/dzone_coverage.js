@@ -209,6 +209,52 @@ window.IceQ.DZoneCoverage = (function () {
       });
       gridLayer.add(puck);
       sceneNodes.push(puck);
+      puckNode = puck;
+    }
+    let puckNode = null;
+
+    // ---- one-pass consequence (QC 2026-08-18: "static lesson, no consequence").
+    // Wrong: the carrier feeds YOUR man and it's in. Right: the same pass dies
+    // on your stick (or is shot into your shin pads for the winger reads).
+    // ~2 s, promise-returning, never throws into the caller.
+    function consequence(res) {
+      return (async function () {
+        try {
+          const p = currentPlay();
+          if (!puckNode || !defender) return;
+          const manIdx = (p.role === 'wing') ? 0 : 2;
+          const man = p.context[manIdx];
+          const manNode = sceneNodes.find(n => n.getAttr && n.getAttr('iceqKind') === 'skater' && Math.abs(n.x() - toCanvasX(man.x)) < 1 && Math.abs(n.y() - toCanvasY(man.y)) < 1);
+          const from = puckNode.position();
+          const toMan = manNode ? IceQ.Player.puckPosFor(manNode) : { x: toCanvasX(man.x), y: toCanvasY(man.y) };
+          puckNode.visible(false);
+          if (res.cover) {
+            // Pass leaves, YOU are goal-side with the stick in the lane: it dies on your blade.
+            const myBlade = IceQ.Player.puckPosFor(defender);
+            const t = 0.62;
+            const dx = toMan.x - from.x, dy = toMan.y - from.y;
+            const L2 = dx * dx + dy * dy || 1;
+            const u = Math.max(0.2, Math.min(0.9, ((myBlade.x - from.x) * dx + (myBlade.y - from.y) * dy) / L2));
+            const near = Math.hypot(myBlade.x - (from.x + u * dx), myBlade.y - (from.y + u * dy));
+            const stopAt = near < 7 * scale ? myBlade : { x: from.x + u * dx, y: from.y + u * dy };
+            const h = IceQ.Path.animatePuckPass(gridLayer, from, stopAt, { duration: 0.55, persist: true });
+            await h.promise;
+            await IceQ.Path.animateGoalConsequence(rink, { kind: 'intercepted', message: p.role === 'wing' ? 'SHOOTING LANE CLOSED' : 'STICK IN THE LANE. DEAD PLAY.', duration: 0.9 });
+            try { h.node.destroy(); } catch (e) {}
+          } else {
+            const h = IceQ.Path.animatePuckPass(gridLayer, from, toMan, { duration: 0.55 });
+            await h.promise;
+            const netSide = man.x >= 0 ? -1 : 1;
+            const h2 = IceQ.Path.animatePuckPass(gridLayer, toMan, { x: toCanvasX(netSide * 2.2), y: toCanvasY(65.5) }, { duration: p.role === 'wing' ? 0.5 : 0.22, persist: true });
+            await h2.promise;
+            try { IceQ.Audio && IceQ.Audio.goalAgainst && IceQ.Audio.goalAgainst(); } catch (e) {}
+            await IceQ.Path.animateGoalConsequence(rink, { kind: 'goal', message: p.role === 'wing' ? 'ONE-TIMER FROM THE POINT. GOAL AGAINST.' : 'YOUR MAN, TAP-IN. GOAL AGAINST.', duration: 1.0 });
+            try { h2.node.destroy(); } catch (e) {}
+          }
+          puckNode.visible(true);
+          gridLayer.batchDraw();
+        } catch (e) { try { puckNode && puckNode.visible(true); } catch (e2) {} }
+      })();
     }
 
     function drawContext() {
@@ -361,6 +407,7 @@ window.IceQ.DZoneCoverage = (function () {
       clearOverlay();
       drawScene();
       resetDefender();
+      if (defender && defender.moveToTop) defender.moveToTop();   // YOU over the context sprites
       gridLayer.batchDraw();
       return { rushIdx: playIdx, rush: currentPlay(), totalRushes: PLAYS.length };
     }
@@ -368,6 +415,7 @@ window.IceQ.DZoneCoverage = (function () {
     return {
       rink,
       check: evaluate,
+      consequence,
       showMe: showCorrect,
       reset: () => { clearOverlay(); resetDefender(); },
       nextRush: nextPlay,
