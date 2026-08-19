@@ -77,7 +77,7 @@ window.IceQ.OzoneEntry = (function () {
       // Scoring paths now END IN THE NET (goal line y=64, net interior to 67.5).
       // They used to stop at y=62-63 and fire the green GOAL! banner with the
       // puck visibly sitting a foot or two outside.
-      rightPuck:   [ [37, 14], [34, 34], [2, 50], [0, 66] ],
+      rightPuck:   [ [37, 14], [34, 34], 'YOU', [0, 66] ],
       wrongPuck:   [ [37, 14], [38, 40], [36, 58], [22, 68], [-10, 70], [-32, 56] ],
       rightMsg:    'GOAL!',
       wrongMsg:    'NOBODY AT THE NET',
@@ -104,7 +104,7 @@ window.IceQ.OzoneEntry = (function () {
       // red DON'T-GO-HERE circle and then glided YOU straight through it.
       chaseZone:   { x: -16, y: 30, r: 8 },
       youRoute:    [ [-14, 2], [-8, 24], [-2, 40], [0, 52] ],
-      rightPuck:   [ [-37, 14], [-34, 34], [-2, 52], [0, 66] ],
+      rightPuck:   [ [-37, 14], [-34, 34], 'YOU', [0, 66] ],
       wrongPuck:   [ [-37, 14], [-34, 30], [-20, 26], [2, 16], [18, 4] ],
       rightMsg:    'GOAL!',
       wrongMsg:    'TURNOVER',
@@ -137,7 +137,7 @@ window.IceQ.OzoneEntry = (function () {
       // Show Me painted "DON'T GO HERE" on top of his own token.
       chaseZone:   { x: -24, y: 4, r: 7 },
       youRoute:    [ [-14, 2], [-12, 18], [-7, 32], [-3, 42] ],
-      rightPuck:   [ [32, 26], [12, 32], [-3, 42], [0, 66] ],
+      rightPuck:   [ [32, 26], [12, 32], 'YOU', [0, 66] ],
       wrongPuck:   [ [32, 26], [34, 44], [34, 60], [16, 68] ],
       rightMsg:    'GOAL — 4th ATTACKER!',
       wrongMsg:    'RUSH DIES',
@@ -178,7 +178,7 @@ window.IceQ.OzoneEntry = (function () {
       // thing. Now 16 ft clear of him.
       chaseZone:   { x:  0, y: 30, r: 10 },
       youRoute:    [ [2, 8], [7, 5], [12, 3] ],
-      rightPuck:   [ [-37, 28], [-20, 40], [-2, 28], [10, 8] ],
+      rightPuck:   [ [-37, 28], [-20, 40], 'YOU', [10, 8] ],
       wrongPuck:   [ [-37, 28], [-14, 36], [6, 20], [26, 5], [34, 1] ],
       rightMsg:    'YOU KILLED IT',
       wrongMsg:    'BREAKAWAY AGAINST',
@@ -202,8 +202,10 @@ window.IceQ.OzoneEntry = (function () {
     // actually CANCELS the play instead of just returning control while
     // banners keep landing on the retry screen (2026-08-18 audit).
     let activeSig = null;
-    const skipped = () => !!(activeSig && activeSig.skipped);
+    const skipped = () => !!(activeSig && activeSig.skipped) || demoAbort;
     let f1Node = null;       // our puck carrier (context player labelled F1)
+    let goalieNode = null;   // their goalie (shifts toward the pass before a shot)
+    let demoAbort = false;   // "Skip to quiz" mid-demo aborts the running reveal NOW
     let puckNode = null;     // the static puck on his blade
     let showMeGlideActive = false;
 
@@ -269,6 +271,7 @@ window.IceQ.OzoneEntry = (function () {
         });
         if (o.color === 'opponent') IceQ.Player.face(node, 'y-');
         if (o.label === 'F1') f1Node = node;
+        if (o.kind === 'goalie') goalieNode = node;
         gridLayer.add(node);
         sceneNodes.push(node);
       });
@@ -320,7 +323,10 @@ window.IceQ.OzoneEntry = (function () {
       const yFt = pos.y / scale;
       const distToCover = Math.hypot(xFt - p.coverTarget.x, yFt - p.coverTarget.y);
       const distToChase = Math.hypot(xFt - p.chaseZone.x, yFt - p.chaseZone.y);
-      const chasing = distToChase <= p.chaseZone.r;
+      // dJoin's obvious wrong answer (after read 4 says STAY) is standing
+      // still at the blue line, which the 7 ft trap circle missed: treat the
+      // whole blue-line band as the stay-trap for that read (QC 2026-08-18).
+      const chasing = distToChase <= p.chaseZone.r || (p.role === 'dJoin' && yFt < 12);
       const onSpot = distToCover <= COVER_TOL;
       // A banded read passes anywhere in the band that isn't the trap — see the
       // note on `coverBand` above. Point reads keep the tight tolerance.
@@ -457,6 +463,30 @@ window.IceQ.OzoneEntry = (function () {
       if (!feetPts || feetPts.length < 2 || typeof Konva === 'undefined') return;
       const puck = puckNode;
       if (!puck) return;
+      // 'YOU' = the kid's blade at the END of his route (the pass lands on
+      // the stick, not the sweater). Net legs (y >= 64) finish at the FAR
+      // post while the goalie squares to the passer: the pass moves the
+      // goalie, the shot beats him. (QC 2026-08-18.)
+      const p0 = currentPlay();
+      const youEnd = (you && p0.youRoute && p0.youRoute.length)
+        ? IceQ.Player.puckPosFor(you, { x: toCanvasX(p0.youRoute[p0.youRoute.length - 1][0]), y: toCanvasY(p0.youRoute[p0.youRoute.length - 1][1]) })
+        : null;
+      const feetResolved = feetPts.map((pt, i) => {
+        if (pt === 'YOU') {
+          if (!youEnd) return [0, 40];
+          return [(youEnd.x - rink.width / 2) / scale, youEnd.y / scale];
+        }
+        return pt;
+      });
+      feetPts = feetResolved.map((pt, i) => {
+        const isLast = i === feetResolved.length - 1;
+        if (isLast && pt[1] >= 64 && Math.abs(pt[0]) <= 3) {
+          const prev = feetResolved[i - 1] || [0, 40];
+          const side = prev[0] >= 0 ? 1 : -1;
+          return [-side * 2.4, 65.5];
+        }
+        return pt;
+      });
       const pts = feetPts.map(([x, y]) => ({ x: toCanvasX(x), y: toCanvasY(y) }));
       const f1 = f1Node;
       const f1Start = f1 ? f1.position() : null;
@@ -472,6 +502,10 @@ window.IceQ.OzoneEntry = (function () {
         // Scene may have been rebuilt mid-play (Next / Reset / route away):
         // never tween a detached node (Konva logs an error).
         if (puck.isDestroyed() || !puck.getLayer()) return;
+        if (last && feetPts[i][1] >= 64 && goalieNode && !goalieNode.isDestroyed()) {
+          const side = feetPts[i - 1][0] >= 0 ? 1 : -1;
+          goalieNode.to({ x: toCanvasX(side * 2.6), duration: Math.min(0.35, d), easing: Konva.Easings.EaseOut });
+        }
         if (i === 1 && f1 && rate === CARRY_FTPS && !f1.isDestroyed()) {
           // Carry: F1 moves so his blade follows the route; puck rides along.
           f1.to({ x: pts[i].x - off.x, y: pts[i].y - off.y, duration: d, easing });
@@ -520,14 +554,36 @@ window.IceQ.OzoneEntry = (function () {
     }
 
     // Demo reveal: route arrow + YOU skating it + the puck finding you.
+    // Total seconds a skate route / puck polyline takes, so the two can be
+    // run TOGETHER with the pass landing as YOU arrives (before: YOU skated
+    // the whole route, THEN the puck went, which read as a relay and doubled
+    // the demo time).
+    function routeSeconds(route, ftps) {
+      let t = 0; for (let i = 1; i < route.length; i++) t += legDuration(route[i - 1], route[i], ftps); return t;
+    }
+    function puckSeconds(feetPts) {
+      const p = currentPlay();
+      const pts = feetPts.map(pt => pt === 'YOU' ? p.youRoute[p.youRoute.length - 1] : pt);
+      let t = 0; for (let i = 1; i < pts.length; i++) t += legDuration(pts[i - 1], pts[i], puckLegRate(pts, i)); return t;
+    }
+    async function skateAndPass(feetPts) {
+      const p = currentPlay();
+      const ts = routeSeconds(p.youRoute, SKATE_FTPS);
+      const tp = puckSeconds(feetPts);
+      const skate = skateRoute();
+      await IceQ.Path.wait(Math.max(0, (ts - tp - 0.15) * 1000));
+      if (skipped()) { await skate; return; }
+      await Promise.all([skate, travelPuck(feetPts)]);
+    }
     async function playReveal() {
       activeSig = null;      // the demo is never under a contrast's Skip
+      demoAbort = false;
       clearOverlay();
       drawRouteArrow();
       await IceQ.Path.wait(140);
-      await skateRoute();
-      await travelPuck(currentPlay().rightPuck);
+      await skateAndPass(currentPlay().rightPuck);
     }
+    function abortDemo() { demoAbort = true; try { you && you.stop(); puckNode && puckNode.stop(); f1Node && f1Node.stop(); } catch (e) {} }
 
     // ----- contrast replay -------------------------------------------------
     // Wrong: leave YOU where the kid put them, run the puck down the path that
@@ -557,9 +613,7 @@ window.IceQ.OzoneEntry = (function () {
       drawRouteArrow();
       await IceQ.Path.wait(120);
       if (skipped()) return;
-      await skateRoute();
-      if (skipped()) return;
-      await travelPuck(p.rightPuck);
+      await skateAndPass(p.rightPuck);
       if (skipped()) return;
       await IceQ.Path.animateGoalConsequence(rink, { kind: 'saved', message: p.rightMsg, duration: 1.0 });
     }
@@ -643,6 +697,7 @@ window.IceQ.OzoneEntry = (function () {
 
     return {
       rink,
+      abortDemo,
       check: evaluate,
       showMe: showCorrect,
       reset: () => { clearOverlay(); resetYou(); },

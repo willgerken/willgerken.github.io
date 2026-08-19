@@ -215,7 +215,7 @@ window.IceQ.WHYS = {
       {
         type: 'quote',
         text: 'The hardest defensive habit to build at 10U: don\'t chase the puck. Especially not on a 2-on-1.',
-        attr: '— USA Hockey ADM',
+        attr: '— Coach',
       },
       ...(s ? [{
         type: 'bars',
@@ -251,7 +251,7 @@ window.IceQ.WHYS = {
         type: 'bullets',
         items: [
           'An attacker\'s skates must NOT cross the offensive blue line before the puck does.',
-          'If a player crosses early, they can "tag up" by touching their own blue line again — the play stays alive.',
+          'If a player is in early, he can "tag up": get both skates back out over the attacking blue line before the puck is touched, and the play stays alive (delayed offside).',
           'Watch the SKATES, not the body. It is offside when BOTH skates are over the line before the puck.',
         ],
       },
@@ -262,7 +262,7 @@ window.IceQ.WHYS = {
       {
         type: 'quote',
         text: 'Offside calls kill momentum. The best players time the blue line so they\'re always onside — even by half a stride.',
-        attr: '— USA Hockey ADM',
+        attr: '— Coach',
       },
       {
         type: 'cta',

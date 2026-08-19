@@ -443,7 +443,10 @@
 
     if (btnWatch) btnWatch.addEventListener('click', () => { runDemo(); });
     if (btnSkipDemo) btnSkipDemo.addEventListener('click', () => {
-      if (demoRunning) { demoSkipRequested = true; }   // skip mid-walkthrough
+      if (demoRunning) {                                // skip mid-walkthrough: abort the running reveal NOW
+        demoSkipRequested = true;
+        try { m.abortDemo && m.abortDemo(); } catch (e) {}
+      }
       else {                                            // skip straight from intro
         try { IceQ.Progress.markDemoSeen('ozone-entry'); } catch (e) {}
         m.goToRead(0); setMode('test');
@@ -1011,8 +1014,8 @@
       //   TOL < dist <= 14 -> just the right play, no goal consequence
       //   (pass branch handled above)
       showFb(msg);
-      if (r.dist > 14) {
-        runContrast();
+      if (r.chasingCarrier || r.dist > 14) {
+        runContrast();          // chasing the carrier MUST show the tap-in
       } else {
         runRightOnly();
       }
@@ -1872,9 +1875,14 @@
 
     let playsCompleted = new Set();
     const guard = makeDemoGuard(m);
+    const cueEl = APP.querySelector('#read-cue');
+    // The kid has three different jobs across five plays; say which one he
+    // has, and keep saying it (Reset used to wipe it).
+    const setCue = () => { const info = m.currentRushInfo(); if (cueEl) cueEl.textContent = `Read ${info.rushIdx + 1} of ${info.totalRushes}: ${info.rush.label}.`; };
     function updateProg() {
       const info = m.currentRushInfo();
       if (rushProg) rushProg.textContent = `(${info.rushIdx + 1}/${info.totalRushes})`;
+      setCue();
     }
     updateProg();
     const showEarnedChrome = () => {
@@ -1953,6 +1961,10 @@
     const setNarration = (txt) => { if (cueEl) cueEl.textContent = txt; };
 
     let readsCompleted = new Set();
+    // Reads the kid saw via Show Me this lap: a correct tap right after is
+    // reading the label, not the forecheck, so it earns nothing until the read
+    // comes round again (QC 2026-08-18: Show Me was free credit here).
+    let assisted = new Set();
     const totalReads = m.currentRushInfo().totalRushes;
     let demoRunning = false;
     let skipRequested = false;
@@ -1996,6 +2008,9 @@
         await IceQ.Path.wait(650);
       }
       try { IceQ.Progress.markDemoSeen('breakout-reads'); } catch (e) {}
+      // A mid-demo Skip already moved the kid into the quiz; do not yank him
+      // back to read 0 when the stale loop drains.
+      if (skipRequested) return;
       demoRunning = false;
       m.goToRead(0);
       setMode('test');
@@ -2003,7 +2018,11 @@
 
     if (btnWatch) btnWatch.addEventListener('click', () => { runDemo(); });
     if (btnSkipDemo) btnSkipDemo.addEventListener('click', () => {
-      if (demoRunning) { skipRequested = true; }   // skip mid-walkthrough
+      if (demoRunning) {                              // skip mid-walkthrough: NOW, not after this read finishes
+        skipRequested = true; demoRunning = false;
+        try { IceQ.Progress.markDemoSeen('breakout-reads'); } catch (e) {}
+        m.goToRead(0); setMode('test');
+      }
       else {                                        // skip straight from intro
         try { IceQ.Progress.markDemoSeen('breakout-reads'); } catch (e) {}
         m.goToRead(0); setMode('test');
@@ -2018,12 +2037,16 @@
         showFb(IceQ.BreakoutReads.phrasedFeedback(r));
         btnWhy.hidden = false;
         if (r.correct) {
-          try { IceQ.Audio && IceQ.Audio.savePling(); } catch {}
           try { IceQ.Path.celebrate(m.rink); } catch (e) {}
           // Reveal the play that beats this pressure AND run it (D carries /
           // passes / rims with the puck on the stick), not just an arrow.
           try { m.playReveal(); } catch (e) { m.showMe(); }
-          readsCompleted.add(info.rushIdx);
+          if (assisted.has(info.rushIdx)) {
+            showFb('Right call, but you saw the answer. This one comes back around; read it cold next time.');
+          } else {
+            try { IceQ.Audio && IceQ.Audio.savePling(); } catch {}
+            readsCompleted.add(info.rushIdx);
+          }
           setChoices(false);          // lock until Reset / Next read
           if (readsCompleted.size >= totalReads) {
             btnDone.hidden = false;
@@ -2038,9 +2061,9 @@
 
     btnShow.addEventListener('click', () => {
       m.showMe();
-      showFb('That gold path is the breakout that beats this pressure. Hit Reset and try a read on your own.');
+      assisted.add(m.currentRushInfo().rushIdx);
+      showFb('That gold path is the breakout that beats this pressure. No credit for this one now; it comes back around.');
       btnWhy.hidden = false;
-      // Show Me does not grant credit — the kid still taps the right call.
     });
     btnReset.addEventListener('click', () => {
       m.reset(); hideFb();
@@ -2049,6 +2072,7 @@
     });
     btnRotate.addEventListener('click', () => {
       m.nextRush(); updateProg(); setNarration(m.cue());
+      assisted.delete(m.currentRushInfo().rushIdx);   // a fresh lap is a fresh read
       hideFb();
       setChoices(true);
       btnRotate.hidden = true; btnWhy.hidden = true;
@@ -2206,14 +2230,16 @@
       const r = IceQ.House.check(cells);
       showFb(IceQ.House.phrasedFeedback(r));
       btnWhy.hidden = false;
-      if (r.correct >= r.totalHouse * 0.6) {
+      // Done needs the SHAPE, not a carpet: most of the house found AND not
+      // much painted outside it (select-all used to pass).
+      if (r.correct >= r.totalHouse * 0.75 && r.incorrect <= 3) {
         btnDone.hidden = false;
         try { IceQ.Path.celebrate(rink); } catch (e) {}
       }
     });
     btnShow.addEventListener('click', () => {
       IceQ.House.drawHousePolygon(rink);
-      showFb("The house: from the tops of the face-off circles down to the goal line. Now hit Reset and try to map it yourself.");
+      showFb("The house: widest at the dots, up to the tops of the circles, pinching in to the posts. Now hit Reset and map it yourself.");
       btnWhy.hidden = false;
       // Done is NOT unlocked by Show Me — the kid must demonstrate, not just see.
     });

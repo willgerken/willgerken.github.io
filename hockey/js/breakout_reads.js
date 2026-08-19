@@ -125,7 +125,11 @@ window.IceQ.BreakoutReads = (function () {
     let dNode = null;        // our puck-carrying D (drives the carry legs)
     let puckNode = null;     // the static puck on his blade
     let goalieNode = null;
-    function currentRead() { return READS[readIdx]; }
+    // Read ORDER is shuffled per session; the demo walks READS in authored
+    // order (goToRead(i) with i from the demo loop indexes the shuffled
+    // sequence too, which is fine: the demo shows all four either way).
+    const SEQ = (() => { const a = READS.map((_, i) => i); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; })();
+    function currentRead() { return READS[SEQ[readIdx]]; }
 
     function clearScene() {
       sceneNodes.forEach(n => { try { n.destroy(); } catch (e) {} });
@@ -145,7 +149,9 @@ window.IceQ.BreakoutReads = (function () {
       const xEff = MIRROR ? -o.x : o.x;
       // Facing y-, the sprite is flipped, so the side that points to the middle
       // swaps relative to the authored (+y) orientation.
-      const stickSide = ours ? (xEff >= 0 ? 'L' : 'R') : (xEff >= 0 ? 'R' : 'L');
+      // QC 2026-08-18: this was 'L'/'R' the other way round, which put every
+      // one of our blades toward the BOARDS after the 180 deg face('y-').
+      const stickSide = ours ? (xEff >= 0 ? 'R' : 'L') : (xEff >= 0 ? 'R' : 'L');
       const node = IceQ.Player.create({
         x: toCanvasX(o.x), y: toCanvasY(o.y),
         scale: Math.max(0.55, scale * (label ? 0.08 : 0.07)),
@@ -223,10 +229,12 @@ window.IceQ.BreakoutReads = (function () {
       });
       overlayLayer.add(arrow);
       arrow.to({ opacity: 0.95, duration: 0.35 });
-      // Label near the path midpoint
-      const mid = r.path[Math.floor(r.path.length / 2)];
+      // Label at the END of the path (receiver side), lifted off the ice a
+      // little: the midpoint of three of the four routes is behind the cage,
+      // right on top of the OUR NET tag.
+      const endPt = r.path[r.path.length - 1];
       const lbl = new Konva.Text({
-        x: toCanvasX(mid[0]) - 60, y: toCanvasY(mid[1]) - 26,
+        x: toCanvasX(endPt[0]) - 60, y: toCanvasY(Math.min(endPt[1], 60)) - 34,
         width: 120, align: 'center',
         text: BREAKOUTS[r.answer].label.toUpperCase(),
         fontSize: 13, fontStyle: '900', fill: '#E0C68A',

@@ -68,7 +68,7 @@ window.IceQ.DZoneCoverage = (function () {
       coverTarget: { x:  2, y: 53 },
       // Trap sits in the open ice a puck-watching defender drifts into — NOT on
       // top of the partner who is correctly pressuring the puck.
-      chaseZone:   { x: 12, y: 48, r: 9 },
+      chaseZone:   { x: 15, y: 46, r: 9 },
       start:       { x:  0, y: 30 },
     },
     {
@@ -120,7 +120,7 @@ window.IceQ.DZoneCoverage = (function () {
       // is "only one D goes," and the red DON'T-OVER-COMMIT ring was drawn on
       // top of the partner who correctly went. Now it marks the open ice the
       // second D actually drifts into when he over-commits.
-      chaseZone:   { x: 15, y: 56, r: 10 },
+      chaseZone:   { x: 17, y: 57, r: 9 },
       start:       { x: -8, y: 34 },
     },
   ];
@@ -220,6 +220,7 @@ window.IceQ.DZoneCoverage = (function () {
           color: o.color, stickSide: o.stickSide || 'L',
           label: o.label || '', kind: o.kind || 'skater',
         });
+        if (o.color === 'spartan') IceQ.Player.face(node, 'y-');   // our D face the play, not our goalie
         gridLayer.add(node);
         sceneNodes.push(node);
       });
@@ -254,6 +255,7 @@ window.IceQ.DZoneCoverage = (function () {
         color: 'spartan', label: 'YOU', stickSide: 'L',
         draggable: true,
       });
+      IceQ.Player.face(defender, 'y-');
       defender.on('dragmove', () => {
         const pos = defender.position();
         const minX = toCanvasX(-40), maxX = toCanvasX(40);
@@ -276,8 +278,16 @@ window.IceQ.DZoneCoverage = (function () {
       const yFt = pos.y / scale;
       const distToCover = Math.hypot(xFt - p.coverTarget.x, yFt - p.coverTarget.y);
       const distToChase = Math.hypot(xFt - p.chaseZone.x, yFt - p.chaseZone.y);
+      // For the net-front roles, "cover" also means goal-side of your man
+      // and not parked on the goalie (QC 2026-08-18: the circle alone passed
+      // a kid standing ABOVE his man, and a kid standing in the crease).
+      const man = (p.role === 'weakD' || p.role === 'secondD') ? p.context[2] : null;
+      const goalSide = !man || yFt >= man.y + 1;
+      const inCrease = !!man && yFt > 58 && Math.abs(xFt) < 6;
       return {
-        cover: distToCover <= COVER_TOL,
+        cover: distToCover <= COVER_TOL && goalSide && !inCrease,
+        nearButWrongSide: distToCover <= COVER_TOL && !goalSide,
+        onGoalie: distToCover <= COVER_TOL && goalSide && inCrease,
         chasing: distToChase <= p.chaseZone.r,
         distToCover, distToChase,
         role: p.role,
@@ -379,6 +389,12 @@ window.IceQ.DZoneCoverage = (function () {
           return "Good — goal-side of your man, stick on stick, he can't get to the net.";
       }
     }
+    if (res.nearButWrongSide) {
+      return "Close, but you're on the wrong side of your man: he is between you and the net. Get goal-side of him, stick on stick, and he has to go through you.";
+    }
+    if (res.onGoalie) {
+      return "You're standing on your goalie. Step out to the top of the crease, goal-side of your man, so the goalie can see the puck.";
+    }
     if (res.chasing) {
       switch (res.role) {
         case 'weakD':
@@ -391,7 +407,8 @@ window.IceQ.DZoneCoverage = (function () {
           return "You over-committed and lost your man. Find him, get goal-side, stick on stick.";
       }
     }
-    return "You're in between. Not covering your man, and not protecting the middle. Pick one. Read where your check is, get goal-side of him, stick on stick.";
+    if (res.role === 'wing') return "You're in between. Your check is the point man: get back up into his shooting lane and keep your gap.";
+    return "You're in between. Not on your man, not protecting the middle. Find your check first, get goal-side of him, stick on stick.";
   }
 
   return { init, phrasedFeedback, PLAYS };

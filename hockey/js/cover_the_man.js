@@ -133,6 +133,7 @@ window.IceQ.CoverTheMan = (function () {
         scale: Math.max(0.55, scale * 0.075),
         color: 'spartan', label: 'D2', stickSide: p.dPartner.stickSide,
       });
+      IceQ.Player.face(partnerNode, 'y-');
       // Our goalie in our net (zone cue + nobody defends an empty net).
       const goalie = IceQ.Player.create({
         x: toCanvasX(0), y: toCanvasY(62.5),
@@ -190,6 +191,7 @@ window.IceQ.CoverTheMan = (function () {
         color: 'spartan', label: 'YOU', stickSide: 'L',
         draggable: true,
       });
+      IceQ.Player.face(defender, 'y-');   // our zone: YOU faces up-ice, not his own goalie
       defender.on('dragmove', () => {
         const pos = defender.position();
         const minX = toCanvasX(-40), maxX = toCanvasX(40);
@@ -216,8 +218,14 @@ window.IceQ.CoverTheMan = (function () {
       const yFt = pos.y / scale;
       const distToCover = Math.hypot(xFt - p.coverTarget.x, yFt - p.coverTarget.y);
       const distToChase = Math.hypot(xFt - p.chaseZone.x, yFt - p.chaseZone.y);
+      // The circle alone let a kid ABOVE his man pass (QC 2026-08-18): cover
+      // means goal-side of the slot man and not parked on the goalie.
+      const goalSide = yFt >= p.slotMan.y + 1;
+      const inCrease = yFt > 58 && Math.abs(xFt) < 6;
       return {
-        cover: distToCover <= COVER_TOL,
+        cover: distToCover <= COVER_TOL && goalSide && !inCrease,
+        nearButWrongSide: distToCover <= COVER_TOL && !goalSide,
+        onGoalie: distToCover <= COVER_TOL && inCrease,
         chasing: distToChase <= p.chaseZone.r,
         distToCover, distToChase,
         playLabel: p.label,
@@ -323,10 +331,16 @@ window.IceQ.CoverTheMan = (function () {
     if (res.cover) {
       return "You covered the slot man. The puck carrier has no easy passing option — your D-partner (D2) pressures the puck. That's how you actually take a goal away.";
     }
+    if (res.nearButWrongSide) {
+      return "Close, but you're on the wrong side of him: he is between you and the net. Get goal-side, stick on his blade.";
+    }
+    if (res.onGoalie) {
+      return "You're standing on your goalie. Step out to the top of the crease, goal-side of the slot man, and let the goalie see the puck.";
+    }
     if (res.chasing) {
       return "You chased the puck — and now the slot man is wide open for the cross-ice pass. D2 already had the carrier. Cover the receiver.";
     }
-    return "You're between the two opponents but not really covering either. Tap Show Me to see where to position.";
+    return "You're between the two opponents but not really covering either. Get goal-side of the slot man with your stick on his blade; D2 has the carrier.";
   }
 
   return { init, phrasedFeedback, PLAYS };
