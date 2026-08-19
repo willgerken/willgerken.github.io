@@ -399,6 +399,35 @@
   </template>
 
   <!-- ========== O-ZONE FACEOFF SCENARIO TEMPLATE ========== -->
+  <!-- ========== PINCH OR PEEL (Veterans) TEMPLATE ========== -->
+  <template id="tpl-pinch-read">
+    <section class="view view-pinch-read">
+      <section class="instructions">
+        <p>You are the strong-side D at the point. Their D rims it up your wall. <button class="term" data-term="pinch">Pinch</button> (go get it, keep it in) or <button class="term" data-term="peel">peel</button> (back off, live to defend)? It depends on who is high and whether you can win the race.</p>
+        <p class="prompt" id="read-cue">Hit <strong>Play</strong>. Tap <strong>PINCH</strong> or <strong>PEEL</strong> before the puck reaches you.</p>
+      </section>
+      <div class="rink-wrap"><div id="rink" aria-label="Half ice rink, their end"></div></div>
+      <section class="feedback" id="feedback" hidden><p id="feedback-message"></p></section>
+      <nav class="controls">
+        <button class="btn btn-primary" id="btn-check"><span class="btn-icon">▶</span><span class="btn-label">Play</span></button>
+        <button class="btn btn-call-offside" id="btn-pinch"><span class="btn-icon">⬇</span><span class="btn-label">PINCH</span></button>
+        <button class="btn btn-call-offside" id="btn-peel"><span class="btn-icon">⬆</span><span class="btn-label">PEEL</span></button>
+        <button class="btn btn-secondary" id="btn-show"><span class="btn-icon">▸</span><span class="btn-label">Show Me</span></button>
+        <button class="btn btn-tertiary" id="btn-reset"><span class="btn-icon">↻</span><span class="btn-label">Reset</span></button>
+      </nav>
+      <button class="btn btn-rotate" id="btn-rotate" hidden>Next play <span id="rush-progress" class="rush-progress"></span></button>
+      <button class="btn btn-why" id="btn-why" hidden><span class="why-spark">✦</span> Why does this matter?</button>
+      <button class="btn btn-skip" id="btn-skip" hidden><span class="skip-icon">⏭</span> Skip ahead (no credit)</button>
+      <button class="btn btn-done" id="btn-done" hidden>Knock it off ▸</button>
+      <section class="vocab">
+        <button class="term" data-term="pinch">pinch</button>
+        <button class="term" data-term="peel">peel</button>
+        <button class="term" data-term="rim">rim</button>
+        <button class="term" data-term="odd-man">odd-man rush</button>
+      </section>
+    </section>
+  </template>
+
   <!-- ========== O-ZONE CYCLE (Veterans) TEMPLATE ========== -->
   <template id="tpl-ozone-cycle">
     <section class="view view-ozone-cycle">
@@ -561,6 +590,7 @@
   <script src="js/ozone_faceoff.js"></script>
   <script src="js/ozone_entry.js"></script>
   <script src="js/ozone_cycle.js"></script>
+  <script src="js/pinch_read.js"></script>
   <script src="js/home.js"></script>
   <script src="js/main.js"></script>
   <script>

@@ -205,6 +205,11 @@ window.IceQ.vocab = {
     def: "Keeping the puck low in their end by passing it back down the wall to a teammate who is swinging underneath you, over and over, until somebody is open.",
     why: "Hard to defend because the D has to choose between the puck and the guy coming under. The whole trick is WHEN you give it up: after the trailer is there, before the D closes.",
   },
+  'peel': {
+    title: 'Peel',
+    def: "Back off the wall and skate back toward the blue line instead of going for the puck. You give up the zone on purpose.",
+    why: "A pinch you lose is a 2-on-1 against. When nobody is high behind you or the winger has the jump, peeling keeps the numbers even.",
+  },
   'bump': {
     title: 'Bump',
     def: "A short pass down the boards to the teammate behind you. Soft, on the wall, easy to take.",
