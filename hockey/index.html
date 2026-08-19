@@ -272,7 +272,7 @@
     <section class="view view-offside">
       <section class="instructions">
         <p>Watch the play. Did the attacker enter the zone <strong>before</strong> the puck? That's <button class="term" data-term="offside">offside</button>.</p>
-        <p class="prompt">Hit <strong>Play</strong> to start. Tap <strong>OFFSIDE</strong> the moment you see it. If the play is good (puck first, or attacker tags up), don't tap.</p>
+        <p class="prompt">Hit <strong>Play</strong> to start. Tap <strong>OFFSIDE</strong> the moment you see it. If the play is good (puck crosses first), don't tap.</p>
       </section>
       <div class="rink-wrap"><div id="rink" aria-label="Half ice rink"></div></div>
       <section class="feedback" id="feedback" hidden><p id="feedback-message"></p></section>
@@ -333,7 +333,8 @@
     <section class="view view-dzone-coverage">
       <section class="instructions">
         <p>Our end. We play <strong>man-to-man in our zone</strong> — read where YOUR man is, get <button class="term" data-term="goal-side">goal-side</button> of him (between him and the net) with <button class="term" data-term="stick-on-stick">stick on stick</button>, and everybody protects the <button class="term" data-term="danger-zone">Danger Zone</button>.</p>
-        <p class="prompt">Drag your player (gold) onto the defensive side of your man. Don't <button class="term" data-term="puck-watching">puck-watch</button> and <button class="term" data-term="over-commit">over-commit</button>. Hit <strong>Check</strong>.</p>
+        <p class="prompt">Drag your player (gold) goal-side of your man. Don't <button class="term" data-term="puck-watching">puck-watch</button> and <button class="term" data-term="over-commit">over-commit</button>. Hit <strong>Check</strong>.</p>
+        <p class="prompt read-cue" id="read-cue"></p>
       </section>
       <div class="rink-wrap">
         <div id="rink" aria-label="Half ice rink"></div>

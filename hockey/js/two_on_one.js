@@ -147,6 +147,7 @@ window.IceQ.TwoOnOne = (function () {
         kind: 'goalie',
         label: 'G',
       });
+      IceQ.Player.face(goalieNode, 'y-');
       gridLayer.add(goalieNode);
     }
 
@@ -351,6 +352,9 @@ window.IceQ.TwoOnOne = (function () {
         // off the new sprite quality.
         useImageSprite: true,
       });
+      // Body to the rush, skates toward our net: that is what backing in
+      // looks like. Authored sprites face +y, so turn him around.
+      IceQ.Player.face(defender, 'y-');
       defender.on('dragmove', () => {
         const pos = defender.position();
         const minX = toCanvasX(-40), maxX = toCanvasX(40);
@@ -380,6 +384,7 @@ window.IceQ.TwoOnOne = (function () {
         dist,
         distToCarrier,
         chasingCarrier,
+        inLaneButDeep: Math.abs(xFt - t.x) < 5 && yFt > t.y + 6,
         pass: dist <= TOL_FT,
         rushLabel: r.label,
       };
@@ -511,7 +516,7 @@ window.IceQ.TwoOnOne = (function () {
         const carrierDrive  = { x: toCanvasX(carrierDriveFt.x),  y: toCanvasY(carrierDriveFt.y) };
         const receiverDrive = { x: toCanvasX(receiverDriveFt.x), y: toCanvasY(receiverDriveFt.y) };
         puckNode.visible(true);
-        const driveSec = 0.75;
+        const driveSec = 1.15;   // 35 ft in ~1.15 s = ~30 ft/s with the ease; a rush, not a blur
         carrierNode.to({ x: carrierDrive.x, y: carrierDrive.y, duration: driveSec, easing: Konva.Easings.EaseIn });
         receiverNode.to({ x: receiverDrive.x, y: receiverDrive.y, duration: driveSec, easing: Konva.Easings.EaseIn });
         {
@@ -538,7 +543,7 @@ window.IceQ.TwoOnOne = (function () {
         }
         const passHandle = trackHandle(IceQ.Path.animatePuckPass(
           gridLayer, passFrom, passTo,
-          { duration: 0.42, arcHeight: arc }
+          { duration: 0.6, arcHeight: arc }
         ));
         await passHandle.promise;
         if (sig.skipped) { puckNode.visible(origPuckVisible); return; }
@@ -617,14 +622,25 @@ window.IceQ.TwoOnOne = (function () {
         // The carrier still drives (the D took the PASS away, not the rush),
         // then has to shoot from the top of the circle into a set goalie.
         const origPuckVisible = puckNode.visible();
+        const DRV = 1.1;   // ~20-25 ft/s, a rush, not a blur
         const cDrive = { x: toCanvasX(r.carrier.x * 0.9), y: toCanvasY(40) };
-        carrierNode.to({ x: cDrive.x, y: cDrive.y, duration: 0.6, easing: Konva.Easings.EaseIn });
-        receiverNode.to({ x: toCanvasX(r.receiver.x * 0.8), y: toCanvasY(r.receiver.y + 16), duration: 0.6, easing: Konva.Easings.EaseIn });
+        const rDriveFt = { x: r.receiver.x * 0.8, y: r.receiver.y + 16 };
+        carrierNode.to({ x: cDrive.x, y: cDrive.y, duration: DRV, easing: Konva.Easings.EaseIn });
+        receiverNode.to({ x: toCanvasX(rDriveFt.x), y: toCanvasY(rDriveFt.y), duration: DRV, easing: Konva.Easings.EaseIn });
         {
           const pEnd = IceQ.Player.puckPosFor(carrierNode, cDrive);
-          puckNode.to({ x: pEnd.x, y: pEnd.y, duration: 0.6, easing: Konva.Easings.EaseIn });
+          puckNode.to({ x: pEnd.x, y: pEnd.y, duration: DRV, easing: Konva.Easings.EaseIn });
         }
-        await IceQ.Path.wait(630);
+        // The D backs in WITH the rush, stick still in the new pass lane
+        // (t=0.6 of carrier->receiver, 4 ft of depth). Before QC 2026-08-18
+        // he stood at the old spot while the rush went past him, and the
+        // "forced shot" made no sense.
+        if (defender) {
+          const dx = r.carrier.x * 0.9 * 0.4 + rDriveFt.x * 0.6;
+          const dy = 40 * 0.4 + rDriveFt.y * 0.6 + 4;
+          defender.to({ x: toCanvasX(dx), y: toCanvasY(dy), duration: DRV, easing: Konva.Easings.EaseIn });
+        }
+        await IceQ.Path.wait(DRV * 1000 + 30);
         if (sig.skipped) return;
         puckNode.visible(false);
         const carrierCanvas = IceQ.Player.puckPosFor(carrierNode, cDrive);
@@ -642,7 +658,7 @@ window.IceQ.TwoOnOne = (function () {
         const cornerCanvas = { x: toCanvasX(cornerFt.x), y: toCanvasY(cornerFt.y) };
         const reboundHandle = trackHandle(IceQ.Path.animatePuckPass(
           gridLayer, goalieCanvas, cornerCanvas,
-          { duration: 0.35, arcHeight: 6 }
+          { duration: 0.7, arcHeight: 6 }
         ));
         await reboundHandle.promise;
         if (sig.skipped) { puckNode.visible(origPuckVisible); return; }
@@ -697,7 +713,18 @@ window.IceQ.TwoOnOne = (function () {
       rink,
       check: evaluate,
       showMe: showCorrect,
-      reset: () => { stopAllContrast(); clearOverlay(); resetDefender(); },
+      reset: () => {
+        stopAllContrast(); clearOverlay(); resetDefender();
+        // Skip/Reset mid-replay used to leave the attackers parked at the
+        // drive spots while the grading still used the authored rush.
+        try {
+          const r = currentRush();
+          if (carrierNode) { carrierNode.stop(); carrierNode.position({ x: toCanvasX(r.carrier.x), y: toCanvasY(r.carrier.y) }); }
+          if (receiverNode) { receiverNode.stop(); receiverNode.position({ x: toCanvasX(r.receiver.x), y: toCanvasY(r.receiver.y) }); }
+          if (puckNode && carrierNode) { puckNode.stop(); puckNode.visible(true); puckNode.position(IceQ.Player.puckPosFor(carrierNode)); }
+          gridLayer.batchDraw();
+        } catch (e) { /* scene may be mid-rebuild */ }
+      },
       nextRush,
       currentRushInfo: () => ({ rushIdx, rush: currentRush(), totalRushes: ACTIVE_RUSHES.length }),
       isDone: () => evaluate().pass,
@@ -720,6 +747,9 @@ window.IceQ.TwoOnOne = (function () {
     }
     if (res.dist > 14) {
       return "Way off the pass line. The cross-ice pass is wide open. Get between the two attackers.";
+    }
+    if (res.inLaneButDeep) {
+      return "You're in the lane but backing in too deep. Tighten the gap so the carrier can't walk to the top of the circle.";
     }
     return "Close — but not quite on the pass line. Slide so your stick is in the passing lane.";
   }

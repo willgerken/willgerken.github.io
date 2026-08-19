@@ -50,11 +50,11 @@ window.IceQ.OzoneCycle = (function () {
   ];
   // Standard trailer: from the slot, swings down INSIDE F1 into the corner.
   const TRAILER_STD = [
-    { t: 0.00, x: 22, y: 38 },
-    { t: 0.30, x: 30, y: 50 },
-    { t: 0.55, x: 35, y: 62 },
-    { t: 0.75, x: 37, y: 66 },
-    { t: 1.00, x: 38, y: 67 },
+    { t: 0.00, x: 20, y: 36 },
+    { t: 0.30, x: 25, y: 50 },
+    { t: 0.55, x: 33, y: 63 },
+    { t: 0.75, x: 36, y: 67 },
+    { t: 1.00, x: 37, y: 68 },
   ];
   const PLAYS = [
     {
@@ -86,20 +86,19 @@ window.IceQ.OzoneCycle = (function () {
       cue: 'F2 is late getting under and the D is closing fast. The pocket is SHORT. Wait for it, then do not miss it.',
       trailer: [
         { t: 0.00, x: 16, y: 32 },
-        { t: 0.35, x: 26, y: 46 },
-        { t: 0.62, x: 35, y: 62 },
+        { t: 0.35, x: 23, y: 46 },
+        { t: 0.62, x: 33, y: 63 },
         { t: 0.80, x: 37, y: 66 },
         { t: 1.00, x: 38, y: 67 },
       ],
       trailerLabel: 'F2',
       window: [0.58, 0.78],
-      pinAt: 0.84,
       noDrop: false,
     },
     {
       key: 'covered',
       label: 'backchecker jumps the lane',
-      cue: 'F2 is coming under, but watch their forward: he is backchecking right into the lane. If the lane is covered, there is NO drop. Keep it.',
+      cue: 'F2 is coming under. Watch their forward too: he is backchecking hard. Read the lane, then make your call.',
       trailer: TRAILER_STD,
       trailerLabel: 'F2',
       // Their backchecking forward slides down between F1 and the trailer
@@ -120,28 +119,36 @@ window.IceQ.OzoneCycle = (function () {
     {
       key: 'd-pinch',
       label: 'your D pinches down as the trailer',
-      cue: 'F2 went to the net. Your strong-side D is pinching DOWN the wall behind you to keep the cycle alive. Bump it to him when he is under you.',
+      cue: 'F2 went to the net. Your strong-side D is pinching DOWN the wall to keep the cycle alive. Bump it up the wall to him once he is set above you.',
+      // The D activates: comes down the wall and SETS at the hash marks. F1
+      // drifts a lane inside so the two never share the same wall (they used
+      // to skate through each other inside the window).
       trailer: [
         { t: 0.00, x: 30, y: 9 },
-        { t: 0.30, x: 39, y: 22 },
-        { t: 0.60, x: 40.5, y: 48 },
-        { t: 0.80, x: 40.5, y: 56 },
-        { t: 1.00, x: 40.5, y: 58 },
+        { t: 0.30, x: 38.5, y: 20 },
+        { t: 0.52, x: 39.5, y: 31 },
+        { t: 1.00, x: 39.5, y: 33 },
       ],
       trailerLabel: 'D',
       trailerIsD: true,
+      f1Route: [
+        { t: 0.00, x: 36.5, y: 67 },
+        { t: 0.25, x: 38, y: 58 },
+        { t: 0.55, x: 32, y: 46 },
+        { t: 0.75, x: 30, y: 42 },
+        { t: 1.00, x: 30, y: 40 },
+      ],
       // F2 is at the net front in this one.
       f2Static: { x: 4, y: 56 },
-      window: [0.52, 0.76],
+      window: [0.54, 0.78],
       noDrop: false,
-      // The D coming down the wall trails ABOVE F1, so the bump goes up the
-      // wall, not down into the corner.
+      // The D is ABOVE F1, so the bump goes up the wall, not down into the corner.
       bumpUp: true,
     },
     {
       key: 'no-trailer',
       label: 'no trailer, F2 goes to the net',
-      cue: 'F2 is driving the net, not coming under. Nobody is behind you. No drop here: carry it and cut to the middle.',
+      cue: 'F2 is on the move. Is he coming under you, or somewhere else? Read it, then make your call.',
       trailer: [
         { t: 0.00, x: 22, y: 38 },
         { t: 0.50, x: 8, y: 54 },
@@ -177,6 +184,10 @@ window.IceQ.OzoneCycle = (function () {
     });
     const tokenScale = Math.max(0.62, scale * 0.085);
 
+    // Play ORDER is shuffled per session (first one stays the basic cycle so
+    // the intro reads), otherwise six plays in a fixed order are memorised by
+    // the second pass.
+    const ORDER = (() => { const rest = PLAYS.slice(1).map((_, i) => i + 1); for (let i = rest.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [rest[i], rest[j]] = [rest[j], rest[i]]; } return [0].concat(rest); })();
     let playIdx = 0;
     let nodes = {};          // f1, f2, f3, d1, d2, od1, od2, goalie, jumper, puck
     let animation = null;
@@ -188,7 +199,7 @@ window.IceQ.OzoneCycle = (function () {
     let loose = [];          // extra pucks / overlays to clear
     let contrastHandles = [];
 
-    function currentPlay() { return PLAYS[playIdx]; }
+    function currentPlay() { return PLAYS[ORDER[playIdx]]; }
 
     function mk(opts) {
       const g = IceQ.Player.create(Object.assign({ scale: tokenScale }, opts, {
@@ -216,12 +227,12 @@ window.IceQ.OzoneCycle = (function () {
       place(nodes.od2, { x: -4, y: 57 });
       IceQ.Player.face(nodes.od2, 'y-');
       // Our guys.
-      nodes.f1 = mk({ color: 'spartan', label: 'F1', stickSide: 'R' });
+      nodes.f1 = mk({ color: 'spartan', label: 'YOU', stickSide: 'R' });
       IceQ.Player.face(nodes.f1, 'y-');
-      nodes.f2 = mk({ color: 'spartan', label: p.trailerLabel === 'F2' ? 'F2' : 'F2', stickSide: 'R' });
+      nodes.f2 = mk({ color: 'spartan', label: 'F2', stickSide: 'L' });   // stick inside: blade never past the boards
       nodes.f3 = mk({ color: 'spartan', label: 'F3', stickSide: 'L' });
       place(nodes.f3, { x: 14, y: 30 });
-      nodes.d1 = mk({ color: 'spartan', label: 'D', stickSide: 'R' });   // strong-side point
+      nodes.d1 = mk({ color: 'spartan', label: 'D', stickSide: 'L' });   // strong-side point, stick inside
       nodes.d2 = mk({ color: 'spartan', label: 'D', stickSide: 'L' });   // weak-side point
       place(nodes.d2, { x: -20, y: 9 });
       if (p.jumper) {
@@ -245,7 +256,7 @@ window.IceQ.OzoneCycle = (function () {
       opts = opts || {};
       const p = currentPlay();
       // F1: carry route, or the "hold and cut" route after the no-drop read.
-      let f1 = kf(F1_ROUTE, t);
+      let f1 = kf(p.f1Route || F1_ROUTE, t);
       if (opts.hold && p.holdRoute && t >= p.holdRoute[0].t) f1 = kf(p.holdRoute, t);
       place(nodes.f1, f1);
       // F1 faces his direction of travel.
@@ -264,7 +275,9 @@ window.IceQ.OzoneCycle = (function () {
         IceQ.Player.face(nodes.d1, 'y+');
       }
       // Their pressure D rides F1's inside hip, then pins him.
-      const pinAt = p.pinAt || 0.80;
+      // The seal IS the cue that the pocket closed: the pressure D pins F1
+      // exactly when the drop window ends, never before.
+      const pinAt = p.pinAt || (p.noDrop ? 0.80 : p.window[1]);
       const pinU = Math.max(0, Math.min(1, (t - pinAt) / 0.12));
       place(nodes.od1, { x: f1.x - 7 + 4 * pinU, y: f1.y + 2 - 2 * pinU });
       // Backchecker (decoy play).
@@ -348,9 +361,14 @@ window.IceQ.OzoneCycle = (function () {
     }
     // Move a skater along feet points with the puck on his blade.
     async function carry(node, ptsFt, ftps, sig) {
+      // Start from where the sprite IS (callers used to pass the blade spot,
+      // which hopped the body 4-5 ft), and face the way we are going.
+      ptsFt = [nodeFt(node)].concat(ptsFt.slice(1));
       for (let i = 1; i < ptsFt.length; i++) {
         if (!node.getStage()) return;
         const a = ptsFt[i - 1], b = ptsFt[i];
+        IceQ.Player.face(node, Math.abs(b.y - a.y) >= Math.abs(b.x - a.x) ? (b.y < a.y ? 'y-' : 'y+') : (b.x < a.x ? 'x-' : 'x+'));
+        if (MIRROR && Math.abs(b.y - a.y) < Math.abs(b.x - a.x)) IceQ.Player.face(node, b.x < a.x ? 'x+' : 'x-');
         const d = Math.max(0.15, Math.min(1.4, Math.hypot(b.x - a.x, b.y - a.y) / ftps));
         const t0 = performance.now();
         let done = false;
@@ -424,11 +442,17 @@ window.IceQ.OzoneCycle = (function () {
           return;
         }
         if (res.kind === 'good-hold') {
-          // F1 already cut to the middle on the hold route; he shoots.
+          // F1 cut off the wall; the textbook next play is low-to-high to
+          // the point, and the D shoots through the net-front screen.
           const from = bladeFt(f1);
-          await slidePuck(puck, [from, { x: 0.8, y: 60.3 }], SHOT_FTPS, { sig, easeLast: true });   // into the goalie's pad: a shot, not a gift
+          const d1 = nodes.d1;
+          await slidePuck(puck, [from, bladeFt(d1)], PASS_FTPS, { sig });
           if (sig.skipped) return;
-          await IceQ.Path.animateGoalConsequence(rink, { kind: 'saved', message: 'GOOD READ. KEPT IT, CUT TO THE MIDDLE, SHOT ON NET.', duration: 1.1 });
+          await IceQ.Path.wait(120);
+          goalieTo(0.5, 0.3);
+          await slidePuck(puck, [bladeFt(d1), { x: 0.8, y: 60.3 }], SHOT_FTPS, { sig, easeLast: true });   // through traffic, into the pad: a shot, not a gift
+          if (sig.skipped) return;
+          await IceQ.Path.animateGoalConsequence(rink, { kind: 'saved', message: 'GOOD READ. KEPT IT, LOW-TO-HIGH, POINT SHOT ON NET.', duration: 1.1 });
           return;
         }
         if (res.kind === 'too-early') {
@@ -436,9 +460,15 @@ window.IceQ.OzoneCycle = (function () {
           const from = bladeFt(f1);
           const wallX = WALL_X + 1.5;
           const dead = { x: wallX, y: Math.min(70, from.y + 14) };
+          // The trailer keeps coming (he WAS going to be there), their D
+          // peels off F1 and wins the loose puck by a step: the lesson is
+          // visible, not asserted.
+          const trNow = nodeFt(tr);
+          const trLate = skate(tr, [trNow, { x: dead.x - 5, y: dead.y + 1 }], 16, sig);
           await slidePuck(puck, [from, { x: wallX, y: from.y + 3 }, dead], PASS_FTPS, { sig, easeLast: true });
           if (sig.skipped) return;
-          await skate(nodes.od1, [nodeFt(nodes.od1), { x: dead.x - 2.5, y: dead.y - 1 }], CARRY_FTPS + 4, sig);
+          await skate(nodes.od1, [nodeFt(nodes.od1), { x: dead.x - 2.5, y: dead.y - 1 }], CARRY_FTPS + 6, sig);
+          await trLate;
           if (sig.skipped) return;
           const g = nodeFt(nodes.od1);
           await carry(nodes.od1, [g, { x: g.x - 6, y: g.y - 16 }], CARRY_FTPS + 4, sig);
@@ -483,8 +513,10 @@ window.IceQ.OzoneCycle = (function () {
       const p = currentPlay();
       return (async function () {
         if (!res || res.correct) return { completed: true };
-        await raceSkip(IceQ.Path.flashLabel(rink, { text: 'BUT INSTEAD…', color: '#E0C68A', fontSize: 30, holdMs: 420, fadeMs: 160, skipSignal: sig }), sig, 2500);
-        if (sig.skipped) return { skipped: true };
+        if (res.kind !== 'demo') {
+          await raceSkip(IceQ.Path.flashLabel(rink, { text: 'BUT INSTEAD…', color: '#E0C68A', fontSize: 30, holdMs: 420, fadeMs: 160, skipSignal: sig }), sig, 2500);
+          if (sig.skipped) return { skipped: true };
+        }
         // Replay to the right moment and freeze it.
         overlayLayer.destroyChildren();
         positionAt(0, { hold: p.noDrop });
@@ -511,6 +543,9 @@ window.IceQ.OzoneCycle = (function () {
         if (!p.noDrop) {
           const tr = trailerNode();
           const ring = new Konva.Circle({ x: tr.x(), y: tr.y(), radius: 6 * scale, stroke: '#3DB46A', strokeWidth: 3, dash: [6, 4], listening: false });
+          overlayLayer.add(ring); loose.push(ring);
+        } else if (nodes.jumper) {
+          const ring = new Konva.Circle({ x: nodes.jumper.x(), y: nodes.jumper.y(), radius: 6 * scale, stroke: '#CE202E', strokeWidth: 3, dash: [6, 4], listening: false });
           overlayLayer.add(ring); loose.push(ring);
         }
         overlayLayer.batchDraw();
@@ -595,7 +630,7 @@ window.IceQ.OzoneCycle = (function () {
     switch (res.kind) {
       case 'good-drop':
         return res.trailer === 'D'
-          ? 'That is the pocket. Your D came down the wall behind you while their D was on you, and the bump got there clean. Cycle stays alive, and he has a lane.'
+          ? 'That is the pocket. Your D came down the wall and set above you while their D was on you, and the bump up the wall got there clean. Cycle stays alive, and he has a lane.'
           : 'That is the pocket. F2 was under you with speed, their D was on you, and the bump got there clean. That is how a cycle keeps the puck.';
       case 'good-hold':
         return res.play === 'covered'

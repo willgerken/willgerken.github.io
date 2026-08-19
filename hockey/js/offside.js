@@ -67,7 +67,7 @@ window.IceQ.Offside = (function () {
       offside: true,
       description: 'Receiver was over the blue line before the puck.',
       carrier:  { startX: 40, startY: 22, endX: 170, endY: 28, side: 'R' },
-      receiver: { startX: 80, startY: 42, endX: 165, endY: 36,
+      receiver: { startX: 80, startY: 42, endX: 170, endY: 36,
                   pathType: 'straight' },
       // puck = carrier + 3 ft. puck reaches x=136 when carrier=133 →
       //   t=(133-40)/130 = 0.715
@@ -82,7 +82,7 @@ window.IceQ.Offside = (function () {
       offside: true,
       description: 'Receiver leaked into the zone before the puck arrived.',
       carrier:  { startX: 35, startY: 63, endX: 168, endY: 58, side: 'L' },
-      receiver: { startX: 85, startY: 22, endX: 160, endY: 32,
+      receiver: { startX: 85, startY: 22, endX: 166, endY: 32,
                   pathType: 'straight' },
       // puck=carrier+3; puck crosses 136 at t=(133-35)/133=0.737.
       // receiver crosses 136 at t=(136-85)/(160-85)=0.680 → offside by
@@ -176,7 +176,7 @@ window.IceQ.Offside = (function () {
       description: 'The center (middle of the 3-man rush) was over the blue line before the puck.',
       carrier:  { startX: 40, startY: 24, endX: 170, endY: 30, side: 'R' },
       // RECEIVER1 = C (the middle skater, crashing the slot). OFFSIDE.
-      receiver: { startX: 78, startY: 42, endX: 162, endY: 40,
+      receiver: { startX: 78, startY: 42, endX: 172, endY: 40,
                   pathType: 'straight' },
       // RECEIVER2 = LW (far-side winger). LEGAL — hangs back behind the
       // puck and only releases once the carrier nears the blue line.
@@ -208,7 +208,7 @@ window.IceQ.Offside = (function () {
       // (clearly legal-looking start) but accelerates and reaches the line
       // before the puck — the "watch the late skater" trap. endX=180
       // gives him enough velocity that he crosses at t≈0.633 (puck=0.680).
-      receiver2: { startX: 60, startY: 68, endX: 180, endY: 50,
+      receiver2: { startX: 66, startY: 68, endX: 180, endY: 50,
                    pathType: 'straight' },
       // puck-T: (133-50)/(172-50) = 0.680
       // receiver1 (RW) hangs until carrier=130 (puck=133, AT the line),
@@ -559,18 +559,24 @@ window.IceQ.Offside = (function () {
       if (r.hangBackUntil != null) {
         // Receiver hangs back at startX/startY until carrier reaches
         // hangBackUntil, then sprints to endX/endY in the remaining time.
+        // A patient receiver is not a statue (QC 2026-08-18: receivers that
+        // froze then sprinted 55-75 ft/s were both a tell and a cartoon).
+        // He drifts up-ice at about half the carrier's pace, staying a few
+        // feet shy of the line, then releases and covers a capped distance.
         const carrierAt = carrierPosFt(play, t);
+        const DRIFT = 0.55;
+        const driftX = Math.min(r.startX + DRIFT * (carrierAt.x - play.carrier.startX), ATK_BLUE_X - 6);
         if (carrierAt.x < r.hangBackUntil) {
-          return { x: r.startX, y: r.startY };
+          return { x: driftX, y: r.startY };
         }
-        // Compute how far through the "release window" we are. The release
-        // happens at the t-value where carrier.x === hangBackUntil.
         const releaseT = (r.hangBackUntil - play.carrier.startX) /
                          (play.carrier.endX - play.carrier.startX);
-        const localT = (t - releaseT) / (1 - releaseT);
+        const localT = Math.max(0, Math.min(1, (t - releaseT) / (1 - releaseT)));
+        const relX = Math.min(r.startX + DRIFT * (r.hangBackUntil - play.carrier.startX), ATK_BLUE_X - 6);
+        const endX = Math.min(r.endX, relX + 36);   // a real burst, not a blur
         return {
-          x: r.startX + (r.endX - r.startX) * Math.max(0, Math.min(1, localT)),
-          y: r.startY + (r.endY - r.startY) * Math.max(0, Math.min(1, localT)),
+          x: relX + (endX - relX) * localT,
+          y: r.startY + (r.endY - r.startY) * localT,
         };
       }
       return {
@@ -1002,7 +1008,7 @@ window.IceQ.Offside = (function () {
     // EITHER crossed early. earliestOffender(play) — below — gives more
     // detail when we need to phrase feedback.
     function receiverEverCrossedFirst(play, whistleAtRaw) {
-      const STEP = 0.02;   // 50 samples across the rush
+      const STEP = 0.005;  // fine enough that a phone-scale puck lead cannot tie a crossing
       let r1At = null;     // first raw-t when receiver crossed
       let r2At = null;     // first raw-t when receiver2 crossed (null if no r2)
       let puckInZoneAt = null;
@@ -1584,6 +1590,26 @@ window.IceQ.Offside = (function () {
       };
     }
 
+    // Play was OFFSIDE but the whistle came before anybody was over: the
+    // story is "nobody was over yet", not "you let it through" (the kid did
+    // the opposite of letting it through).
+    function playWrongEarlyCall(skipSignal) {
+      const sig = skipSignal || { skipped: false };
+      return (async function () {
+        if (sig.skipped) return;
+        const whistle = drawWhistleOverlay('WHISTLE!', '#CE202E');
+        await IceQ.Path.wait(500);
+        try { whistle.destroy(); } catch (e) {}
+        overlayLayer.batchDraw();
+        if (sig.skipped) return;
+        await IceQ.Path.flashLabel(rink, {
+          text: 'TOO EARLY: NOBODY WAS OVER THE LINE YET',
+          color: '#CE202E', holdMs: 900, fontSize: 20,
+          skipSignal: sig,
+        });
+      })();
+    }
+
     // Play was LEGAL, kid whistled early. Linesman waves it off — no goal,
     // no horn (nothing actually happened on the ice worth celebrating or
     // punishing). Just a visual gesture + "WAVE IT OFF" flashLabel.
@@ -1697,9 +1723,10 @@ window.IceQ.Offside = (function () {
         return Promise.resolve({ completed: true });
       }
 
-      const isMissed = (res.kind === 'missed' || res.kind === 'too-early');
+      const isMissed = (res.kind === 'missed');
+      const isEarly = (res.kind === 'too-early');
       const isFalseCall = (res.kind === 'false-call');
-      if (!isMissed && !isFalseCall) {
+      if (!isMissed && !isFalseCall && !isEarly) {
         // Unknown kind — bail safely.
         return Promise.resolve({ completed: true });
       }
@@ -1714,11 +1741,11 @@ window.IceQ.Offside = (function () {
         skipSignal: sig,
         wrongLabel: isMissed
           ? 'YOU LET IT THROUGH\u2026'
-          : 'WAIT\u2014 PUCK HAD CROSSED\u2026',
+          : isEarly ? 'EARLY WHISTLE\u2026' : 'WAIT\u2014 PUCK HAD CROSSED\u2026',
         middleLabel: 'BUT INSTEAD\u2026',
-        rightLabel: isMissed ? "HERE'S THE WHISTLE" : "CLEAN ENTRY",
+        rightLabel: (isMissed || isEarly) ? "HERE'S THE WHISTLE" : "CLEAN ENTRY",
         playWrong: function () {
-          return isMissed ? playWrongMissedCall(sig) : playWrongFalseCall(sig);
+          return isMissed ? playWrongMissedCall(sig) : isEarly ? playWrongEarlyCall(sig) : playWrongFalseCall(sig);
         },
         // No positions to reset (linesman has no body on the ice) — but
         // we DO need to wipe overlays from the wrong replay before the
@@ -1757,7 +1784,7 @@ window.IceQ.Offside = (function () {
           })();
         },
         playRight: function () {
-          return isMissed ? playRightMissedCall(sig) : playRightFalseCall(sig);
+          return (isMissed || isEarly) ? playRightMissedCall(sig) : playRightFalseCall(sig);
         },
       };
 

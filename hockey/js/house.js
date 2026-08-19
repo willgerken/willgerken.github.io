@@ -40,9 +40,18 @@ window.IceQ.House = (function() {
   //   rows: above-zone | high-slot | low-slot | behind-goal
   // Boundaries at: face-off dot x (±22), just outside goalposts (±6), blue line,
   // top of circles (y=29), face-off dot row (y=44), goal line (y=64), end boards (y=75).
-  // 5 cols × 5 rows = 25 cells; 6 cells fall inside the canonical house.
-  const COL_EDGES = [-42.5, -22, -6, 6, 22, 42.5];
-  const ROW_EDGES = [0, 15, 29, 44, 64, 75];
+  // 2026-08-18 (Will: "house needs more potential boxes to pick from so it
+  // is not so easy"). Was 5x5 = 25 cells with 6 in the house; now 9 columns
+  // by 8 rows down to the goal line plus the behind-the-net row = 81 cells
+  // (~9.4 x 8 ft each, ~40 px on a phone), 16 of them inside the house. The
+  // kid has to actually trace the shape instead of tapping a 2x3 block.
+  // (Rows later snapped to landmarks, see ROW_EDGES: 72 cells, 16 in house.)
+  const COL_EDGES = [-42.5, -33.1, -23.6, -14.2, -4.7, 4.7, 14.2, 23.6, 33.1, 42.5];
+  // Rows snap to the landmarks the house is DEFINED by (top of the circles
+  // y=29, dot line y=44, goal line y=64), so the red shape never bisects a
+  // row and a kid who traces what the text says is graded fairly. 9 x 8 = 72
+  // cells, 16 in the house.
+  const ROW_EDGES = [0, 10, 19.5, 29, 36.5, 44, 54, 64, 75];
 
   function pointInPolygon(x, y, poly) {
     let inside = false;
@@ -116,10 +125,19 @@ window.IceQ.House = (function() {
     let correct = 0, incorrect = 0, missed = 0, totalHouse = 0;
     cells.forEach(c => {
       if (c.inHouse) totalHouse++;
-      if (c.selected && c.inHouse) { paintCell(c, 'ok'); correct++; }
-      else if (c.selected && !c.inHouse) { paintCell(c, 'err'); incorrect++; }
-      else if (!c.selected && c.inHouse) { paintCell(c, 'miss'); missed++; }
-      else { paintCell(c, 'idle'); }
+      if (c.selected && c.inHouse) correct++;
+      else if (c.selected && !c.inHouse) incorrect++;
+      else if (!c.selected && c.inHouse) missed++;
+    });
+    // Paint. Misses are only revealed once the kid basically has the shape
+    // (otherwise one random Check painted the whole house for free and the
+    // second Check always passed). Show Me is the honest way to see it.
+    const reveal = correct >= totalHouse * 0.75;
+    cells.forEach(c => {
+      if (c.selected && c.inHouse) paintCell(c, 'ok');
+      else if (c.selected && !c.inHouse) paintCell(c, 'err');
+      else if (!c.selected && c.inHouse && reveal) paintCell(c, 'miss');
+      else paintCell(c, 'idle');
     });
     return { correct, incorrect, missed, totalHouse };
   }
@@ -208,13 +226,17 @@ window.IceQ.House = (function() {
     if (correct === totalHouse && incorrect === 0) {
       return "You mapped the whole house. That's the exact area to protect when you don't have the puck.";
     }
-    if (correct >= totalHouse * 0.75 && incorrect <= 2) {
-      return `You found most of the house — ${correct} of ${totalHouse} danger zones. A few spots were a little high or wide. Hit Show Me to see the full shape.`;
+    if (correct >= totalHouse * 0.75 && incorrect <= 3) {
+      if (incorrect === 0) return `You found most of the house, ${correct} of ${totalHouse} spots. You missed ${missed} along the edges (yellow). Fill them in and check again.`;
+      return `You found most of the house, ${correct} of ${totalHouse} spots, but ${incorrect} of yours were outside it. Trim those and fill the yellow ones.`;
+    }
+    if (correct >= totalHouse * 0.75 && incorrect > 3) {
+      return `You found the house, but you painted ${incorrect} spots outside it too. The house is not the whole zone. Trim the edges and check again.`;
     }
     if (correct >= totalHouse * 0.5) {
       return `Good start — you got ${correct} of ${totalHouse}. The house is bigger than most kids guess. Try again or hit Show Me.`;
     }
-    return "The house is the area right in front of the net, from the tops of the face-off circles down to the goal posts. Hit Show Me to see it, then try again.";
+    return "The house is the area right in front of the net: widest at the dots, up to the tops of the circles, pinching in toward the posts. Hit Show Me to see it, then try again.";
   }
 
   return {
