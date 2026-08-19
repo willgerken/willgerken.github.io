@@ -912,9 +912,11 @@
 
     let rushesCompleted = new Set();
     const guard = makeDemoGuard(m);
+    const cueEl = APP.querySelector('#read-cue');
     const updateProg = () => {
       const info = m.currentRushInfo();
       if (rushProg) rushProg.textContent = `(${info.rushIdx + 1}/${info.totalRushes})`;
+      if (cueEl) cueEl.textContent = `Rush ${info.rushIdx + 1} of ${info.totalRushes}: ${info.rush.label}. ${rushesCompleted.size} done.`;
     };
     updateProg();
     // Show the way forward for a rush the kid has already earned (Reset and a
@@ -1801,9 +1803,11 @@
     // Coverage / Net Front.
     let playsCompleted = new Set();
     const guard = makeDemoGuard(m);
+    const cueEl = APP.querySelector('#read-cue');
     function updateProg() {
       const info = m.currentRushInfo();
       if (rushProg) rushProg.textContent = `(${info.rushIdx + 1}/${info.totalRushes})`;
+      if (cueEl) cueEl.textContent = `Read ${info.rushIdx + 1} of ${info.totalRushes}: ${info.rush.label}. ${playsCompleted.size} done.`;
     }
     updateProg();
     const showEarnedChrome = () => {
@@ -1812,11 +1816,17 @@
       else if (playsCompleted.has(info.rushIdx)) btnRotate.hidden = false;
     };
 
-    btnCheck.addEventListener('click', () => {
+    let busy = false;
+    btnCheck.addEventListener('click', async () => {
+      if (busy) return;
       const r = m.check();
       const info = m.currentRushInfo();
       let msg = IceQ.CoverTheMan.phrasedFeedback(r);
       if (r.cover && guard.stale()) { showFb(DEMO_MSG); return; }
+      busy = true; [btnCheck, btnShow, btnReset].forEach(b => { b.disabled = true; });
+      try {
+        if (m.consequence) await Promise.race([m.consequence(r), new Promise(res => setTimeout(res, 4000))]);
+      } catch (e) {} finally { busy = false; [btnCheck, btnShow, btnReset].forEach(b => { b.disabled = false; }); }
       if (r.cover) {
         try { IceQ.Audio && IceQ.Audio.savePling(); } catch {}
         try { IceQ.Path.celebrate(m.rink); } catch (e) {}
@@ -1891,11 +1901,19 @@
       else if (playsCompleted.has(info.rushIdx)) btnRotate.hidden = false;
     };
 
-    btnCheck.addEventListener('click', () => {
+    let busy = false;
+    btnCheck.addEventListener('click', async () => {
+      if (busy) return;
       const r = m.check();
       const info = m.currentRushInfo();
       let msg = IceQ.DZoneCoverage.phrasedFeedback(r);
       if (r.cover && guard.stale()) { showFb(DEMO_MSG); return; }
+      // Let the play happen (~2 s): the pass either dies on your stick or it
+      // is a tap-in. Buttons lock for that long and come back no matter what.
+      busy = true; [btnCheck, btnShow, btnReset].forEach(b => { b.disabled = true; });
+      try {
+        if (m.consequence) await Promise.race([m.consequence(r), new Promise(res => setTimeout(res, 4000))]);
+      } catch (e) {} finally { busy = false; [btnCheck, btnShow, btnReset].forEach(b => { b.disabled = false; }); }
       if (r.cover) {
         try { IceQ.Audio && IceQ.Audio.savePling(); } catch {}
         try { IceQ.Path.celebrate(m.rink); } catch (e) {}
@@ -1909,6 +1927,7 @@
       }
       if (!r.cover) { try { IceQ.Audio && IceQ.Audio.wrongThunk && IceQ.Audio.wrongThunk(); } catch (e) {} }
       showFb(msg);
+      updateProg();
       btnWhy.hidden = false;
     });
     btnShow.addEventListener('click', () => {

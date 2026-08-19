@@ -34,20 +34,20 @@ window.IceQ.CoverTheMan = (function () {
     {
       key: 'right-corner',
       label: 'puck in right corner',
-      puckCarrier: { x:  22, y: 60, stickSide: 'L' },
+      puckCarrier: { x:  30, y: 67, stickSide: 'L' },   // in the corner, not on the low wall
       slotMan:     { x:  -4, y: 50, stickSide: 'R' },
-      dPartner:    { x:  16, y: 56, stickSide: 'R' },
+      dPartner:    { x:  25, y: 63, stickSide: 'R' },
       coverTarget: { x:  -2, y: 54 },
-      chaseZone:   { x:  22, y: 60, r: 14 },
+      chaseZone:   { x:  12, y: 54, r: 9 },             // the open ice a double-teamer drifts into, not on top of D2
     },
     {
       key: 'left-corner',
       label: 'puck in left corner',
-      puckCarrier: { x: -22, y: 60, stickSide: 'R' },
+      puckCarrier: { x: -30, y: 67, stickSide: 'R' },
       slotMan:     { x:   4, y: 50, stickSide: 'L' },
-      dPartner:    { x: -16, y: 56, stickSide: 'L' },
+      dPartner:    { x: -25, y: 63, stickSide: 'L' },
       coverTarget: { x:   2, y: 54 },
-      chaseZone:   { x: -22, y: 60, r: 14 },
+      chaseZone:   { x: -12, y: 54, r: 9 },
     },
     {
       key: 'behind-net',
@@ -56,7 +56,7 @@ window.IceQ.CoverTheMan = (function () {
       slotMan:     { x:  -8, y: 52, stickSide: 'R' },
       dPartner:    { x:   2, y: 68, stickSide: 'R' },
       coverTarget: { x:  -6, y: 54 },
-      chaseZone:   { x:   8, y: 70, r: 14 },
+      chaseZone:   { x:   4, y: 62, r: 8 },
     },
   ];
 
@@ -232,6 +232,42 @@ window.IceQ.CoverTheMan = (function () {
       };
     }
 
+    // One-pass consequence (QC 2026-08-18): carrier feeds the slot man. If YOU
+    // are goal-side with the stick in the lane it dies on your blade; if not,
+    // tap-in. ~2 s, never throws into the caller.
+    function consequence(res) {
+      return (async function () {
+        try {
+          if (!puckNodeCTM || !defender || !slotMan) return;
+          const from = puckNodeCTM.position();
+          const toMan = IceQ.Player.puckPosFor(slotMan);
+          puckNodeCTM.visible(false);
+          if (res.cover) {
+            const myBlade = IceQ.Player.puckPosFor(defender);
+            const dx = toMan.x - from.x, dy = toMan.y - from.y; const L2 = dx * dx + dy * dy || 1;
+            const u = Math.max(0.2, Math.min(0.9, ((myBlade.x - from.x) * dx + (myBlade.y - from.y) * dy) / L2));
+            const near = Math.hypot(myBlade.x - (from.x + u * dx), myBlade.y - (from.y + u * dy));
+            const stopAt = near < 7 * scale ? myBlade : { x: from.x + u * dx, y: from.y + u * dy };
+            const h = IceQ.Path.animatePuckPass(gridLayer, from, stopAt, { duration: 0.55, persist: true });
+            await h.promise;
+            await IceQ.Path.animateGoalConsequence(rink, { kind: 'intercepted', message: 'STICK IN THE LANE. DEAD PLAY.', duration: 0.9 });
+            try { h.node.destroy(); } catch (e) {}
+          } else {
+            const h = IceQ.Path.animatePuckPass(gridLayer, from, toMan, { duration: 0.55 });
+            await h.promise;
+            const p = currentPlay();
+            const netSide = p.slotMan.x >= 0 ? -1 : 1;
+            const h2 = IceQ.Path.animatePuckPass(gridLayer, toMan, { x: toCanvasX(netSide * 2.2), y: toCanvasY(65.5) }, { duration: 0.22, persist: true });
+            await h2.promise;
+            try { IceQ.Audio && IceQ.Audio.goalAgainst && IceQ.Audio.goalAgainst(); } catch (e) {}
+            await IceQ.Path.animateGoalConsequence(rink, { kind: 'goal', message: 'SLOT MAN, TAP-IN. GOAL AGAINST.', duration: 1.0 });
+            try { h2.node.destroy(); } catch (e) {}
+          }
+          puckNodeCTM.visible(true); gridLayer.batchDraw();
+        } catch (e) { try { puckNodeCTM && puckNodeCTM.visible(true); } catch (e2) {} }
+      })();
+    }
+
     function showCorrect() {
       const p = currentPlay();
       overlayLayer.destroyChildren();
@@ -312,12 +348,14 @@ window.IceQ.CoverTheMan = (function () {
       drawOpponents();
       drawPuck();
       resetDefender();
+      if (defender && defender.moveToTop) defender.moveToTop();   // YOU over the context sprites
       gridLayer.batchDraw();
       return { rushIdx: playIdx, rush: currentPlay(), totalRushes: PLAYS.length };
     }
 
     return {
       rink,
+      consequence,
       check: evaluate,
       showMe: showCorrect,
       reset: () => { clearOverlay(); resetDefender(); },

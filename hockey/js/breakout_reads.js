@@ -46,11 +46,15 @@ window.IceQ.BreakoutReads = (function () {
       // Breakout wingers live ON THE WALL at the hash marks (boards x=±42.5).
       // They were 18-20 ft off it, sitting inside the dots, which is the exact
       // habit a coach spends September fixing.
-      outlets: [ { x: 37, y: 42, label: 'RW' }, { x: -37, y: 28, label: 'LW' } ],
+      outlets: [ { x: 37, y: 24, label: 'RW' }, { x: -37, y: 30, label: 'LW' } ],
       pressure: [ { x: 4, y: 30 } ],
-      path: [ [6, 69], [16, 60], [22, 46], [22, 34] ],
-      carryLegs: 3,        // D-Wheel: the D skates the whole route with the puck
-      cue: "No real pressure yet — you've got time and space behind the net.",
+      // "Up the boards" means up the boards: out of the corner, onto the
+      // wall, carry it out. The RW has moved up to the top of the circle so
+      // the D is not skating into him. (QC 2026-08-18: the route used to run
+      // up the dot line through the middle of the circle.)
+      path: [ [6, 69], [22, 70], [36, 60], [38, 46], [36, 34] ],
+      carryLegs: 4,        // D-Wheel: the D skates the whole route with the puck
+      cue: "Read the pressure: one forechecker, still high. Space behind the net.",
       teach: "No pressure yet, so you've got time — skate it out yourself, up the boards, and start the rush with speed.",
     },
     {
@@ -65,13 +69,14 @@ window.IceQ.BreakoutReads = (function () {
       // legs (33 ft total) that a 10U D can actually make.
       d:  { x: 26, y: 60 }, d2: { x: -12, y: 64 },
       outlets: [ { x: 37, y: 46, label: 'RW' } ],
-      pressure: [ { x: 22, y: 53 }, { x: 8, y: 45 } ],
+      // F1 right on the D, F2 taking the wall winger away, D2 alone across.
+      pressure: [ { x: 23, y: 54 }, { x: 35, y: 50 } ],
       // Behind the net means BEHIND it: the cage sits x=-3..3, y=64..67.5, so
       // the pass crosses the goal-line axis at y~71, two feet clear of the back
       // bar. (An earlier version clipped the cage at y~66.)
       path: [ [26, 61], [16, 70], [0, 71.5], [-12, 66] ],
       carryLegs: 1,        // D takes one stride below the goal line, then moves it
-      cue: "F1 is all over you. Your partner D is wide open across the ice.",
+      cue: "Read the pressure: where is F1, and who is covered?",
       teach: "F1 is right on you, but your partner D is wide open — move it across to him. The simplest play beats the pressure.",
     },
     {
@@ -80,28 +85,37 @@ window.IceQ.BreakoutReads = (function () {
       label: 'forecheck cheats your strong side',
       d:  { x: 20, y: 60 }, d2: { x: -20, y: 60 },
       outlets: [ { x: 37, y: 44, label: 'RW' }, { x: -37, y: 44, label: 'LW' } ],
-      pressure: [ { x: 13, y: 55 }, { x: 6, y: 47 } ],
-      path: [ [20, 60], [12, 66], [0, 71], [-14, 65], [-18, 58] ],
-      carryLegs: 2,        // fake up, carry behind the net, then reverse it to the partner
-      cue: "They're leaning hard to your strong side, expecting you to wheel up the boards.",
+      // F1 angles in from the WALL side above the D, F2 shades to the strong
+      // wall: the wheel lane is dead, the back side is the out. (Before, both
+      // forecheckers were inside the D and the picture said "wheel".)
+      pressure: [ { x: 30, y: 52 }, { x: 36, y: 40 } ],
+      // A reverse has a FAKE: a stride up the wall to sell the wheel, then cut
+      // back below the goal line and reverse it to the partner.
+      path: [ [20, 60], [26, 54], [16, 65], [4, 71], [-14, 66], [-18, 58] ],
+      carryLegs: 3,        // fake up, cut back, carry behind the net, then reverse it
+      cue: "Read the pressure: which way are they leaning?",
       teach: "They've cheated hard to your strong side expecting the wheel — so fake up, then reverse it behind the net the OTHER way.",
     },
     {
       key: 'jammed',
       answer: 'weak-rim',
       label: 'strong-side wall jammed',
-      d:  { x: 24, y: 60 }, d2: { x: -20, y: 60 },
+      d:  { x: 24, y: 60 }, d2: { x: -18, y: 58 },
       // A rim RIDES THE WALL — that's the entire mechanic: the puck stays glued
       // to the boards where no forechecker can pick it, and the winger waits on
       // the wall to trap it. The old path ran 16.5 ft off the boards at its
       // widest with the LW standing 16.5 ft off too, which isn't a rim, it's a
       // slow cross-ice pass through the middle: exactly what a rim exists to
       // avoid. Boards are at x=±42.5.
-      outlets: [ { x: -37, y: 44, label: 'LW' } ],
-      pressure: [ { x: 19, y: 56 }, { x: 28, y: 50 } ],
-      path: [ [24, 61], [14, 71], [0, 73], [-16, 71], [-34, 65], [-39, 52], [-37, 45] ],
+      // "Jammed" means jammed: RW on his wall with a red on him, F1 on the D,
+      // a red on D2. Only the weak-side wall is open.
+      outlets: [ { x: 37, y: 44, label: 'RW' }, { x: -37, y: 44, label: 'LW' } ],
+      pressure: [ { x: 21, y: 55 }, { x: 35, y: 48 }, { x: -13, y: 55 } ],
+      // The rim rides the end boards (y~74) and the corner (the drawn corner
+      // radius is small, so the waypoint sits at the wall), then the wall.
+      path: [ [24, 61], [14, 73], [0, 74], [-18, 73.5], [-38, 70], [-40.5, 56], [-38, 46] ],
       carryLegs: 0,        // a rim: puck leaves the stick and rides the wall
-      cue: "They've jammed your strong-side wall. The weak-side wing is open up the far boards.",
+      cue: "Read the pressure: which wall is open?",
       teach: "They've jammed your strong-side wall — don't force it. Rim it hard around the boards to the open weak-side wing.",
     },
   ];

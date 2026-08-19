@@ -66,7 +66,7 @@ window.IceQ.OzoneEntry = (function () {
       // inverted the puck-protection point: a right shot going wide right
       // shields the puck on the WALL side, body between puck and the defender.
       puck:        { x: 37, y: 14 },
-      start:       { x: 16, y: 2 },
+      start:       { x: 16, y: 7 },
       coverTarget: { x:  0, y: 50 },
       // Sits between the middle lane and the wall — the drift-out-to-the-puck
       // trap — WITHOUT covering F1 himself. (Moving the carrier out to a genuine
@@ -96,7 +96,7 @@ window.IceQ.OzoneEntry = (function () {
         { x:   0, y: 62.5, color: 'opponent', kind: 'goalie' },
       ],
       puck:        { x: -37, y: 14 },
-      start:       { x: -14, y: 2 },
+      start:       { x: -14, y: 7 },
       coverTarget: { x:   0, y: 52 },
       // The trap here is "curled and hovered at the top of the circle," so it
       // belongs on the PUCK side. At (-2,24,r=11) it sat directly on the
@@ -128,7 +128,7 @@ window.IceQ.OzoneEntry = (function () {
         { x:   0, y: 62.5, color: 'opponent', kind: 'goalie' },
       ],
       puck:        { x: 32, y: 26 },
-      start:       { x: -14, y: 2 },
+      start:       { x: -14, y: 7 },
       // High slot at 10U is y=40-46, not 32. y=32 is above the tops of the
       // circles — a 10U kid does not score from 32 ft through traffic.
       coverTarget: { x:  -3, y: 42 },
@@ -232,7 +232,7 @@ window.IceQ.OzoneEntry = (function () {
         sceneNodes.push(ln);
       });
       const lbl = new Konva.Text({
-        x: toCanvasX(-14), y: toCanvasY(2),
+        x: toCanvasX(-14), y: toCanvasY(5),
         width: 28 * scale, align: 'center',
         text: 'MIDDLE LANE', fontSize: Math.max(8, scale * 1.05),
         fontStyle: '800', fill: 'rgba(224, 198, 138, 0.7)',
@@ -544,6 +544,7 @@ window.IceQ.OzoneEntry = (function () {
       clearScene();
       clearOverlay();
       drawScene();
+      if (you && you.moveToTop) you.moveToTop();
       if (you) {
         const p = currentPlay();
         cancelShowMeGlide();
@@ -690,6 +691,7 @@ window.IceQ.OzoneEntry = (function () {
       clearScene();
       clearOverlay();
       drawScene();
+      if (you && you.moveToTop) you.moveToTop();
       resetYou();
       gridLayer.batchDraw();
       return { rushIdx: playIdx, rush: currentPlay(), totalRushes: PLAYS.length };

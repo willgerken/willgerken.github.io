@@ -70,7 +70,7 @@
         Why does this matter?
       </button>
 
-      <button class="btn btn-skip" id="btn-skip" hidden><span class="skip-icon">⏭</span> Skip ahead (no credit)</button>
+      <button class="btn btn-skip" id="btn-skip" hidden><span class="skip-icon">⏭</span> Skip replay</button>
 
       <button class="btn btn-done" id="btn-done" hidden>
         Knock it off the goal ▸
@@ -106,7 +106,7 @@
       </nav>
       <button class="btn btn-rotate" id="btn-rotate" hidden>🔄 Try the next rush <span id="rush-progress" class="rush-progress"></span></button>
       <button class="btn btn-why" id="btn-why" hidden><span class="why-spark">✦</span> Why does this matter?</button>
-      <button class="btn btn-skip" id="btn-skip" hidden><span class="skip-icon">⏭</span> Skip ahead (no credit)</button>
+      <button class="btn btn-skip" id="btn-skip" hidden><span class="skip-icon">⏭</span> Skip replay</button>
       <button class="btn btn-done" id="btn-done" hidden>Knock it off the goal ▸</button>
       <section class="vocab">
         <button class="term" data-term="cheetah">🐆 cheetah</button>
@@ -137,7 +137,7 @@
       </nav>
       <button class="btn btn-rotate" id="btn-rotate" hidden>🔄 Try the next rush <span id="rush-progress" class="rush-progress"></span></button>
       <button class="btn btn-why" id="btn-why" hidden><span class="why-spark">✦</span> Why does this matter?</button>
-      <button class="btn btn-skip" id="btn-skip" hidden><span class="skip-icon">⏭</span> Skip ahead (no credit)</button>
+      <button class="btn btn-skip" id="btn-skip" hidden><span class="skip-icon">⏭</span> Skip replay</button>
       <button class="btn btn-done" id="btn-done" hidden>Knock it off the goal ▸</button>
       <section class="vocab">
         <button class="term" data-term="lane-integrity">lane integrity</button>
@@ -168,7 +168,7 @@
       </nav>
       <button class="btn btn-rotate" id="btn-rotate" hidden>🔄 Try the next breakout <span id="rush-progress" class="rush-progress"></span></button>
       <button class="btn btn-why" id="btn-why" hidden><span class="why-spark">✦</span> Why does this matter?</button>
-      <button class="btn btn-skip" id="btn-skip" hidden><span class="skip-icon">⏭</span> Skip ahead (no credit)</button>
+      <button class="btn btn-skip" id="btn-skip" hidden><span class="skip-icon">⏭</span> Skip replay</button>
       <button class="btn btn-done" id="btn-done" hidden>Knock it off the goal ▸</button>
       <section class="vocab">
         <button class="term" data-term="wall-play">wall play</button>
@@ -186,6 +186,7 @@
       <section class="instructions">
         <p>Two opponents in your zone — puck carrier in the corner and the <button class="term" data-term="slot">slot</button> man at the net. Your <strong>D-partner (D2)</strong> already has the carrier covered. Your job: cover the <button class="term" data-term="defensive-side">dangerous receiver</button> — don't double-team the puck.</p>
         <p class="prompt">Use <button class="term" data-term="stick-on-stick">stick on stick</button>, not skating to the puck. Hit <strong>Check</strong> when you're in position.</p>
+        <p class="prompt read-cue" id="read-cue"></p>
       </section>
       <div class="rink-wrap">
         <div id="rink" aria-label="Half ice rink"></div>
@@ -198,7 +199,7 @@
       </nav>
       <button class="btn btn-rotate" id="btn-rotate" hidden>🔄 Try the next puck spot <span id="rush-progress" class="rush-progress"></span></button>
       <button class="btn btn-why" id="btn-why" hidden><span class="why-spark">✦</span> Why does this matter?</button>
-      <button class="btn btn-skip" id="btn-skip" hidden><span class="skip-icon">⏭</span> Skip ahead (no credit)</button>
+      <button class="btn btn-skip" id="btn-skip" hidden><span class="skip-icon">⏭</span> Skip replay</button>
       <button class="btn btn-done" id="btn-done" hidden>Knock it off the goal ▸</button>
       <section class="vocab">
         <button class="term" data-term="stick-on-stick">stick on stick</button>
@@ -228,7 +229,7 @@
       </nav>
       <button class="btn btn-rotate" id="btn-rotate" hidden>🔄 Try the next puck spot <span id="rush-progress" class="rush-progress"></span></button>
       <button class="btn btn-why" id="btn-why" hidden><span class="why-spark">✦</span> Why does this matter?</button>
-      <button class="btn btn-skip" id="btn-skip" hidden><span class="skip-icon">⏭</span> Skip ahead (no credit)</button>
+      <button class="btn btn-skip" id="btn-skip" hidden><span class="skip-icon">⏭</span> Skip replay</button>
       <button class="btn btn-done" id="btn-done" hidden>Knock it off the goal ▸</button>
       <section class="vocab">
         <button class="term" data-term="box-out">box out</button>
@@ -246,6 +247,7 @@
         <p>Two attackers crossing the blue line. ONE defender (you). One goalie behind you.</p>
         <p>The classic rule: <strong>D plays the pass, goalie plays the shot.</strong> Don't commit to the puck carrier — the cross-ice pass is the killer.</p>
         <p class="prompt">Drag yourself onto the PASS LINE between the two attackers.</p>
+        <p class="prompt read-cue" id="read-cue"></p>
       </section>
       <div class="rink-wrap"><div id="rink" aria-label="Half ice rink"></div></div>
       <section class="feedback" id="feedback" hidden><p id="feedback-message"></p></section>
@@ -256,7 +258,7 @@
       </nav>
       <button class="btn btn-rotate" id="btn-rotate" hidden>🔄 Try the next rush <span id="rush-progress" class="rush-progress"></span></button>
       <button class="btn btn-why" id="btn-why" hidden><span class="why-spark">✦</span> Why does this matter?</button>
-      <button class="btn btn-skip" id="btn-skip" hidden><span class="skip-icon">⏭</span> Skip ahead (no credit)</button>
+      <button class="btn btn-skip" id="btn-skip" hidden><span class="skip-icon">⏭</span> Skip replay</button>
       <button class="btn btn-done" id="btn-done" hidden>Knock it off the goal ▸</button>
       <section class="vocab">
         <button class="term" data-term="gap">gap</button>
@@ -283,7 +285,7 @@
       </nav>
       <button class="btn btn-rotate" id="btn-rotate" hidden>🔄 Next play <span id="rush-progress" class="rush-progress"></span></button>
       <button class="btn btn-why" id="btn-why" hidden><span class="why-spark">✦</span> Why does this matter?</button>
-      <button class="btn btn-skip" id="btn-skip" hidden><span class="skip-icon">⏭</span> Skip ahead (no credit)</button>
+      <button class="btn btn-skip" id="btn-skip" hidden><span class="skip-icon">⏭</span> Skip replay</button>
       <button class="btn btn-done" id="btn-done" hidden>Knock it off the goal ▸</button>
       <section class="vocab">
         <button class="term" data-term="offside">offside</button>
@@ -316,7 +318,7 @@
       <button class="btn btn-why" id="btn-why" hidden>
         <span class="why-spark">✦</span> Why does this matter?
       </button>
-      <button class="btn btn-skip" id="btn-skip" hidden><span class="skip-icon">⏭</span> Skip ahead (no credit)</button>
+      <button class="btn btn-skip" id="btn-skip" hidden><span class="skip-icon">⏭</span> Skip replay</button>
       <button class="btn btn-done" id="btn-done" hidden>Knock it off the goal ▸</button>
       <section class="vocab">
         <button class="term" data-term="defensive-side">defensive side</button>
@@ -347,7 +349,7 @@
       </nav>
       <button class="btn btn-rotate" id="btn-rotate" hidden>🔄 Try the next situation <span id="rush-progress" class="rush-progress"></span></button>
       <button class="btn btn-why" id="btn-why" hidden><span class="why-spark">✦</span> Why does this matter?</button>
-      <button class="btn btn-skip" id="btn-skip" hidden><span class="skip-icon">⏭</span> Skip ahead (no credit)</button>
+      <button class="btn btn-skip" id="btn-skip" hidden><span class="skip-icon">⏭</span> Skip replay</button>
       <button class="btn btn-done" id="btn-done" hidden>Knock it off the goal ▸</button>
       <section class="vocab">
         <button class="term" data-term="defensive-side">defensive side</button>
@@ -418,7 +420,7 @@
       </nav>
       <button class="btn btn-rotate" id="btn-rotate" hidden>Next play <span id="rush-progress" class="rush-progress"></span></button>
       <button class="btn btn-why" id="btn-why" hidden><span class="why-spark">✦</span> Why does this matter?</button>
-      <button class="btn btn-skip" id="btn-skip" hidden><span class="skip-icon">⏭</span> Skip ahead (no credit)</button>
+      <button class="btn btn-skip" id="btn-skip" hidden><span class="skip-icon">⏭</span> Skip replay</button>
       <button class="btn btn-done" id="btn-done" hidden>Knock it off ▸</button>
       <section class="vocab">
         <button class="term" data-term="pinch">pinch</button>
@@ -446,7 +448,7 @@
       </nav>
       <button class="btn btn-rotate" id="btn-rotate" hidden>Next play <span id="rush-progress" class="rush-progress"></span></button>
       <button class="btn btn-why" id="btn-why" hidden><span class="why-spark">✦</span> Why does this matter?</button>
-      <button class="btn btn-skip" id="btn-skip" hidden><span class="skip-icon">⏭</span> Skip ahead (no credit)</button>
+      <button class="btn btn-skip" id="btn-skip" hidden><span class="skip-icon">⏭</span> Skip replay</button>
       <button class="btn btn-done" id="btn-done" hidden>Knock it off ▸</button>
       <section class="vocab">
         <button class="term" data-term="cycle">cycle</button>
@@ -485,7 +487,7 @@
       <button class="btn btn-rotate" id="btn-rotate" hidden>🔄 Try the next read <span id="rush-progress" class="rush-progress"></span></button>
       <button class="btn btn-tertiary btn-replay-demo" id="btn-replay-demo" hidden>▶ Watch the patterns again</button>
       <button class="btn btn-why" id="btn-why" hidden><span class="why-spark">✦</span> Why does this matter?</button>
-      <button class="btn btn-skip" id="btn-skip" hidden><span class="skip-icon">⏭</span> Skip ahead (no credit)</button>
+      <button class="btn btn-skip" id="btn-skip" hidden><span class="skip-icon">⏭</span> Skip replay</button>
       <button class="btn btn-done" id="btn-done" hidden>Knock it off the goal ▸</button>
       <section class="vocab">
         <button class="term" data-term="middle-lane-drive">middle lane drive</button>
