@@ -399,6 +399,35 @@
   </template>
 
   <!-- ========== O-ZONE FACEOFF SCENARIO TEMPLATE ========== -->
+  <!-- ========== O-ZONE CYCLE (Veterans) TEMPLATE ========== -->
+  <template id="tpl-ozone-cycle">
+    <section class="view view-ozone-cycle">
+      <section class="instructions">
+        <p>The <button class="term" data-term="cycle">cycle</button>: F1 carries up the wall, the <button class="term" data-term="trailer">trailer</button> swings under him, and F1 <button class="term" data-term="bump">bumps</button> it back down the wall. The whole skill is <strong>when</strong>.</p>
+        <p class="prompt" id="read-cue">Hit <strong>Play</strong>. Tap <strong>DROP</strong> the moment the trailer is in the pocket. If the lane is covered or nobody is under you, don't drop: keep it.</p>
+      </section>
+      <div class="rink-wrap"><div id="rink" aria-label="Half ice rink, their end"></div></div>
+      <section class="feedback" id="feedback" hidden><p id="feedback-message"></p></section>
+      <nav class="controls">
+        <button class="btn btn-primary" id="btn-check"><span class="btn-icon">▶</span><span class="btn-label">Play</span></button>
+        <button class="btn btn-call-offside" id="btn-call"><span class="btn-icon">⬇</span><span class="btn-label">DROP</span></button>
+        <button class="btn btn-secondary" id="btn-show"><span class="btn-icon">▸</span><span class="btn-label">Show Me</span></button>
+        <button class="btn btn-tertiary" id="btn-reset"><span class="btn-icon">↻</span><span class="btn-label">Reset</span></button>
+      </nav>
+      <button class="btn btn-rotate" id="btn-rotate" hidden>Next play <span id="rush-progress" class="rush-progress"></span></button>
+      <button class="btn btn-why" id="btn-why" hidden><span class="why-spark">✦</span> Why does this matter?</button>
+      <button class="btn btn-skip" id="btn-skip" hidden><span class="skip-icon">⏭</span> Skip ahead (no credit)</button>
+      <button class="btn btn-done" id="btn-done" hidden>Knock it off ▸</button>
+      <section class="vocab">
+        <button class="term" data-term="cycle">cycle</button>
+        <button class="term" data-term="trailer">trailer</button>
+        <button class="term" data-term="bump">bump</button>
+        <button class="term" data-term="low-to-high">low-to-high</button>
+        <button class="term" data-term="pinch">pinch</button>
+      </section>
+    </section>
+  </template>
+
   <template id="tpl-ozone-entry">
     <section class="view view-ozone-entry">
       <section class="instructions">
@@ -531,6 +560,7 @@
   <script src="js/breakout_reads.js"></script>
   <script src="js/ozone_faceoff.js"></script>
   <script src="js/ozone_entry.js"></script>
+  <script src="js/ozone_cycle.js"></script>
   <script src="js/home.js"></script>
   <script src="js/main.js"></script>
   <script>

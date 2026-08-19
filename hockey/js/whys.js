@@ -502,6 +502,39 @@ window.IceQ.WHYS = {
     ],
   }),
 
+  'ozone-cycle': () => ({
+    title: 'Why does the timing of the drop matter?',
+    blocks: [
+      {
+        type: 'lead',
+        text: 'A cycle is how you keep the puck in their end when the first play is not there. It only works if the bump leaves your stick at the right moment.',
+      },
+      {
+        type: 'bullets',
+        items: [
+          '**Too early** and the trailer is not there yet: the puck goes to empty wall and their D is first to it.',
+          '**Too late** and the D has you sealed on the boards: the puck gets poked off the glass and out.',
+          '**The pocket** is the beat in between: trailer under you with speed, D committed to you, lane clean.',
+          '**Read the lane, not just the trailer.** If a backchecker is sitting where the bump goes, or nobody came, the right play is to keep it and cut to the middle.',
+          '**F3 stays high.** Three below the dots is a rush the other way waiting to happen.',
+        ],
+      },
+      {
+        type: 'quote',
+        text: 'Possession is the whole point of the cycle. One bad bump gives it back.',
+        attr: '— Coach',
+      },
+      {
+        type: 'cta',
+        text: 'Next practice: ask your coach "On our cycle, who is the trailer and where does F3 live?"',
+      },
+      {
+        type: 'source',
+        text: 'Standard low-zone cycle as taught at 12U+ (USA Hockey ADM small-area games build exactly this read).',
+      },
+    ],
+  }),
+
   'ozone-entry': (s) => ({
     title: 'Why drive the middle lane?',
     blocks: [

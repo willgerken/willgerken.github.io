@@ -364,35 +364,38 @@ window.IceQ.Home = (function () {
       return btn;
     }
 
-    const coreHeader = document.createElement('h3');
-    coreHeader.className = 'home-section-header';
-    // "The Original Six": the six targets on the goal. Will 2026-08-18: "The
-    // Drills / More drills" did not read; this names the set the way hockey
-    // people name things.
-    coreHeader.textContent = 'The Original Six';
-    container.appendChild(coreHeader);
-    const coreSub = document.createElement('p');
-    coreSub.className = 'home-section-sub';
-    coreSub.textContent = 'Same six as the targets on the goal. Knock them all off.';
-    container.appendChild(coreSub);
-    const list = document.createElement('nav');
-    list.className = 'home-list';
-    cornerScenarios.forEach(s => list.appendChild(makeListItem(s)));
-    container.appendChild(list);
+    // Two groups (Will 2026-08-18): ROOKIES = the Original Six (the goal
+    // targets) plus Bonus Reps; VETERANS = the 13U+ reads. Different kids,
+    // different shelf, same app.
+    const level = (sc) => (IceQ.scenarioLevel ? IceQ.scenarioLevel(sc) : (sc.level || 'rookie'));
+    const rookieBonus = listOnlyScenarios.filter(sc => level(sc) !== 'veteran');
+    const veterans = listOnlyScenarios.filter(sc => level(sc) === 'veteran');
 
-    if (listOnlyScenarios.length) {
-      const sectionHeader = document.createElement('h3');
-      sectionHeader.className = 'home-section-header';
-      sectionHeader.textContent = 'Bonus Reps';
-      container.appendChild(sectionHeader);
-      const subText = document.createElement('p');
-      subText.className = 'home-section-sub';
-      subText.textContent = 'Extra ice once the six are down.';
-      container.appendChild(subText);
-      const list2 = document.createElement('nav');
-      list2.className = 'home-list';
-      listOnlyScenarios.forEach(s => list2.appendChild(makeListItem(s)));
-      container.appendChild(list2);
+    const groupHeader = (txt, sub) => {
+      const h = document.createElement('h2');
+      h.className = 'home-group-header';
+      h.textContent = txt;
+      container.appendChild(h);
+      if (sub) { const p = document.createElement('p'); p.className = 'home-group-sub'; p.textContent = sub; container.appendChild(p); }
+    };
+    const section = (title, sub, items) => {
+      const h = document.createElement('h3');
+      h.className = 'home-section-header';
+      h.textContent = title;
+      container.appendChild(h);
+      if (sub) { const p = document.createElement('p'); p.className = 'home-section-sub'; p.textContent = sub; container.appendChild(p); }
+      const nav = document.createElement('nav');
+      nav.className = 'home-list';
+      items.forEach(sc => nav.appendChild(makeListItem(sc)));
+      container.appendChild(nav);
+    };
+
+    groupHeader('Rookies', 'Where everybody starts. Positioning, reads, rules.');
+    section('The Original Six', 'Same six as the targets on the goal. Knock them all off.', cornerScenarios);
+    if (rookieBonus.length) section('Bonus Reps', 'Extra ice once the six are down.', rookieBonus);
+    if (veterans.length) {
+      groupHeader('Veterans', '13U and up. Timing, lanes, and the reads that keep the puck.');
+      section('Reads', 'Different mechanics, tighter windows, real consequences.', veterans);
     }
 
     // Tap-target-on-goal handler (delegated)

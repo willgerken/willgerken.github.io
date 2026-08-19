@@ -1,5 +1,5 @@
 // Minimal offline cache. Bump CACHE version when you ship new content.
-const CACHE = 'iceq-v0.49';
+const CACHE = 'iceq-v0.50';
 const CORE = [
   './',
   'index.html',
@@ -27,6 +27,7 @@ const CORE = [
   'js/breakout_reads.js',
   'js/ozone_faceoff.js',
   'js/ozone_entry.js',
+  'js/ozone_cycle.js',
   'js/home.js',
   'js/main.js',
   'assets/icon.svg',

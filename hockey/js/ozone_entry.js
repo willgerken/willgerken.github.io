@@ -464,6 +464,7 @@ window.IceQ.OzoneEntry = (function () {
       const off = f1 ? { x: puckStart.x - f1Start.x, y: puckStart.y - f1Start.y } : null;
       if (opts.stroke) puck.stroke(opts.stroke);
       for (let i = 1; i < pts.length; i++) {
+        if (!puck.getStage()) return;          // scene torn down (kid left): stop quietly
         const rate = puckLegRate(feetPts, i);
         const d = legDuration(feetPts[i - 1], feetPts[i], rate);
         const last = i === pts.length - 1;
@@ -496,7 +497,7 @@ window.IceQ.OzoneEntry = (function () {
       if (!you) return;
       cancelShowMeGlide();
       for (let i = 1; i < p.youRoute.length; i++) {
-        if (skipped()) { try { you.stop(); } catch (e) {} return; }
+        if (skipped() || !you.getStage()) { try { you.stop(); } catch (e) {} return; }
         const [x, y] = p.youRoute[i];
         const d = legDuration(p.youRoute[i - 1], p.youRoute[i], SKATE_FTPS);
         you.to({ x: toCanvasX(x), y: toCanvasY(y), duration: d, easing: Konva.Easings.EaseInOut });

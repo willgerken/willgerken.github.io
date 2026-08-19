@@ -202,8 +202,18 @@ window.IceQ.vocab = {
   },
   'cycle': {
     title: 'Cycle',
-    def: "A low-zone offensive pattern where players rotate along the boards and behind the net to keep possession.",
-    why: "Hard to defend because the D has to choose between covering the puck or the support. Creates cross-ice seams.",
+    def: "Keeping the puck low in their end by passing it back down the wall to a teammate who is swinging underneath you, over and over, until somebody is open.",
+    why: "Hard to defend because the D has to choose between the puck and the guy coming under. The whole trick is WHEN you give it up: after the trailer is there, before the D closes.",
+  },
+  'bump': {
+    title: 'Bump',
+    def: "A short pass down the boards to the teammate behind you. Soft, on the wall, easy to take.",
+    why: "In a cycle the bump is the handoff. Too early and it goes to nobody; too late and you are pinned before it leaves your stick.",
+  },
+  'low-to-high': {
+    title: 'Low-to-High',
+    def: "A pass from down low in their end back up to your D at the blue line.",
+    why: "The cycle pulls their whole team low. Low-to-high gets it to the one guy with time and a shooting lane.",
   },
   'outlet': {
     title: 'Outlet (Release Valve)',
@@ -369,7 +379,7 @@ window.IceQ.vocab = {
   },
   'trailer': {
     title: 'Trailer',
-    def: "The player who arrives last on a rush, a step or two behind everybody else.",
+    def: "The player who comes behind the play: last man on a rush, or the guy swinging under you on a cycle.",
     why: "All eyes go to the first guys in. Nobody picks up the one who shows up late, which is exactly why he is open.",
   },
   'one-timer': {
