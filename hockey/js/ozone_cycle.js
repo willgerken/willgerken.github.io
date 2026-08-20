@@ -415,8 +415,16 @@ window.IceQ.OzoneCycle = (function () {
           const from = bladeFt(f1);
           const to = bladeFt(tr);
           const wallX = WALL_X + 1.5;
+          // BUMP AND GO: the second the puck leaves his stick, F1 keeps
+          // skating: he curls off the wall into the space the trailer came
+          // from (that swap IS the cycle). On the D-pinch play he goes to the
+          // net-front instead: his D took his wall.
+          const f1Now = nodeFt(f1);
+          const f1Go = p.bumpUp
+            ? skate(f1, [f1Now, { x: 24, y: 50 }, { x: 10, y: 56 }], 17, sig)
+            : skate(f1, [f1Now, { x: 33, y: Math.max(24, f1Now.y - 14) }, { x: 24, y: Math.max(20, f1Now.y - 20) }], 17, sig);
           await slidePuck(puck, [from, { x: wallX, y: from.y + (p.bumpUp ? -2 : 3) }, { x: wallX, y: to.y }, to], PASS_FTPS, { sig });
-          if (sig.skipped) return;
+          if (sig.skipped) { await f1Go; return; }
           // Trailer takes it and goes: F2 carries up and hits F3 in the slot
           // for a one-timer; the D (pinch play) walks it up and shoots.
           goalieTo(3.0, 0.6);   // goalie squares to the strong side
@@ -436,7 +444,8 @@ window.IceQ.OzoneCycle = (function () {
             // One-timer far side, past a goalie who is still on the strong post.
             await slidePuck(puck, [f3, { x: -2.3, y: 65.5 }], SHOT_FTPS, { sig, easeLast: true });
           }
-          if (sig.skipped) return;
+          if (sig.skipped) { await f1Go; return; }
+          await f1Go;
           try { IceQ.Audio && IceQ.Audio.goalHorn && IceQ.Audio.goalHorn(); } catch (e) {}
           await IceQ.Path.animateGoalConsequence(rink, { kind: 'saved', message: 'CLEAN BUMP. CYCLE ROLLS, GOAL.', duration: 1.1 });
           return;

@@ -990,7 +990,7 @@
       }
     }
 
-    btnCheck.addEventListener('click', () => {
+    btnCheck.addEventListener('click', async () => {
       if (playing) return;
       const r = m.check();
       const info = m.currentRushInfo();
@@ -1000,6 +1000,19 @@
         try { IceQ.Audio.savePling(); } catch (e) {}
         try { IceQ.Path.celebrate(m.rink); } catch (e) {}
         rushesCompleted.add(info.rushIdx);
+        // The kid EARNED the save: play it out (Will 2026-08-18, "2-on-1
+        // still not giving a shot on goal"). Carrier drives, has to shoot,
+        // goalie takes it, rebound to the corner, SAVED.
+        skipSignal = { skipped: false };
+        playing = true;
+        setButtonsForContrast(true);
+        try {
+          await m.playRightAnswer(skipSignal);
+        } catch (e) {} finally {
+          playing = false;
+          setButtonsForContrast(false);
+          guard.mark();
+        }
         if (rushesCompleted.size < info.totalRushes) {
           msg += ' Tap "Try the next rush".';
           btnRotate.hidden = false;
