@@ -1,5 +1,5 @@
 // Minimal offline cache. Bump CACHE version when you ship new content.
-const CACHE = 'iceq-v0.53';
+const CACHE = 'iceq-v0.54';
 const CORE = [
   './',
   'index.html',
