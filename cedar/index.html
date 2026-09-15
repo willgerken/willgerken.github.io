@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Cedar</title>
+<meta name="description" content="Monitoring apps, weather, utilities, and local links for the lake house.">
+<meta name="theme-color" content="#16706a">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
+<link rel="manifest" href="manifest.json">
+<meta name="apple-mobile-web-app-title" content="Cedar">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#1a1a1a; --ink-light:#4a4a4a; --ink-muted:#737373;
+  --paper:#faf9f7; --paper-warm:#f5f3ef; --surface:#ffffff;
+  --accent:#1a3a5c; --highlight:#c4a35a; --highlight-soft:rgba(196,163,90,.13);
+  --lake:#16706a; --lake-soft:rgba(22,112,106,.10);
+  --clay:#a2542f; --clay-soft:rgba(162,84,47,.10);
+  --alert:#b3261e; --alert-soft:rgba(179,38,30,.10);
+  --border:#e0ddd8; --border-light:#eceae6;
+  --font-display:'Instrument Serif',Georgia,serif;
+  --font-body:'DM Sans',-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif;
+  --font-mono:'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
+  --radius:6px;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --ink:#ece9e4; --ink-light:#c3bfb8; --ink-muted:#948f88;
+    --paper:#14161a; --paper-warm:#191c21; --surface:#1c2026;
+    --accent:#8fb6dd; --highlight:#d8b96e; --highlight-soft:rgba(216,185,110,.14);
+    --lake:#4bc3b5; --lake-soft:rgba(75,195,181,.13);
+    --clay:#e0906a; --clay-soft:rgba(224,144,106,.13);
+    --alert:#ef7a72; --alert-soft:rgba(239,122,114,.14);
+    --border:#2e343c; --border-light:#252b32;
+  }
+}
+:root[data-theme="dark"]{
+  --ink:#ece9e4; --ink-light:#c3bfb8; --ink-muted:#948f88;
+  --paper:#14161a; --paper-warm:#191c21; --surface:#1c2026;
+  --accent:#8fb6dd; --highlight:#d8b96e; --highlight-soft:rgba(216,185,110,.14);
+  --lake:#4bc3b5; --lake-soft:rgba(75,195,181,.13);
+  --clay:#e0906a; --clay-soft:rgba(224,144,106,.13);
+  --alert:#ef7a72; --alert-soft:rgba(239,122,114,.14);
+  --border:#2e343c; --border-light:#252b32;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{font-size:16px;scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{font-family:var(--font-body);color:var(--ink);background:var(--paper);line-height:1.55;-webkit-font-smoothing:antialiased}
+a{color:var(--accent);text-decoration:none}
+.wrap{max-width:1040px;margin:0 auto;padding:0 16px}
+
+/* header */
+header{padding:2.2rem 0 1.2rem;border-bottom:1px solid var(--border-light);background:var(--paper-warm)}
+header h1{font-family:var(--font-display);font-weight:400;font-size:clamp(2.4rem,7vw,3.4rem);line-height:1;letter-spacing:-.01em}
+header h1 em{font-style:italic;color:var(--lake)}
+header p{color:var(--ink-light);margin-top:.5rem;max-width:56ch}
+.kicker{font-family:var(--font-mono);font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--lake);margin-bottom:.4rem}
+
+/* section nav */
+.jump{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--paper) 92%,transparent);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:1px solid var(--border-light)}
+.jump ul{list-style:none;display:flex;gap:.25rem;overflow-x:auto;padding:.5rem 0;scrollbar-width:none}
+.jump ul::-webkit-scrollbar{display:none}
+.jump a{display:inline-block;white-space:nowrap;padding:.45rem .8rem;border-radius:999px;font-size:.86rem;font-weight:500;color:var(--ink-light);border:1px solid transparent}
+.jump a:hover,.jump a:focus-visible{border-color:var(--border);color:var(--ink);background:var(--surface)}
+
+/* quick strip */
+.quick{display:grid;grid-template-columns:repeat(4,1fr);gap:.5rem;padding:1rem 0 .2rem}
+.quick a{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.2rem;min-height:72px;padding:.6rem .3rem;border-radius:var(--radius);background:var(--surface);border:1px solid var(--border);color:var(--ink);font-weight:600;font-size:.86rem;text-align:center;line-height:1.15}
+.quick a small{font-weight:400;color:var(--ink-muted);font-size:.72rem}
+.quick a.sos{border-color:var(--alert);background:var(--alert-soft);color:var(--alert)}
+.quick a:hover{border-color:var(--lake)}
+.callout{border-left:3px solid var(--alert);background:var(--alert-soft);padding:.7rem .9rem;border-radius:0 var(--radius) var(--radius) 0;font-size:.92rem;margin-bottom:1rem}
+.callout b{color:var(--alert)}
+/* sections */
+section{padding:1.8rem 0 .4rem}
+section h2{font-family:var(--font-display);font-weight:400;font-size:1.75rem;line-height:1.1;margin-bottom:.25rem}
+section .lead{color:var(--ink-muted);font-size:.92rem;margin-bottom:1rem;max-width:62ch}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:.7rem}
+.card{display:flex;flex-direction:column;gap:.15rem;padding:.85rem .95rem;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);color:var(--ink);min-height:64px;transition:border-color .15s,transform .15s,box-shadow .15s}
+a.card:hover,a.card:focus-visible{border-color:var(--lake);transform:translateY(-1px);box-shadow:0 4px 14px rgba(0,0,0,.06)}
+.card .name{font-weight:600;font-size:1rem;display:flex;align-items:baseline;gap:.5rem}
+.card .name .tag{font-family:var(--font-mono);font-size:.64rem;letter-spacing:.08em;text-transform:uppercase;padding:.1rem .4rem;border-radius:3px;background:var(--lake-soft);color:var(--lake);font-weight:500}
+.card .tag.app{background:var(--highlight-soft);color:var(--highlight)}
+.card .tag.call{background:var(--clay-soft);color:var(--clay)}
+.card .tag.todo{background:var(--alert-soft);color:var(--alert)}
+.card .note{font-size:.84rem;color:var(--ink-muted);line-height:1.4}
+.card .phone{font-family:var(--font-mono);font-size:.86rem;color:var(--ink-light);margin-top:.15rem}
+.card.primary{border-color:var(--lake);background:linear-gradient(0deg,var(--lake-soft),var(--surface))}
+
+/* rows (cheat sheet) */
+.rows{border:1px solid var(--border);border-radius:var(--radius);background:var(--surface);overflow:hidden}
+.row{display:grid;grid-template-columns:minmax(120px,32%) 1fr;gap:.6rem;padding:.65rem .95rem;border-top:1px solid var(--border-light);font-size:.92rem}
+.row:first-child{border-top:none}
+.row b{font-weight:600}
+.row span{color:var(--ink-light)}
+.mono{font-family:var(--font-mono);font-size:.86rem}
+
+/* windy embed */
+.embed{margin-top:1rem;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;background:var(--surface)}
+.embed iframe{display:block;width:100%;height:420px;border:0}
+.embed .cap{padding:.45rem .9rem;font-size:.8rem;color:var(--ink-muted);border-top:1px solid var(--border-light)}
+
+footer{margin-top:2.4rem;padding:1.4rem 0 3rem;border-top:1px solid var(--border-light);color:var(--ink-muted);font-size:.82rem}
+footer a{color:var(--ink-light)}
+@media (max-width:520px){
+  .grid{grid-template-columns:1fr}
+  .row{grid-template-columns:1fr;gap:.1rem}
+  .embed iframe{height:360px}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <div class="kicker">Long Lake &middot; Traverse City</div>
+    <h1>Cedar <em>house</em></h1>
+    <p>Everything that watches the house, plus the weather, the utilities, and who to call. Bookmark it on your phone: Share &rarr; Add to Home Screen.</p>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="quick" aria-label="Quick actions">
+    <a class="sos" href="#emergency">Emergency<small>911 &amp; shutoffs</small></a>
+    <a href="#cams">Cameras<small>Reolink app</small></a>
+    <a href="https://www.sensoredlife.com/?tid=6#/login" target="_blank" rel="noopener">House alarm<small>MarCELL</small></a>
+    <a href="https://forecast.weather.gov/MapClick.php?lat=44.71&lon=-85.74" target="_blank" rel="noopener">Weather<small>NWS</small></a>
+  </div>
+</div>
+
+<nav class="jump" aria-label="Sections">
+  <div class="wrap">
+    <ul>
+      <li><a href="#emergency">Emergency</a></li>
+      <li><a href="#monitor">Monitoring</a></li>
+      <li><a href="#weather">Weather &amp; lake</a></li>
+      <li><a href="#utilities">Utilities</a></li>
+      <li><a href="#call">Who to call</a></li>
+      <li><a href="#house">House facts</a></li>
+      <li><a href="#local">Township &amp; county</a></li>
+      <li><a href="#lake">Around the lake</a></li>
+      <li><a href="#fun">Seasons &amp; fun</a></li>
+      <li><a href="#drive">The drive</a></li>
+    </ul>
+  </div>
+</nav>
+
+<main class="wrap">
+
+<section id="emergency">
+  <h2>Emergency</h2>
+  <div class="callout"><b>Call 911 first.</b> Give the street address (it is on the fridge and in the family doc, not on this page), then say "Long Lake Township, on the peninsula." Then call Will or Mom.</div>
+  <div class="grid">
+    <a class="card" href="tel:911">
+      <span class="name">911 <span class="tag call">fire &middot; police &middot; medical</span></span>
+      <span class="note">Grand Traverse Metro Fire and the county sheriff cover the peninsula.</span>
+    </a>
+    <a class="card" href="https://www.munsonhealthcare.org/munson-medical-center" target="_blank" rel="noopener">
+      <span class="name">Munson Medical Center <span class="tag call">ER</span></span>
+      <span class="note">The Traverse City hospital, about 20 minutes. Emergency room is open around the clock.</span>
+    </a>
+    <a class="card" href="tel:+18002221222">
+      <span class="name">Poison Control <span class="tag call">24 hr</span></span>
+      <span class="note">Anything swallowed that should not have been.</span>
+      <span class="phone">800-222-1222</span>
+    </a>
+    <a class="card" href="tel:+18009475000">
+      <span class="name">Smell gas? <span class="tag call">DTE</span></span>
+      <span class="note">Everyone outside first, then call. Do not flip switches on the way out.</span>
+      <span class="phone">800-947-5000</span>
+    </a>
+  </div>
+  <div class="rows" style="margin-top:.7rem">
+    <div class="row"><b>Water leaking</b><span>Main shutoff is in the basement utility room, at the pressure tank. Turn it clockwise until it stops. Then text Will.</span></div>
+    <div class="row"><b>Power out</b><span>The generator starts on its own in about 30 seconds. If it does not, check the outage map below and text Will; do not touch the transfer switch.</span></div>
+    <div class="row"><b>Breaker tripped</b><span>Panel is in the basement. Flip the one that is half-way, fully off then on. The crock pump outlet is the GFCI at the back of the garage.</span></div>
+    <div class="row"><b>Alarm horn in the basement</b><span>Two TankAlert boxes: a horn means the septic pump or the outside sump is backed up. Press Silence, stop running water, call Will.</span></div>
+    <div class="row"><b>No heat</b><span>Check the thermostat is on Heat, then the furnace switch (looks like a light switch on the furnace). Still nothing: Team Bob's, below.</span></div>
+    <div class="row"><b>Pond</b><span>Deep water starts a few feet from shore. Life jackets on the paddle boat and kayaks, no exceptions, and nobody on the ice without an adult who checked it.</span></div>
+  </div>
+</section>
+
+<section id="monitor">
+  <h2>Monitoring</h2>
+  <p class="lead">If an alert lands: MarCELL first (it is the alarm), then Reolink to look, then the generator app if the power is out.</p>
+  <div class="grid">
+    <a class="card primary" href="https://www.sensoredlife.com/?tid=6#/login" target="_blank" rel="noopener">
+      <span class="name">MarCELL <span class="tag">cellular</span></span>
+      <span class="note">Temperature, humidity, power, and the water pucks. Runs on Verizon, so it works with the house internet down. Alarm ranges 40&ndash;85&deg;F, 10&ndash;70% RH. Also the MarCELL app.</span>
+    </a>
+    <a class="card" id="cams" href="https://reolink.com/software-and-manual/" target="_blank" rel="noopener">
+      <span class="name">Reolink cameras <span class="tag app">app only</span></span>
+      <span class="note">Utility room and window cams. Open the <b>Reolink app</b> on your phone for live view; the cameras record to their own memory cards. The Reolink website will show zero devices (that page is only for paid cloud plans). On a laptop, install the Reolink Client from this link.</span>
+    </a>
+    <a class="card" href="https://app.mobilelinkgen.com" target="_blank" rel="noopener">
+      <span class="name">Generac Mobile Link <span class="tag app">app</span></span>
+      <span class="note">Generator status, exercise log, and outage alerts. Confirm whether the Nexus controller needs a Mobile Link module before relying on it.</span>
+    </a>
+    <a class="card" href="https://www.tplinkcloud.com" target="_blank" rel="noopener">
+      <span class="name">TP-Link Deco <span class="tag app">app</span></span>
+      <span class="note">Mesh WiFi. Use the Deco app to see whether the cameras are online, reboot nodes, and check what is connected.</span>
+    </a>
+    <a class="card" href="https://www.ecobee.com/login" target="_blank" rel="noopener">
+      <span class="name">Thermostat <span class="tag todo">not yet</span></span>
+      <span class="note">Smart thermostat waits on the C-wire check. ecobee login here; if it ends up a Nest, use <a href="https://home.nest.com" target="_blank" rel="noopener">home.nest.com</a>. Set a permanent hold, never a schedule.</span>
+    </a>
+    <a class="card" href="https://www.yosmart.com" target="_blank" rel="noopener">
+      <span class="name">YoLink <span class="tag todo">move-in</span></span>
+      <span class="note">Leak sensors plus the auto water shutoff. Decision deferred to move-in; the MarCELL pucks cover the vacant phase.</span>
+    </a>
+    <a class="card" href="https://maps.fishdeeper.com" target="_blank" rel="noopener">
+      <span class="name">Fish Deeper <span class="tag">pond</span></span>
+      <span class="note">Sonar maps of the pond from the Deeper unit. Depth overlay lives here after each survey.</span>
+    </a>
+  </div>
+</section>
+
+<section id="weather">
+  <h2>Weather &amp; lake</h2>
+  <p class="lead">Forecast points are set for the peninsula. The NWS office for Traverse City is Gaylord.</p>
+  <div class="grid">
+    <a class="card primary" href="https://forecast.weather.gov/MapClick.php?lat=44.71&lon=-85.74" target="_blank" rel="noopener">
+      <span class="name">NWS forecast <span class="tag">7-day</span></span>
+      <span class="note">Point forecast for the peninsula, straight from the National Weather Service.</span>
+    </a>
+    <a class="card" href="https://forecast.weather.gov/MapClick.php?lat=44.71&lon=-85.74&FcstType=graphical" target="_blank" rel="noopener">
+      <span class="name">NWS hourly graph</span>
+      <span class="note">Temperature, wind, and precipitation by the hour. The one to check before a freeze night.</span>
+    </a>
+    <a class="card" href="https://radar.weather.gov/station/KAPX/standard" target="_blank" rel="noopener">
+      <span class="name">Radar (Gaylord)</span>
+      <span class="note">Live radar from the KAPX site, the one that covers Grand Traverse.</span>
+    </a>
+    <a class="card" href="https://www.windy.com/44.71/-85.74?44.71,-85.74,11" target="_blank" rel="noopener">
+      <span class="name">Windy</span>
+      <span class="note">Wind, gusts, and lake-effect bands on a map. Good for kayak days and for guessing at snow.</span>
+    </a>
+    <a class="card" href="https://www.weather.gov/apx/winter" target="_blank" rel="noopener">
+      <span class="name">NWS Gaylord winter page</span>
+      <span class="note">Snow totals, winter storm outlooks, and the seasonal snowfall map for northern lower Michigan.</span>
+    </a>
+    <a class="card" href="https://www.nohrsc.noaa.gov/interactive/html/map.html" target="_blank" rel="noopener">
+      <span class="name">Snow depth map</span>
+      <span class="note">NOAA snow analysis. How much is sitting on the roof and the driveway right now.</span>
+    </a>
+    <a class="card" href="https://www.glerl.noaa.gov/data/ice/" target="_blank" rel="noopener">
+      <span class="name">Great Lakes ice</span>
+      <span class="note">NOAA ice cover for the big lakes. Long Lake freezes on its own schedule; the township gauge logs freeze-over and ice-out.</span>
+    </a>
+    <a class="card" href="https://longlaketwpmi.documents-on-demand.com/" target="_blank" rel="noopener">
+      <span class="name">Long Lake levels <span class="tag">weekly</span></span>
+      <span class="note">Township posts a weekly Lake Levels sheet. Open the documents portal, then Township Parks &rarr; Lake Levels (the PDF link changes every week). Also linked from the township home page.</span>
+    </a>
+    <a class="card" href="https://longlakeassociation.com" target="_blank" rel="noopener">
+      <span class="name">Long Lake Association</span>
+      <span class="note">Lake news, water quality, invasive species, and boat-wash reminders.</span>
+    </a>
+  </div>
+  <div class="embed">
+    <iframe title="Windy forecast for Long Lake" loading="lazy" src="https://embed.windy.com/embed2.html?lat=44.71&lon=-85.74&detailLat=44.71&detailLon=-85.74&width=650&height=450&zoom=9&level=surface&overlay=wind&product=ecmwf&menu=&message=true&marker=true&calendar=now&pressure=&type=map&location=coordinates&detail=true&metricWind=mph&metricTemp=%C2%B0F&radarRange=-1"></iframe>
+    <div class="cap">Windy, centered on the peninsula. Tap the marker for the hourly detail.</div>
+  </div>
+</section>
+
+<section id="utilities">
+  <h2>Utilities</h2>
+  <p class="lead">Power is Consumers Energy, gas is DTE, internet is Spectrum. Check the outage map before assuming the generator failed.</p>
+  <div class="grid">
+    <a class="card primary" href="https://www.consumersenergy.com/outagemap" target="_blank" rel="noopener">
+      <span class="name">Consumers Energy outage map <span class="tag">electric</span></span>
+      <span class="note">Is the whole peninsula dark, or just us? Report an outage at 800-477-5050.</span>
+    </a>
+    <a class="card" href="https://www.consumersenergy.com" target="_blank" rel="noopener">
+      <span class="name">Consumers Energy account</span>
+      <span class="note">Bills, autopay, usage. Electric only.</span>
+    </a>
+    <a class="card" href="https://outage.dteenergy.com" target="_blank" rel="noopener">
+      <span class="name">DTE outage map <span class="tag">gas</span></span>
+      <span class="note">Gas service. Smell gas: leave, then call 800-947-5000. Account at <a href="https://www.dteenergy.com" target="_blank" rel="noopener">dteenergy.com</a>.</span>
+    </a>
+    <a class="card" href="https://www.spectrum.net/support/outage" target="_blank" rel="noopener">
+      <span class="name">Spectrum outage <span class="tag">internet</span></span>
+      <span class="note">If the cameras and Deco drop together, check here first. Account at <a href="https://www.spectrum.net/login" target="_blank" rel="noopener">spectrum.net</a>.</span>
+    </a>
+  </div>
+</section>
+
+<section id="call">
+  <h2>Who to call</h2>
+  <p class="lead">The people who already know the house. Generator and well service both have history on site.</p>
+  <div class="grid">
+    <a class="card" href="tel:+12315903999">
+      <span class="name">TSI Electric <span class="tag call">generator</span></span>
+      <span class="note">Services the Generac; last full service July 2026. Also the electrician for panel work.</span>
+      <span class="phone">231-590-3999 &middot; <a href="https://www.tsielectric.com" target="_blank" rel="noopener">tsielectric.com</a></span>
+    </a>
+    <a class="card" href="https://www.teambobs.com" target="_blank" rel="noopener">
+      <span class="name">Team Bob's <span class="tag call">furnace &middot; plumbing</span></span>
+      <span class="note">Heating, air, and plumbing. The Trane furnace is theirs to service.</span>
+      <span class="phone">teambobs.com</span>
+    </a>
+    <a class="card" href="https://www.cluffwelldrilling.com" target="_blank" rel="noopener">
+      <span class="name">Cluff Well Drilling <span class="tag call">well &middot; pump</span></span>
+      <span class="note">Well service; shocked and retested the well in August 2026. Call for pump or pressure-tank trouble.</span>
+      <span class="phone">cluffwelldrilling.com</span>
+    </a>
+    <a class="card" href="tel:+18004999719">
+      <span class="name">Owens Soft Water <span class="tag call">softener</span></span>
+      <span class="note">Kinetico dealer. Salt, service, and the twin-tank softener.</span>
+      <span class="phone">800-499-9719</span>
+    </a>
+    <a class="card" href="tel:+12313426207">
+      <span class="name">Complete Well &amp; Septic <span class="tag call">septic</span></span>
+      <span class="note">Did the time-of-transfer inspection. Pumping, effluent filter, drainfield questions.</span>
+      <span class="phone">231-342-6207</span>
+    </a>
+    <a class="card" href="tel:+18004775050">
+      <span class="name">Consumers Energy <span class="tag call">outage</span></span>
+      <span class="note">Report a power outage or a downed line.</span>
+      <span class="phone">800-477-5050</span>
+    </a>
+    <a class="card" href="tel:+18009475000">
+      <span class="name">DTE gas emergency <span class="tag call">gas leak</span></span>
+      <span class="note">Leave the house first, then call.</span>
+      <span class="phone">800-947-5000</span>
+    </a>
+    <a class="card" href="tel:+12319410450">
+      <span class="name">Ford Insurance Agency <span class="tag call">insurance</span></span>
+      <span class="note">Our Auto-Owners agent in Traverse City. For a claim you can also go straight to <a href="https://www.auto-owners.com/claims" target="_blank" rel="noopener">auto-owners.com/claims</a>.</span>
+      <span class="phone">231-941-0450</span>
+    </a>
+    <div class="card">
+      <span class="name">Snow plow <span class="tag todo">not hired yet</span></span>
+      <span class="note">The association plows the road, not our driveway. Will is lining someone up before the first snow; name goes here when it is settled.</span>
+    </div>
+    <div class="card">
+      <span class="name">Trash &amp; recycling <span class="tag todo">confirm</span></span>
+      <span class="note">Hauler and pickup day still to be confirmed with the neighbors. Until then, garbage goes inside the garage, never out overnight (bears and raccoons).</span>
+    </div>
+    <a class="card" href="https://gtcrc.org" target="_blank" rel="noopener">
+      <span class="name">GT County Road Commission <span class="tag call">plowing</span></span>
+      <span class="note">County roads and plow priorities. The driveway is our problem.</span>
+      <span class="phone">gtcrc.org</span>
+    </a>
+  </div>
+</section>
+
+<section id="house">
+  <h2>House facts</h2>
+  <p class="lead">The things you need at the hardware store or on the phone with a contractor.</p>
+  <div class="rows">
+    <div class="row"><b>Furnace</b><span>Trane XR95, 95% condensing, two-pipe vent, with condensate pump. Filter <span class="mono">16&times;25&times;1</span>, arrow points toward the furnace.</span></div>
+    <div class="row"><b>Water softener</b><span>Kinetico 2060s, non-electric twin tank. Owens Soft Water services it.</span></div>
+    <div class="row"><b>Generator</b><span>Generac standby with a Nexus service-rated transfer switch: whole-house, automatic. Leave the switch in AUTO. The old 10-circuit manual switch is legacy; all toggles stay on LINE.</span></div>
+    <div class="row"><b>Sump / crock pump</b><span>Exterior crock under the faux-rock cover, discharges to the pond. Powered from the back-of-garage GFCI: if the pump is mysteriously dead, reset that outlet first.</span></div>
+    <div class="row"><b>High-water alarms</b><span>Two TankAlert panels in the basement: one septic lift, one exterior crock. Push-to-test on each; test during the generator load test.</span></div>
+    <div class="row"><b>Septic</b><span>1,600-gal tank plus pump chamber off the east foundation; pressure-mound field west of the house, long axis east-west. Keep trees and vehicles off it.</span></div>
+    <div class="row"><b>Pond aerator</b><span>Off for winter, on again in spring. In late summer run it on a timer a few hours midday before going continuous, so a stratified pond does not turn over.</span></div>
+    <div class="row"><b>Dehumidifier</b><span>Continuous drain to the basement tub, set at 50%.</span></div>
+    <div class="row"><b>Calendar</b><span>Principal Residence Exemption (MI Form 2368) by <b>June 1, 2027</b>. UPS battery every 3 years. Annual well water test. Generator service each summer. Chimney sweep and furnace service each fall.</span></div>
+  </div>
+</section>
+
+<section id="local">
+  <h2>Township &amp; county</h2>
+  <p class="lead">Long Lake Township handles zoning, permits, and taxes. Grand Traverse County handles GIS, health, and emergency alerts.</p>
+  <div class="grid">
+    <a class="card" href="https://longlaketownship.com" target="_blank" rel="noopener">
+      <span class="name">Long Lake Township</span>
+      <span class="note">Home page, with the Lake Levels link and meeting notices.</span>
+    </a>
+    <a class="card" href="https://longlaketownship.com/treasurer/" target="_blank" rel="noopener">
+      <span class="name">Township treasurer <span class="tag">taxes</span></span>
+      <span class="note">Summer and winter tax bills, due dates, and where to pay.</span>
+    </a>
+    <a class="card" href="https://bsaonline.com/?uid=218" target="_blank" rel="noopener">
+      <span class="name">Property &amp; tax lookup (BS&amp;A)</span>
+      <span class="note">Assessed value, taxable value, and tax history for any parcel in the township.</span>
+    </a>
+    <a class="card" href="https://longlaketownship.com/assessor/" target="_blank" rel="noopener">
+      <span class="name">Township assessor</span>
+      <span class="note">Assessment notices, the PRE form, and the property transfer affidavit.</span>
+    </a>
+    <a class="card" href="https://longlaketownship.com/permits/" target="_blank" rel="noopener">
+      <span class="name">Permits</span>
+      <span class="note">Building, egress window, pole barn, dock. Start here before any contractor does.</span>
+    </a>
+    <a class="card" href="https://longlaketownship.com/planner/" target="_blank" rel="noopener">
+      <span class="name">Zoning &amp; planning</span>
+      <span class="note">R-2 Lake Residential rules: setbacks, accessory buildings, shoreline.</span>
+    </a>
+    <a class="card" href="https://longlaketownship.com/septic-inspection-program/" target="_blank" rel="noopener">
+      <span class="name">Septic inspection program</span>
+      <span class="note">The township's time-of-transfer program and what it requires.</span>
+    </a>
+    <a class="card" href="https://www.gtcountymi.gov/467/Mapping-Gallery" target="_blank" rel="noopener">
+      <span class="name">County maps (GIS)</span>
+      <span class="note">Parcels, aerials, the septic field location, and wetlands layers.</span>
+    </a>
+    <a class="card" href="https://www.gtcountymi.gov/2211/Health" target="_blank" rel="noopener">
+      <span class="name">County Health Department</span>
+      <span class="note">Well and septic permits, water sampling, time-of-transfer records.</span>
+    </a>
+    <a class="card" href="https://public.govdelivery.com/accounts/MIGRANDTRAVERSE/subscriber/topics?qsp=CODE_RED" target="_blank" rel="noopener">
+      <span class="name">CodeRED alerts <span class="tag">sign up</span></span>
+      <span class="note">County emergency notifications by text. Worth having on both phones.</span>
+    </a>
+    <a class="card" href="https://www.gtcountymi.gov/2685/Emergency-Services" target="_blank" rel="noopener">
+      <span class="name">County emergency services</span>
+      <span class="note">Emergency management, burn permits, and hazard info.</span>
+    </a>
+    <a class="card" href="https://www.michigan.gov/taxes/property/principal-residence-exemption" target="_blank" rel="noopener">
+      <span class="name">Michigan PRE <span class="tag">by 6/1/2027</span></span>
+      <span class="note">Principal Residence Exemption: Form 2368 to the township once this is home. Cuts the school operating mills.</span>
+    </a>
+    <a class="card" href="https://www.michigan.gov/egle" target="_blank" rel="noopener">
+      <span class="name">EGLE</span>
+      <span class="note">State environmental agency. Any boardwalk, dock, or shoreline work near the pond goes through them.</span>
+    </a>
+    <a class="card" href="https://www.michigan.gov/dnr" target="_blank" rel="noopener">
+      <span class="name">Michigan DNR</span>
+      <span class="note">Fishing licenses, ice safety, and hunting seasons on the trail corridor.</span>
+    </a>
+    <a class="card" href="https://www.michigan.gov/burnpermit" target="_blank" rel="noopener">
+      <span class="name">Burn permit check</span>
+      <span class="note">Whether open burning is allowed today in Grand Traverse County. Check before the brush pile or a big fire-pit night.</span>
+    </a>
+  </div>
+</section>
+
+<section id="lake">
+  <h2>Around the lake</h2>
+  <p class="lead">The fun part. Beach and launch keys hang by the garage door; put them back.</p>
+  <div class="grid">
+    <div class="card">
+      <span class="name">Association beach &amp; launch <span class="tag">members</span></span>
+      <span class="note">Private beach, dock, swim raft, and boat launch about a quarter mile down the road. Kayak carts are in the garage. Golf carts are the neighborhood way to get there.</span>
+    </div>
+    <div class="card">
+      <span class="name">Park &amp; playground</span>
+      <span class="note">Association park with a ball field, basketball court, playground, and pavilion. Reachable through the woods behind the house without touching a real road.</span>
+    </div>
+    <a class="card" href="https://longlakeassociation.com" target="_blank" rel="noopener">
+      <span class="name">Lake rules &amp; boat wash</span>
+      <span class="note">Long Lake Association: no-wake rules, invasive species, and what to do with a boat that has been on another lake.</span>
+    </a>
+    <a class="card" href="https://www.centreice.org" target="_blank" rel="noopener">
+      <span class="name">Centre Ice Arena <span class="tag">hockey</span></span>
+      <span class="note">The Traverse City rink, about seven minutes away. Public skate and stick-and-puck times.</span>
+    </a>
+    <a class="card" href="https://traversetrails.org" target="_blank" rel="noopener">
+      <span class="name">TART Trails <span class="tag">bikes</span></span>
+      <span class="note">Paved and dirt trail maps around Traverse City, including the VASA singletrack.</span>
+    </a>
+    <a class="card" href="https://www.tadl.org" target="_blank" rel="noopener">
+      <span class="name">Library (TADL)</span>
+      <span class="note">Traverse Area District Library. Cards, hours, and the rainy-day plan.</span>
+    </a>
+    <a class="card" href="https://www.moomers.com" target="_blank" rel="noopener">
+      <span class="name">Moomers <span class="tag">ice cream</span></span>
+      <span class="note">Homemade ice cream on a dairy farm ten minutes away. Regularly voted the best in the country. Non-negotiable stop.</span>
+    </a>
+    <a class="card" href="https://www.traversecity.com/beaches/" target="_blank" rel="noopener">
+      <span class="name">Bay beaches</span>
+      <span class="note">Clinch Park and West End downtown, the State Park beach on East Bay. Long Lake is warmer; the bay is bigger.</span>
+    </a>
+    <a class="card" href="https://www.gtcountymi.gov/parks" target="_blank" rel="noopener">
+      <span class="name">Civic Center &amp; Howe Arena <span class="tag">skate</span></span>
+      <span class="note">County park with the second rink, public skate, a track, and ball fields. Centre Ice is the other rink.</span>
+    </a>
+    <a class="card" href="https://www.traversecitymi.gov/community/recreation-directory/hickory-hills-recreation-area/" target="_blank" rel="noopener">
+      <span class="name">Hickory Hills <span class="tag">sled &middot; ski</span></span>
+      <span class="note">City-run hill on the west side: cheap skiing, sledding, and disc golf in summer. Closest snow to the house.</span>
+    </a>
+    <a class="card" href="https://www.pitspitters.com" target="_blank" rel="noopener">
+      <span class="name">Pit Spitters baseball <span class="tag">summer</span></span>
+      <span class="note">Minor-league baseball at Turtle Creek. Fireworks nights and cheap seats.</span>
+    </a>
+    <a class="card" href="https://www.tallshipsailing.com" target="_blank" rel="noopener">
+      <span class="name">Schooner Manitou</span>
+      <span class="note">Two-hour sails on the bay from downtown. Kids can help raise the sails.</span>
+    </a>
+    <a class="card" href="https://www.greatlakeskids.org" target="_blank" rel="noopener">
+      <span class="name">Children's museum</span>
+      <span class="note">Great Lakes Children's Museum by the water. Best for the younger end.</span>
+    </a>
+    <a class="card" href="https://www.stateandbijou.org" target="_blank" rel="noopener">
+      <span class="name">State Theatre <span class="tag">movies</span></span>
+      <span class="note">Downtown movie house with 25-cent kids' matinees on weekends.</span>
+    </a>
+    <a class="card" href="https://www.downtowntc.com/services/dda-services/farmers-market.html" target="_blank" rel="noopener">
+      <span class="name">Farmers market <span class="tag">Sat</span></span>
+      <span class="note">Sara Hardy market downtown, Saturday mornings May through October, Wednesdays in summer.</span>
+    </a>
+    <a class="card" href="https://www.thevillagetc.com" target="_blank" rel="noopener">
+      <span class="name">The Village at GT Commons</span>
+      <span class="note">The old asylum turned into shops, bakeries, and trails. Good rainy afternoon, good bike destination.</span>
+    </a>
+    <a class="card" href="https://www.michigan.gov/dnr/buy-and-apply/recreation-passport" target="_blank" rel="noopener">
+      <span class="name">Recreation Passport <span class="tag">state parks</span></span>
+      <span class="note">The state-park sticker for the car, added at plate renewal. Needed for the State Park beach, Interlochen, and every boat launch on state land.</span>
+    </a>
+    <a class="card" href="https://www.michigan.gov/dnr" target="_blank" rel="noopener">
+      <span class="name">Fishing license</span>
+      <span class="note">Anyone 17 and up needs a Michigan license, even in the pond. Kids under 17 fish free. Bass and bluegill are in there.</span>
+    </a>
+  </div>
+</section>
+
+<section id="fun">
+  <h2>Seasons &amp; fun</h2>
+  <p class="lead">Fall color peaks up here around the second week of October. Then it snows, and that is the point.</p>
+  <div class="grid">
+    <a class="card primary" href="https://www.traversecity.com/fall/" target="_blank" rel="noopener">
+      <span class="name">Fall in Traverse City <span class="tag">color</span></span>
+      <span class="note">Color tour routes, pumpkin patches, cider mills, and the week-by-week leaf report from the tourism folks.</span>
+    </a>
+    <a class="card" href="https://www.michigan.org/fall" target="_blank" rel="noopener">
+      <span class="name">Pure Michigan fall color</span>
+      <span class="note">Statewide fall color map and peak timing by region.</span>
+    </a>
+    <a class="card" href="https://smokymountains.com/fall-foliage-map/" target="_blank" rel="noopener">
+      <span class="name">Foliage prediction map</span>
+      <span class="note">Nationwide peak-leaf forecast by county. Handy for picking the weekend to drive up.</span>
+    </a>
+    <a class="card" href="https://www.m22.com" target="_blank" rel="noopener">
+      <span class="name">M-22 scenic drive</span>
+      <span class="note">The Leelanau loop past Sleeping Bear, Glen Arbor, and Leland. Best color drive within an hour.</span>
+    </a>
+    <a class="card" href="https://www.nps.gov/slbe/index.htm" target="_blank" rel="noopener">
+      <span class="name">Sleeping Bear Dunes</span>
+      <span class="note">Dune climb, Pierce Stocking scenic drive, Empire bluff. Forty minutes west.</span>
+    </a>
+    <a class="card" href="https://www.jacobsfarmtc.com" target="_blank" rel="noopener">
+      <span class="name">Jacob's Farm <span class="tag">corn maze</span></span>
+      <span class="note">Corn maze, cider, donuts, and live music on the edge of town.</span>
+    </a>
+    <a class="card" href="https://friske.com" target="_blank" rel="noopener">
+      <span class="name">Friske Farm Market</span>
+      <span class="note">Orchard, u-pick apples, and the pie counter up US-31 in Ellsworth.</span>
+    </a>
+    <a class="card" href="https://www.michigan.gov/dnr/things-to-do/fishing/weekly-fishing-report" target="_blank" rel="noopener">
+      <span class="name">Salmon run <span class="tag">Sept &ndash; Oct</span></span>
+      <span class="note">DNR weekly fishing report. Kings run up the Boardman and the Betsie every fall; go watch them at the weir.</span>
+    </a>
+    <a class="card" href="https://www.swpc.noaa.gov/products/aurora-30-minute-forecast" target="_blank" rel="noopener">
+      <span class="name">Northern lights <span class="tag">aurora</span></span>
+      <span class="note">NOAA 30-minute aurora forecast. On a strong night they show over the lake; dark sky is one of the perks up here.</span>
+    </a>
+    <a class="card" href="https://www.mt-holiday.com" target="_blank" rel="noopener">
+      <span class="name">Mt. Holiday <span class="tag">ski &middot; tubing</span></span>
+      <span class="note">The little hill on the east side of town: night skiing, tubing, and lessons. Ten minutes.</span>
+    </a>
+    <a class="card" href="https://www.crystalmountain.com" target="_blank" rel="noopener">
+      <span class="name">Crystal Mountain</span>
+      <span class="note">The real ski hill, about 40 minutes southwest. Also mountain biking and a water park in summer.</span>
+    </a>
+    <a class="card" href="https://www.vasa.org" target="_blank" rel="noopener">
+      <span class="name">VASA trail &amp; race</span>
+      <span class="note">Groomed cross-country ski trails and fat-bike loops in the Pere Marquette forest. The Vasa race is in February.</span>
+    </a>
+    <a class="card" href="https://www.tcsnowmobile.com" target="_blank" rel="noopener">
+      <span class="name">Snowmobile trails</span>
+      <span class="note">Tri-County Snowmobile Alliance trail maps and grooming reports.</span>
+    </a>
+    <a class="card" href="https://www.greatwolf.com/traverse-city" target="_blank" rel="noopener">
+      <span class="name">Great Wolf Lodge <span class="tag">rainy day</span></span>
+      <span class="note">Indoor water park in town. Day passes exist; check before promising the kids.</span>
+    </a>
+    <a class="card" href="https://www.downtowntc.com" target="_blank" rel="noopener">
+      <span class="name">Downtown TC events</span>
+      <span class="note">Friday night live, the tree lighting, Restaurant Week, and what is on this weekend.</span>
+    </a>
+    <a class="card" href="https://www.interlochen.org/events" target="_blank" rel="noopener">
+      <span class="name">Interlochen concerts</span>
+      <span class="note">Summer concert series and student performances all year, 20 minutes south.</span>
+    </a>
+    <a class="card" href="https://www.missionpointlighthouse.com" target="_blank" rel="noopener">
+      <span class="name">Mission Point Lighthouse <span class="tag">Old Mission</span></span>
+      <span class="note">Drive the length of Old Mission Peninsula to the lighthouse on the 45th parallel. Beach, trails, and a lighthouse to climb.</span>
+    </a>
+    <a class="card" href="https://www.fishtownmi.org" target="_blank" rel="noopener">
+      <span class="name">Fishtown, Leland</span>
+      <span class="note">Working fishing shanties, smoked fish, and the ferry to the Manitou islands. On the M-22 loop.</span>
+    </a>
+    <a class="card" href="https://www.leelanau.com" target="_blank" rel="noopener">
+      <span class="name">Leelanau County</span>
+      <span class="note">Suttons Bay, Glen Arbor, Northport, and what is going on out there.</span>
+    </a>
+    <a class="card" href="https://www.elkrapids.org" target="_blank" rel="noopener">
+      <span class="name">Elk Rapids &amp; Torch Lake <span class="tag">sandbar</span></span>
+      <span class="note">North on US-31. The Torch Lake sandbar is the summer day the kids will talk about; launch from Elk Rapids or Alden.</span>
+    </a>
+    <a class="card" href="https://www.mackinacisland.org" target="_blank" rel="noopener">
+      <span class="name">Mackinac Island <span class="tag">day trip</span></span>
+      <span class="note">Two hours to the ferry, then bikes, fudge, and the fort. No cars on the island.</span>
+    </a>
+    <a class="card" href="https://www.timberleehills.com" target="_blank" rel="noopener">
+      <span class="name">Timberlee Hills tubing <span class="tag">winter</span></span>
+      <span class="note">Big tubing hill 15 minutes west. Easier than skiing with a mixed-age crew.</span>
+    </a>
+    <a class="card" href="https://www.nubsnob.com" target="_blank" rel="noopener">
+      <span class="name">Nub's Nob <span class="tag">ski</span></span>
+      <span class="note">The locals' ski hill up in Harbor Springs, about 90 minutes. Better snow than Crystal on the right week.</span>
+    </a>
+    <a class="card" href="https://www.boynemountain.com" target="_blank" rel="noopener">
+      <span class="name">Boyne Mountain <span class="tag">ski &middot; water park</span></span>
+      <span class="note">Bigger resort an hour north: skiing, the indoor water park, and the summer zip line.</span>
+    </a>
+    <a class="card" href="https://www.michlegacyartpark.org" target="_blank" rel="noopener">
+      <span class="name">Michigan Legacy Art Park <span class="tag">hike</span></span>
+      <span class="note">Sculpture trail in the woods at Crystal Mountain. Good short hike with a payoff for kids.</span>
+    </a>
+    <a class="card" href="https://www.dennosmuseum.org" target="_blank" rel="noopener">
+      <span class="name">Dennos Museum</span>
+      <span class="note">Art museum on the NMC campus with an Inuit collection and hands-on gallery. Rainy-day option.</span>
+    </a>
+    <a class="card" href="https://www.cherryfestival.org" target="_blank" rel="noopener">
+      <span class="name">National Cherry Festival <span class="tag">July</span></span>
+      <span class="note">Air show, parades, and the whole town on the bay for a week around the Fourth.</span>
+    </a>
+  </div>
+</section>
+
+<section id="drive">
+  <h2>The drive &amp; local</h2>
+  <p class="lead">Lexington to the lake is three states of road conditions.</p>
+  <div class="grid">
+    <a class="card" href="https://mdotjboss.state.mi.us/MiDrive/map" target="_blank" rel="noopener">
+      <span class="name">MiDrive <span class="tag">Michigan</span></span>
+      <span class="note">MDOT road conditions, closures, and plow cams. The last three hours of the trip.</span>
+    </a>
+    <a class="card" href="https://www.ohgo.com" target="_blank" rel="noopener">
+      <span class="name">OHGO <span class="tag">Ohio</span></span>
+      <span class="note">Ohio traffic and weather along I-75.</span>
+    </a>
+    <a class="card" href="https://goky.ky.gov" target="_blank" rel="noopener">
+      <span class="name">GoKY <span class="tag">Kentucky</span></span>
+      <span class="note">Kentucky road conditions for the first hour.</span>
+    </a>
+    <a class="card" href="https://www.tvcairport.com" target="_blank" rel="noopener">
+      <span class="name">Cherry Capital Airport (TVC)</span>
+      <span class="note">Flights, when the van is not the answer.</span>
+    </a>
+    <a class="card" href="https://www.traverseticker.com" target="_blank" rel="noopener">
+      <span class="name">Traverse Ticker</span>
+      <span class="note">Local news, road projects, and what is happening in town.</span>
+    </a>
+    <a class="card" href="https://www.record-eagle.com" target="_blank" rel="noopener">
+      <span class="name">Record-Eagle</span>
+      <span class="note">The Traverse City paper.</span>
+    </a>
+    <a class="card" href="https://www.tcaps.net" target="_blank" rel="noopener">
+      <span class="name">TCAPS</span>
+      <span class="note">Traverse City Area Public Schools. Calendar and enrollment for the move.</span>
+    </a>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    Unlisted page. Links only, no passwords here; the camera, alarm, and WiFi apps use the family login (ask Will or Mom). Something missing or dead? Tell Will. &middot; <a href="/">willgerken.com</a>
+  </div>
+</footer>
+
+</body>
+</html>
