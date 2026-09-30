@@ -60,3 +60,11 @@ table.sheet-table th { color:var(--accent); font-weight:700; border-bottom:2px s
        font-size:.82rem; font-weight:600; }
   table.sheet-table td:first-child::before { content:none; }
 }
+
+/* Colour carries meaning on these sheets; the legend at the foot of the plan explains it. */
+.c-acc { color:var(--accent); font-weight:600; }
+.c-dd  { color:#007a3d; font-weight:600; }
+.c-gen { color:#787878; }
+.c-one { background:#ffe2c2; padding:0 3px; border-radius:3px; }
+p.which { margin-top:26px; padding-top:14px; border-top:1px solid var(--line);
+          color:var(--muted); font-size:.9rem; }
