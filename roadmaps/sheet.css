@@ -53,3 +53,10 @@ table.sheet-table th { color:var(--accent); font-weight:700; border-bottom:2px s
 }
 
 .qr-link { display:inline-block; margin:0 0 6px; font-weight:600; color:var(--accent); }
+
+@media (max-width:640px){
+  table.sheet-table thead { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); }
+  table.sheet-table td[data-label]::before { content:attr(data-label) ": "; color:var(--muted);
+       font-size:.82rem; font-weight:600; }
+  table.sheet-table td:first-child::before { content:none; }
+}
