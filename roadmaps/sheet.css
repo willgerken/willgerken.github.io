@@ -1,0 +1,53 @@
+/* Shared stylesheet for the web versions of the roadmap sheets.
+   Matches the index page's palette; --accent is set per sheet by the build script. */
+:root { --accent:#0033a0; --ink:#1f2328; --muted:#5b6370; --line:#d8dde5; --bg:#fbfbfc; }
+* { box-sizing:border-box; }
+body { margin:0; background:var(--bg); color:var(--ink);
+       font:16px/1.55 system-ui,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif; }
+main { max-width:820px; margin:0 auto; padding:28px 20px 56px; }
+
+.back { margin:0 0 14px; font-size:.9rem; }
+.back a { color:var(--muted); text-decoration:none; }
+.back a:hover, .back a:focus { color:var(--accent); text-decoration:underline; }
+
+h1 { font-size:1.9rem; line-height:1.2; margin:0 0 6px; color:var(--accent); }
+.sub { color:var(--muted); margin:0 0 16px; }
+h2 { font-size:1.15rem; margin:30px 0 8px; padding-bottom:5px; color:var(--accent);
+     border-bottom:2px solid currentColor; }
+
+.actions { margin:0 0 8px; display:flex; flex-wrap:wrap; gap:12px; align-items:center; }
+.btn { display:inline-block; background:var(--accent); color:#fff; text-decoration:none;
+       padding:9px 14px; border-radius:6px; font-size:.95rem; }
+.btn:hover, .btn:focus { filter:brightness(1.12); }
+.upd { color:var(--muted); font-size:.85rem; }
+
+p { margin:0 0 12px; }
+strong { color:inherit; }
+ul { padding-left:1.2em; }
+li { margin:0 0 6px; }
+
+/* Tables: a real table on a wide screen, stacked rows on a phone. */
+table.sheet-table { width:100%; border-collapse:collapse; margin:6px 0 18px; background:#fff; }
+table.sheet-table th, table.sheet-table td { text-align:left; vertical-align:top;
+       padding:9px 12px; border-bottom:1px solid var(--line); }
+table.sheet-table th { color:var(--accent); font-weight:700; border-bottom:2px solid var(--accent);
+       font-size:.92rem; letter-spacing:.01em; }
+
+@media (max-width:640px){
+  main { padding:20px 16px 44px; }
+  h1 { font-size:1.55rem; }
+  table.sheet-table, table.sheet-table tbody, table.sheet-table tr,
+  table.sheet-table td, table.sheet-table th { display:block; width:100%; }
+  table.sheet-table thead, table.sheet-table th:empty { display:none; }
+  table.sheet-table tr { border:1px solid var(--line); border-radius:8px;
+       background:#fff; margin:0 0 10px; padding:4px 2px; }
+  table.sheet-table td, table.sheet-table th { border-bottom:0; padding:6px 12px; }
+  table.sheet-table td:first-child, table.sheet-table th:first-child {
+       color:var(--accent); font-weight:700; padding-bottom:0; }
+}
+
+@media print {
+  .back, .actions { display:none; }
+  body { background:#fff; }
+  main { max-width:none; padding:0; }
+}
