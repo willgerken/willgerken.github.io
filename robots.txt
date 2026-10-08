@@ -1,4 +1,16 @@
 User-agent: *
+# unlisted pages (noindex in the page, no link from index.html)
 Disallow: /hockey/
 Disallow: /cedar/
 Disallow: /spartans/
+Disallow: /pathways/
+Disallow: /CliffordMI.html
+Disallow: /cfp-tool/
+# unlisted files: talk backups, working-paper copies, property images
+Disallow: /insurance.pdf
+Disallow: /GIPZ_FFC.pdf
+Disallow: /BGW_KentState.pdf
+Disallow: /CFP2026.pdf
+Disallow: /geography_IPO_overleaf.pdf
+Disallow: /foxfarm-acreage.jpg
+Disallow: /foxfarm-lot10-setbacks.jpg
