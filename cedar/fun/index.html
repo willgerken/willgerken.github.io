@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Around Cedar</title>
+<meta name="description" content="Things to do around the lake house.">
+<meta name="theme-color" content="#16706a">
+<link rel="apple-touch-icon" href="../icon-180.png">
+<link rel="icon" type="image/png" sizes="512x512" href="../icon-512.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#1a1a1a; --ink-light:#4a4a4a; --ink-muted:#737373;
+  --paper:#faf9f7; --paper-warm:#f5f3ef; --surface:#ffffff;
+  --accent:#1a3a5c; --highlight:#c4a35a; --highlight-soft:rgba(196,163,90,.13);
+  --lake:#16706a; --lake-soft:rgba(22,112,106,.10);
+  --border:#e0ddd8; --border-light:#eceae6;
+  --font-display:'Instrument Serif',Georgia,serif;
+  --font-body:'DM Sans',-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif;
+  --font-mono:'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
+  --radius:6px;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --ink:#ece9e4; --ink-light:#c3bfb8; --ink-muted:#948f88;
+    --paper:#14161a; --paper-warm:#191c21; --surface:#1c2026;
+    --accent:#8fb6dd; --highlight:#d8b96e; --highlight-soft:rgba(216,185,110,.14);
+    --lake:#4bc3b5; --lake-soft:rgba(75,195,181,.13);
+    --border:#2e343c; --border-light:#252b32;
+  }
+}
+:root[data-theme="dark"]{
+  --ink:#ece9e4; --ink-light:#c3bfb8; --ink-muted:#948f88;
+  --paper:#14161a; --paper-warm:#191c21; --surface:#1c2026;
+  --accent:#8fb6dd; --highlight:#d8b96e; --highlight-soft:rgba(216,185,110,.14);
+  --lake:#4bc3b5; --lake-soft:rgba(75,195,181,.13);
+  --border:#2e343c; --border-light:#252b32;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{font-size:17px;scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{font-family:var(--font-body);color:var(--ink);background:var(--paper);line-height:1.55;-webkit-font-smoothing:antialiased}
+a{color:var(--accent);text-decoration:none}
+.wrap{max-width:960px;margin:0 auto;padding:0 16px}
+header{padding:2rem 0 1.1rem;border-bottom:1px solid var(--border-light);background:var(--paper-warm)}
+header h1{font-family:var(--font-display);font-weight:400;font-size:clamp(2.4rem,7vw,3.4rem);line-height:1;letter-spacing:-.01em}
+header h1 em{font-style:italic;color:var(--lake)}
+header p{color:var(--ink-light);margin-top:.5rem;max-width:56ch}
+.kicker{font-family:var(--font-mono);font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--lake);margin-bottom:.4rem}
+.kicker a{color:var(--lake)}
+.jump{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--paper) 92%,transparent);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:1px solid var(--border-light)}
+.jump ul{list-style:none;display:flex;gap:.25rem;overflow-x:auto;padding:.5rem 0;scrollbar-width:none}
+.jump ul::-webkit-scrollbar{display:none}
+.jump a{display:inline-block;white-space:nowrap;padding:.45rem .8rem;border-radius:999px;font-size:.9rem;font-weight:500;color:var(--ink-light);border:1px solid transparent}
+.jump a:hover,.jump a:focus-visible{border-color:var(--border);color:var(--ink);background:var(--surface)}
+section{padding:1.8rem 0 .4rem}
+section h2{font-family:var(--font-display);font-weight:400;font-size:1.8rem;line-height:1.1;margin-bottom:.25rem}
+section .lead{color:var(--ink-muted);font-size:.95rem;margin-bottom:1rem;max-width:62ch}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:.7rem}
+.card{display:flex;flex-direction:column;gap:.15rem;padding:.85rem .95rem;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);color:var(--ink);min-height:64px;transition:border-color .15s,transform .15s,box-shadow .15s}
+a.card:hover,a.card:focus-visible{border-color:var(--lake);transform:translateY(-1px);box-shadow:0 4px 14px rgba(0,0,0,.06)}
+.card .name{font-weight:600;font-size:1.02rem;display:flex;align-items:baseline;gap:.5rem;flex-wrap:wrap}
+.card .name .tag{font-family:var(--font-mono);font-size:.64rem;letter-spacing:.08em;text-transform:uppercase;padding:.1rem .4rem;border-radius:3px;background:var(--lake-soft);color:var(--lake);font-weight:500}
+.card .note{font-size:.88rem;color:var(--ink-muted);line-height:1.4}
+.card.primary{border-color:var(--lake);background:linear-gradient(0deg,var(--lake-soft),var(--surface))}
+footer{margin-top:2.4rem;padding:1.4rem 0 3rem;border-top:1px solid var(--border-light);color:var(--ink-muted);font-size:.85rem}
+footer a{color:var(--ink-light)}
+@media (max-width:520px){.grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <div class="kicker"><a href="../">&larr; Cedar house</a></div>
+    <h1>Around <em>Cedar</em></h1>
+    <p>The lake, the town, the day trips, and the drive up. Beach and launch keys hang by the garage door.</p>
+  </div>
+</header>
+
+<nav class="jump" aria-label="Sections">
+  <div class="wrap">
+    <ul>
+      <li><a href="#lake">The lake &amp; town</a></li>
+      <li><a href="#eat">Eat &amp; drink</a></li>
+      <li><a href="#fun">Seasons &amp; day trips</a></li>
+      <li><a href="#drive">The drive</a></li>
+    </ul>
+  </div>
+</nav>
+
+<main class="wrap">
+
+<section id="lake">
+  <h2>The lake &amp; town</h2>
+  <div class="grid">
+    <div class="card">
+      <span class="name">Association beach &amp; launch <span class="tag">members</span></span>
+      <span class="note">Private beach, dock, swim raft, and boat launch a quarter mile down the road. Kayak carts are in the garage. Everybody golf-carts there.</span>
+    </div>
+    <div class="card">
+      <span class="name">Park &amp; playground</span>
+      <span class="note">Ball field, basketball court, playground, pavilion. You can get there through the woods behind the house.</span>
+    </div>
+    <a class="card" href="https://longlakeassociation.com" target="_blank" rel="noopener">
+      <span class="name">Lake rules &amp; boat wash</span>
+      <span class="note">No-wake rules and what to do with a boat that's been on another lake.</span>
+    </a>
+    <a class="card" href="https://www.moomers.com" target="_blank" rel="noopener">
+      <span class="name">Moomers <span class="tag">ice cream</span></span>
+      <span class="note">Five minutes. Not optional.</span>
+    </a>
+    <a class="card" href="https://www.centreice.org" target="_blank" rel="noopener">
+      <span class="name">Centre Ice Arena <span class="tag">hockey</span></span>
+      <span class="note">Seven minutes. Public skate and stick-and-puck times.</span>
+    </a>
+    <a class="card" href="https://www.gtcountymi.gov/parks" target="_blank" rel="noopener">
+      <span class="name">Civic Center &amp; Howe Arena <span class="tag">skate</span></span>
+      <span class="note">The other rink, plus a track and ball fields.</span>
+    </a>
+    <a class="card" href="https://traversetrails.org" target="_blank" rel="noopener">
+      <span class="name">TART Trails <span class="tag">bikes</span></span>
+      <span class="note">Paved and dirt trail maps, including the VASA singletrack.</span>
+    </a>
+    <a class="card" href="https://www.tadl.org" target="_blank" rel="noopener">
+      <span class="name">Library</span>
+      <span class="note">Traverse Area District Library. The rainy-day plan.</span>
+    </a>
+    <a class="card" href="https://www.traversecity.com/beaches/" target="_blank" rel="noopener">
+      <span class="name">Bay beaches</span>
+      <span class="note">Clinch Park and West End downtown, the State Park beach on East Bay. Long Lake is warmer, the bay is bigger.</span>
+    </a>
+    <a class="card" href="https://www.traversecitymi.gov/community/recreation-directory/hickory-hills-recreation-area/" target="_blank" rel="noopener">
+      <span class="name">Hickory Hills <span class="tag">sled &middot; ski</span></span>
+      <span class="note">City hill on the west side. Cheap skiing, sledding, disc golf in summer. Closest snow to the house.</span>
+    </a>
+    <a class="card" href="https://www.stateandbijou.org" target="_blank" rel="noopener">
+      <span class="name">State Theatre <span class="tag">movies</span></span>
+      <span class="note">Downtown. $1 kids' matinees on weekends.</span>
+    </a>
+    <a class="card" href="https://www.downtowntc.com/services/dda-services/farmers-market.html" target="_blank" rel="noopener">
+      <span class="name">Farmers market <span class="tag">Sat</span></span>
+      <span class="note">Saturday mornings May through October, Wednesdays in summer.</span>
+    </a>
+    <a class="card" href="https://www.thevillagetc.com" target="_blank" rel="noopener">
+      <span class="name">The Village at GT Commons</span>
+      <span class="note">The old asylum, now shops and bakeries and trails. Good gray afternoon.</span>
+    </a>
+    <a class="card" href="https://www.greatlakeskids.org" target="_blank" rel="noopener">
+      <span class="name">Children's museum</span>
+      <span class="note">By the water. For the younger end.</span>
+    </a>
+    <a class="card" href="https://www.pitspitters.com" target="_blank" rel="noopener">
+      <span class="name">Pit Spitters <span class="tag">summer</span></span>
+      <span class="note">Minor-league baseball at Turtle Creek. Fireworks nights, cheap seats.</span>
+    </a>
+    <a class="card" href="https://www.tallshipsailing.com" target="_blank" rel="noopener">
+      <span class="name">Schooner Manitou</span>
+      <span class="note">Two-hour sails on the bay from downtown. Kids help with the sails.</span>
+    </a>
+    <a class="card" href="https://www.downtowntc.com" target="_blank" rel="noopener">
+      <span class="name">Downtown events</span>
+      <span class="note">What's on this weekend.</span>
+    </a>
+    <a class="card" href="https://www.michigan.gov/dnr/buy-and-apply/recreation-passport" target="_blank" rel="noopener">
+      <span class="name">Recreation Passport <span class="tag">state parks</span></span>
+      <span class="note">The state-park sticker, added at plate renewal. Needed for the State Park beach, Interlochen, and every state boat launch.</span>
+    </a>
+    <a class="card" href="https://www.michigan.gov/dnr" target="_blank" rel="noopener">
+      <span class="name">Fishing license</span>
+      <span class="note">17 and up needs one, even in the pond. Kids fish free. Bass and bluegill are in there.</span>
+    </a>
+  </div>
+</section>
+
+<section id="eat">
+  <h2>Eat &amp; drink</h2>
+  <div class="grid">
+    <a class="card primary" href="https://booneslli.com/" target="_blank" rel="noopener">
+      <span class="name">Boone's Long Lake Inn <span class="tag">our lake</span></span>
+      <span class="note">Steaks and the Friday fish fry, five minutes away. The default when nobody wants to cook.</span>
+    </a>
+    <a class="card" href="https://www.farmclubtc.com" target="_blank" rel="noopener">
+      <span class="name">Farm Club <span class="tag">Leelanau</span></span>
+      <span class="note">Farm, bakery, brewery, restaurant. Bike there from Suttons Bay or drive 25 minutes. Kids run the fields.</span>
+    </a>
+    <a class="card" href="https://www.hoplotbrewing.com" target="_blank" rel="noopener">
+      <span class="name">Hop Lot Brewing <span class="tag">Suttons Bay</span></span>
+      <span class="note">Brewery in the woods with fire pits and a big lawn. Kids welcome outside.</span>
+    </a>
+    <a class="card" href="https://www.lpwines.com" target="_blank" rel="noopener">
+      <span class="name">Leelanau wine trail</span>
+      <span class="note">Twenty-some wineries between Suttons Bay and Northport.</span>
+    </a>
+    <a class="card" href="https://ompwinetrail.com" target="_blank" rel="noopener">
+      <span class="name">Old Mission wine trail</span>
+      <span class="note">Nine wineries up the peninsula east of town. Pair with the lighthouse drive.</span>
+    </a>
+    <a class="card" href="https://www.traversecity.com/restaurants/" target="_blank" rel="noopener">
+      <span class="name">Restaurant guide</span>
+      <span class="note">The tourism bureau's list. Restaurant Week is late winter.</span>
+    </a>
+  </div>
+</section>
+
+<section id="fun">
+  <h2>Seasons &amp; day trips</h2>
+  <p class="lead">Fall color peaks around the second week of October.</p>
+  <div class="grid">
+    <a class="card primary" href="https://www.traversecity.com/fall/" target="_blank" rel="noopener">
+      <span class="name">Fall in TC <span class="tag">cider &middot; pumpkins</span></span>
+      <span class="note">Color routes, pumpkin patches, cider mills.</span>
+    </a>
+    <a class="card" href="https://smokymountains.com/fall-foliage-map/" target="_blank" rel="noopener">
+      <span class="name">Fall color map</span>
+      <span class="note">County-level peak forecast. Pick the weekend from this.</span>
+    </a>
+    <a class="card" href="https://www.m22.com" target="_blank" rel="noopener">
+      <span class="name">M-22</span>
+      <span class="note">The Leelanau loop past Sleeping Bear, Glen Arbor, and Leland. Best color drive within an hour.</span>
+    </a>
+    <a class="card" href="https://www.nps.gov/slbe/index.htm" target="_blank" rel="noopener">
+      <span class="name">Sleeping Bear Dunes</span>
+      <span class="note">Dune climb, Pierce Stocking drive, Empire Bluff. Forty minutes west.</span>
+    </a>
+    <a class="card" href="https://www.fishtownmi.org" target="_blank" rel="noopener">
+      <span class="name">Fishtown, Leland</span>
+      <span class="note">Fishing shanties, smoked fish, the Manitou ferry. On the M-22 loop.</span>
+    </a>
+    <a class="card" href="https://www.missionpointlighthouse.com" target="_blank" rel="noopener">
+      <span class="name">Mission Point Lighthouse</span>
+      <span class="note">Drive the length of Old Mission to the tip. Beach, trails, a lighthouse to climb.</span>
+    </a>
+    <a class="card" href="https://www.jacobsfarmtc.com" target="_blank" rel="noopener">
+      <span class="name">Jacob's Farm <span class="tag">corn maze</span></span>
+      <span class="note">Corn maze, cider, donuts, live music on the edge of town.</span>
+    </a>
+    <a class="card" href="https://friske.com" target="_blank" rel="noopener">
+      <span class="name">Friske Farm Market</span>
+      <span class="note">U-pick apples and the pie counter, up US-31 in Ellsworth.</span>
+    </a>
+    <a class="card" href="https://www.michigan.gov/dnr/things-to-do/fishing/weekly-fishing-report" target="_blank" rel="noopener">
+      <span class="name">Salmon run <span class="tag">Sept &ndash; Oct</span></span>
+      <span class="note">Kings run up the Boardman and the Betsie every fall. Go watch them at the weir.</span>
+    </a>
+    <a class="card" href="https://www.swpc.noaa.gov/products/aurora-30-minute-forecast" target="_blank" rel="noopener">
+      <span class="name">Northern lights</span>
+      <span class="note">NOAA's 30-minute aurora forecast. On a good night they show over the lake.</span>
+    </a>
+    <a class="card" href="https://www.mt-holiday.com" target="_blank" rel="noopener">
+      <span class="name">Mt. Holiday <span class="tag">ski &middot; tubing</span></span>
+      <span class="note">The little hill on the east side of town. Night skiing, tubing, lessons. Ten minutes.</span>
+    </a>
+    <a class="card" href="https://www.timberleehills.com" target="_blank" rel="noopener">
+      <span class="name">Timberlee Hills <span class="tag">tubing</span></span>
+      <span class="note">Big tubing hill 15 minutes west. Easier than skiing with a mixed-age crew.</span>
+    </a>
+    <a class="card" href="https://www.crystalmountain.com" target="_blank" rel="noopener">
+      <span class="name">Crystal Mountain</span>
+      <span class="note">The real ski hill, 40 minutes southwest. Mountain biking and a water park in summer.</span>
+    </a>
+    <a class="card" href="https://www.boynemountain.com" target="_blank" rel="noopener">
+      <span class="name">Boyne Mountain</span>
+      <span class="note">An hour north. Skiing, the indoor water park, the summer zip line.</span>
+    </a>
+    <a class="card" href="https://www.vasa.org" target="_blank" rel="noopener">
+      <span class="name">VASA trail</span>
+      <span class="note">Groomed cross-country and fat-bike loops. The race is in February.</span>
+    </a>
+    <a class="card" href="https://www.tcsnowmobile.com" target="_blank" rel="noopener">
+      <span class="name">Snowmobile trails</span>
+      <span class="note">Trail maps and grooming reports.</span>
+    </a>
+    <a class="card" href="https://www.greatwolf.com/traverse-city" target="_blank" rel="noopener">
+      <span class="name">Great Wolf Lodge <span class="tag">rainy day</span></span>
+      <span class="note">Indoor water park in town. Day passes exist; check before promising the kids.</span>
+    </a>
+    <a class="card" href="https://www.interlochen.org/events" target="_blank" rel="noopener">
+      <span class="name">Interlochen</span>
+      <span class="note">Summer concerts and student performances all year. Twenty minutes south.</span>
+    </a>
+    <a class="card" href="https://www.elkrapids.org" target="_blank" rel="noopener">
+      <span class="name">Torch Lake sandbar</span>
+      <span class="note">North on US-31. Launch from Elk Rapids or Alden. The summer day the kids will talk about.</span>
+    </a>
+    <a class="card" href="https://www.mackinacisland.org" target="_blank" rel="noopener">
+      <span class="name">Mackinac Island <span class="tag">day trip</span></span>
+      <span class="note">Two hours to the ferry, then bikes, fudge, the fort.</span>
+    </a>
+    <a class="card" href="https://www.cherryfestival.org" target="_blank" rel="noopener">
+      <span class="name">Cherry Festival <span class="tag">July</span></span>
+      <span class="note">Air show, parades, the whole town on the bay for the week of the Fourth.</span>
+    </a>
+  </div>
+</section>
+
+<section id="drive">
+  <h2>The drive</h2>
+  <p class="lead">Lexington to the lake is three states of road conditions.</p>
+  <div class="grid">
+    <a class="card" href="https://goky.ky.gov" target="_blank" rel="noopener">
+      <span class="name">GoKY <span class="tag">Kentucky</span></span>
+      <span class="note">The first hour.</span>
+    </a>
+    <a class="card" href="https://www.ohgo.com" target="_blank" rel="noopener">
+      <span class="name">OHGO <span class="tag">Ohio</span></span>
+      <span class="note">I-75 through Ohio.</span>
+    </a>
+    <a class="card" href="https://mdotjboss.state.mi.us/MiDrive/map" target="_blank" rel="noopener">
+      <span class="name">MiDrive <span class="tag">Michigan</span></span>
+      <span class="note">Closures and plow cams for the last three hours.</span>
+    </a>
+    <a class="card" href="https://www.tvcairport.com" target="_blank" rel="noopener">
+      <span class="name">Cherry Capital Airport</span>
+      <span class="note">When the van isn't the answer.</span>
+    </a>
+    <a class="card" href="https://www.traverseticker.com" target="_blank" rel="noopener">
+      <span class="name">Traverse Ticker</span>
+      <span class="note">Local news and road projects.</span>
+    </a>
+    <a class="card" href="https://www.tcaps.net" target="_blank" rel="noopener">
+      <span class="name">TCAPS</span>
+      <span class="note">The school district. Calendar and enrollment for the move.</span>
+    </a>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <a href="../">&larr; Back to the house page</a> &middot; <a href="/">willgerken.com</a>
+  </div>
+</footer>
+
+</body>
+</html>
