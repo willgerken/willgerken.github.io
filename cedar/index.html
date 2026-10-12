@@ -69,6 +69,7 @@ header p{color:var(--ink-light);margin-top:.5rem;max-width:56ch}
 .quick{display:grid;grid-template-columns:repeat(4,1fr);gap:.5rem;padding:1rem 0 .2rem}
 .quick a,.quick div{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.2rem;min-height:76px;padding:.6rem .3rem;border-radius:var(--radius);background:var(--surface);border:1px solid var(--border);color:var(--ink);font-weight:600;font-size:.9rem;text-align:center;line-height:1.15}
 .quick small{font-weight:400;color:var(--ink-muted);font-size:.74rem}
+.quick div{border-style:dashed;background:transparent;font-weight:500;color:var(--ink-light)}
 .quick a:hover{border-color:var(--lake)}
 
 section{padding:1.8rem 0 .4rem}
@@ -128,7 +129,7 @@ footer a{color:var(--ink-light)}
 <div class="wrap">
   <div class="quick" aria-label="Quick links">
     <a href="https://www.sensoredlife.com/?tid=6#/login" target="_blank" rel="noopener">House alarm<small>MarCELL</small></a>
-    <div>Cameras<small>Reolink app on your phone</small></div>
+    <div>Cameras<small>open the Reolink app</small></div>
     <a href="https://app.mobilelinkgen.com" target="_blank" rel="noopener">Generator<small>Mobile Link</small></a>
     <a href="https://forecast.weather.gov/MapClick.php?lat=44.71&lon=-85.74" target="_blank" rel="noopener">Weather<small>NWS</small></a>
   </div>
@@ -140,6 +141,7 @@ footer a{color:var(--ink-light)}
       <li><a href="#apps">Apps</a></li>
       <li><a href="#weather">Weather</a></li>
       <li><a href="#broken">If something breaks</a></li>
+      <li><a href="#leaving">Leaving</a></li>
       <li><a href="#call">Who to call</a></li>
       <li><a href="#house">House notes</a></li>
       <li><a href="#paint">Paint</a></li>
@@ -207,9 +209,23 @@ footer a{color:var(--ink-light)}
     <div class="row"><b>Water leak</b><span>Shutoff is in the basement at the pressure tank. Clockwise till it stops.</span></div>
     <div class="row"><b>Horn in the basement</b><span>One of the two TankAlert boxes. The septic pump or the outside crock is backed up. Hit Silence and stop running water.</span></div>
     <div class="row"><b>Crock pump not running</b><span>Reset the GFCI outlet at the back of the garage first. That's what feeds it.</span></div>
+    <div class="row"><b>Breaker tripped</b><span>Panel is in the basement. Find the one sitting halfway, push it fully off, then on.</span></div>
+    <div class="row"><b>No water</b><span>Check the well pump breaker first, then look at the pressure gauge on the tank in the basement. If it's at zero with the breaker on, Cluff.</span></div>
     <div class="row"><b>No heat</b><span>Thermostat on Heat, then the switch on the side of the furnace (looks like a light switch). Still nothing, Team Bob's.</span></div>
     <div class="row"><b>Smell gas</b><span>Everybody outside, then DTE at <a href="tel:+18009475000" class="mono">800-947-5000</a>.</span></div>
     <div class="row"><b>Internet down</b><span><a href="https://www.spectrum.net/support/outage" target="_blank" rel="noopener">Spectrum outage page</a>. The alarm and generator apps keep working without it.</span></div>
+  </div>
+</section>
+
+<section id="leaving">
+  <h2>Leaving the house</h2>
+  <p class="lead">Before you pull out.</p>
+  <div class="rows">
+    <div class="row"><b>Thermostat</b><span>55. Don't drop it until the last coat of paint has had a night.</span></div>
+    <div class="row"><b>Water</b><span>Main off at the pressure tank. Open a low faucet to bleed the line. Water heater to vacation.</span></div>
+    <div class="row"><b>Basement</b><span>Dehumidifier to 45, hose in the tub. Cabinet doors under the sinks open.</span></div>
+    <div class="row"><b>Outside</b><span>Hoses off and drained, bibs covered. Garbage inside the garage, never out overnight.</span></div>
+    <div class="row"><b>Phone</b><span>MarCELL and the cameras both showing live before you leave the driveway.</span></div>
   </div>
 </section>
 
@@ -292,7 +308,6 @@ footer a{color:var(--ink-light)}
     <div class="row"><b>Septic</b><span>Tank and pump chamber off the east side of the house, mound field west of the house. Nothing parked or planted on it.</span></div>
     <div class="row"><b>Pond aerator</b><span>Off for winter, on in spring. Late summer: a few hours a day on a timer before leaving it on all the time.</span></div>
     <div class="row"><b>Dehumidifier</b><span>Drains to the basement tub. 50% when we're there, 45% when we leave.</span></div>
-    <div class="row"><b>Leaving the house</b><span>Thermostat to 55. Water main off at the pressure tank, open a low faucet. Water heater to vacation. Dehumidifier to 45. Cabinet doors under the sinks open. Check MarCELL and the cameras show up on your phone before you pull out.</span></div>
     <div class="row"><b>Every year</b><span>Generator service in summer. Chimney sweep and furnace service in fall. Well water test. UPS battery every three years. <b>Principal Residence Exemption, Form 2368, by June 1, 2027.</b></span></div>
     <div class="row"><b>Pond</b><span><a href="cedar_pond_map.png" target="_blank" rel="noopener">Depth map</a>. Drops to 4 to 6 feet a few steps from shore, one 20-foot hole at the west end. Life jackets on the boats. Nobody on the ice without one of us checking it.</span></div>
   </div>
@@ -317,7 +332,7 @@ footer a{color:var(--ink-light)}
     </a>
     <div class="card">
       <span class="name">The swatch test</span>
-      <span class="note">Sample pots, not quarts, of the five main-floor colors. Two-foot squares on the big wall where the Michigan sign goes, next to the kitchen cabinets, in the den, and in our bedroom. Curtains and rug out first. Look morning, evening, and on a gray day. Then pick two and we decide.</span>
+      <span class="note">Thermostat up to 65 the day you arrive and leave it there till the last coat has dried overnight. Sample pots, not quarts, of the five main-floor colors. Two-foot squares on the big wall where the Michigan sign goes, next to the kitchen cabinets, in the den, and in our bedroom. Curtains and rug out first. Look morning, evening, and on a gray day. Then pick two and we decide.</span>
     </div>
     <div class="card">
       <span class="name">Kids' rooms</span>
@@ -377,7 +392,7 @@ footer a{color:var(--ink-light)}
 
 <footer>
   <div class="wrap">
-    Unlisted page, no passwords on it. Something wrong or missing, tell Will. &middot; <a href="/">willgerken.com</a>
+    Unlisted page, no passwords on it. WiFi and the app logins are in the family doc. Something wrong or missing, tell Will. &middot; <a href="/">willgerken.com</a>
   </div>
 </footer>
 
